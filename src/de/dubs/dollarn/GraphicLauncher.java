@@ -212,7 +212,7 @@ public class GraphicLauncher extends Frame implements MouseMotionListener,
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		Point point = e.getPoint();
-		points.add(new PointR((short)point.x, (short)point.y));
+		points.add(new PointR(point.x, point.y));
 		recLabel.setText("Recording stroke #" + (strokes.size() + 1) + "...");
 		repaint();
 	}

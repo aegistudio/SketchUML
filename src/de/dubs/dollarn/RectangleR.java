@@ -66,18 +66,15 @@ package de.dubs.dollarn;
 import java.text.DecimalFormat;
 
 public class RectangleR {
-	private short _x;
-	private short _y;
-	private short _width;
-	private short _height;
-	public static final RectangleR Empty = new RectangleR();
-	public static final DecimalFormat df = new DecimalFormat("#.###");
+	private static final int Digits = 4;
+	private double _x;
+	private double _y;
+	private double _width;
+	private double _height;
+	public static final RectangleR Empty = new RectangleR(0, 0, 0, 0);
+	DecimalFormat df = new DecimalFormat("#.###");
 
-	private RectangleR() {
-		this((short)0, (short)0, (short)0, (short)0);
-	}
-	
-	public RectangleR(short x, short y, short width, short height) {
+	public RectangleR(double x, double y, double width, double height) {
 		_x = x;
 		_y = y;
 		_width = width;
@@ -92,35 +89,39 @@ public class RectangleR {
 		_height = r.getHeight();
 	}
 
-	public short getX() {
-		return _x;
+	public double getX() {
+		return Utils.round(_x, Digits);
 	}
 
-	public void setX(short value) {
+	public void setX(double value) {
 		_x = value;
 	}
 
-	public short getY() {
-		return _y;
+	public double getY() {
+
+		return Utils.round(_y, Digits);
 	}
 
-	public void setY(short value) {
+	public void setY(double value) {
 		_y = value;
+
 	}
 
-	public short getWidth() {
-		return _width;
+	public double getWidth() {
+
+		return Utils.round(_width, Digits);
 	}
 
-	public void setWidth(short value) {
+	public void setWidth(double value) {
 		_width = value;
 	}
 
-	public short getHeight() {
-		return _height;
+	public double getHeight() {
+
+		return Utils.round(_height, Digits);
 	}
 
-	public void setHeight(short value) {
+	public void setHeight(double value) {
 		_height = value;
 
 	}
@@ -132,28 +133,24 @@ public class RectangleR {
 
 	public PointR getBottomRight() {
 
-		return new PointR(
-				(short)(getX() + getWidth()), 
-				(short)(getY() + getHeight()));
+		return new PointR(getX() + getWidth(), getY() + getHeight());
 	}
 
 	public PointR getCenter() {
 
-		return new PointR(
-				(short)(getX() + getWidth() / 2), 
-				(short)(getY() + getHeight() / 2));
+		return new PointR(getX() + getWidth() / 2d, getY() + getHeight() / 2d);
 	}
 
-	public short getMaxSide() {
+	public double getMaxSide() {
 
-		return (short)Math.max(_width, _height);
+		return Math.max(_width, _height);
 	}
 
-	public short getMinSide() {
-		return (short)Math.min(_width, _height);
+	public double getMinSide() {
+		return Math.min(_width, _height);
 	}
 
-	public short getDiagonal() {
+	public double getDiagonal() {
 		return Utils.Distance(getTopLeft(), getBottomRight());
 	}
 

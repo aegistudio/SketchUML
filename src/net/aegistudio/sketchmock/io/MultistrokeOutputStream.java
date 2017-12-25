@@ -57,8 +57,8 @@ public class MultistrokeOutputStream extends OutputStream {
 	}
 	
 	private void writePoint(PointR point) throws IOException {
-		outputStream.writeShort(point.X);
-		outputStream.writeShort(point.Y);
-		outputStream.writeByte(point.T);
+		outputStream.writeDouble(point.X);
+		outputStream.writeDouble(point.Y);
+		outputStream.writeInt(point.T);
 	}
 }

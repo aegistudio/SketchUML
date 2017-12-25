@@ -64,8 +64,8 @@ package de.dubs.dollarn;
  */
 
 public class PointR {
-	public short X, Y;
-	public byte T;
+	public double X, Y;
+	public int T;
 
 	public PointR() {
 		X = 0;
@@ -73,13 +73,13 @@ public class PointR {
 		T = 0;
 	}
 
-	public PointR(short x, short y) {
+	public PointR(double x, double y) {
 		X = x;
 		Y = y;
 		T = 0;
 	}
 
-	public PointR(short x, short y, byte t) {
+	public PointR(double x, double y, int t) {
 		X = x;
 		Y = y;
 		T = t;

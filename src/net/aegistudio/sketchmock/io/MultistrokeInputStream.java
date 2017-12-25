@@ -81,8 +81,8 @@ public class MultistrokeInputStream extends InputStream {
 	}
 	
 	private void readPoint(PointR point) throws IOException {
-		point.X = inputStream.readShort();
-		point.Y = inputStream.readShort();
-		point.T = inputStream.readByte();
+		point.X = inputStream.readDouble();
+		point.Y = inputStream.readDouble();
+		point.T = inputStream.readInt();
 	}
 }
