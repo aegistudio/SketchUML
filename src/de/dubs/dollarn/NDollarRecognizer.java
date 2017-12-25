@@ -94,7 +94,7 @@ public class NDollarRecognizer {
 	public static final SizeR ResampleScale = new SizeR(DX, DX);
 	public static final double Diagonal = Math.sqrt(DX * DX + DX * DX);
 	public static final double HalfDiagonal = 0.5 * Diagonal;
-	public static final PointR ResampleOrigin = new PointR(0, 0);
+	public static final PointR ResampleOrigin = new PointR((short)0, (short)0);
 	private static final double Phi = 0.5 * (-1 + Math.sqrt(5)); // Golden Ratio
 
 	private static final double _RotationBound = 45.0; // Lisa 1/2/2008; could
@@ -226,7 +226,7 @@ public class NDollarRecognizer {
 		double a = 0;
 		double b = 0;
 
-		for (int i = 0; i < v1.size(); i = i + 2) {
+		for (int i = 0; i < v1.size() && i < v2.size(); i = i + 2) {
 			a = a + v1.elementAt(i) * v2.elementAt(i) + v1.elementAt(i + 1)
 					* v2.elementAt(i + 1);
 			b = b + v1.elementAt(i) * v2.elementAt(i + 1) - v1.elementAt(i + 1)
@@ -544,13 +544,13 @@ public class NDollarRecognizer {
 					PointR p = new PointR();
 					for (int i = 0; i < reader.getAttributeCount(); ++i) {
 						if (reader.getAttributeName(i).equals("X")) {
-							p.X = Double.parseDouble(reader
+							p.X = (short)Double.parseDouble(reader
 									.getAttributeValue(i));
 						} else if (reader.getAttributeName(i).equals("Y")) {
-							p.Y = Double.parseDouble(reader
+							p.Y = (short)Double.parseDouble(reader
 									.getAttributeValue(i));
 						} else if (reader.getAttributeName(i).equals("T")) {
-							p.T = Integer.parseInt(reader.getAttributeValue(i));
+							p.T = (byte)Integer.parseInt(reader.getAttributeValue(i));
 						}
 					}
 					points.add(p);

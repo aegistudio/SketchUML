@@ -85,29 +85,30 @@ public class Utils {
 				maxY = p.Y;
 		}
 
-		return new RectangleR(minX, minY, maxX - minX, maxY - minY);
+		return new RectangleR((short)minX, (short)minY, 
+				(short)(maxX - minX), (short)(maxY - minY));
 	}
 
 	public static double round(double x, int digits) {
 		return (double) Math.round(x * 10 * (digits)) / (10 * digits);
 	}
 
-	public static double Distance(PointR p1, PointR p2) {
+	public static short Distance(PointR p1, PointR p2) {
 		double dx = p2.X - p1.X;
 		double dy = p2.Y - p1.Y;
-		return Math.sqrt(dx * dx + dy * dy);
+		return (short)(Math.sqrt(dx * dx + dy * dy));
 	}
 
 	// compute the centroid of the points given
 	public static PointR Centroid(Vector<PointR> points) {
-		double xsum = 0.0;
-		double ysum = 0.0;
+		short xsum = 0;
+		short ysum = 0;
 
 		for (PointR p : points) {
 			xsum += p.X;
 			ysum += p.Y;
 		}
-		return new PointR(xsum / points.size(), ysum / points.size());
+		return new PointR((short)(xsum / points.size()), (short)(ysum / points.size()));
 	}
 
 	public static double PathLength(Vector<PointR> points) {
@@ -188,8 +189,8 @@ public class Utils {
 			double dy = p.Y - cy;
 
 			PointR q = new PointR();
-			q.X = dx * cos - dy * sin + cx;
-			q.Y = dx * sin + dy * cos + cy;
+			q.X = (short)(dx * cos - dy * sin + cx);
+			q.Y = (short)(dx * sin + dy * cos + cy);
 
 			newPoints.add(q);
 		}
@@ -208,10 +209,10 @@ public class Utils {
 	// from +x-axis to -y-axis is -90 degrees.
 	public static PointR RotatePoint(PointR p, PointR c, double radians) {
 		PointR q = new PointR();
-		q.X = (p.X - c.X) * Math.cos(radians) - (p.Y - c.Y) * Math.sin(radians)
-				+ c.X;
-		q.Y = (p.X - c.X) * Math.sin(radians) + (p.Y - c.Y) * Math.cos(radians)
-				+ c.Y;
+		q.X = (short)((p.X - c.X) * Math.cos(radians) - (p.Y - c.Y) * Math.sin(radians)
+				+ c.X);
+		q.Y = (short)((p.X - c.X) * Math.sin(radians) + (p.Y - c.Y) * Math.cos(radians)
+				+ c.Y);
 		return q;
 	}
 
@@ -228,17 +229,18 @@ public class Utils {
 	// are widely different. Lisa 8/8/2009
 	public static PointR CalcStartUnitVector(Vector<PointR> points, int index) {
 		// v is the vector from points.elementAt(0) to points[index]
-		PointR v = new PointR(((PointR) points.elementAt(index)).X
-				- ((PointR) points.elementAt(0)).X,
-				((PointR) points.elementAt(index)).Y
-						- ((PointR) points.elementAt(0)).Y);
+		PointR v = new PointR(
+					(short)(((PointR) points.elementAt(index)).X
+							- ((PointR) points.elementAt(0)).X),
+					(short)(((PointR) points.elementAt(index)).Y
+							- ((PointR) points.elementAt(0)).Y));
 		// len is the length of vector v
 		double len = Math.sqrt(v.X * v.X + v.Y * v.Y);
 		// the unit vector representing the angle between points.elementAt(0)
 		// and points[index]
 		// is the vector v divided by its length len
 		// TODO: does there need to be a divide by zero check?
-		return new PointR(v.X / len, v.Y / len);
+		return new PointR((short)(v.X / len), (short)(v.Y / len));
 	}
 
 	// will return result in radians
@@ -372,7 +374,7 @@ public class Utils {
 					* (size.getHeight() / Math.max(B.getWidth(), B.getHeight()))
 					: ((PointR) points.elementAt(i)).Y
 							* (size.getHeight() / B.getHeight());
-			newpoints.add(new PointR(qx, qy));
+			newpoints.add(new PointR((short)qx, (short)qy));
 		}
 		return newpoints;
 	}
@@ -485,7 +487,7 @@ public class Utils {
 			if ((D + d) >= I) {
 				double qx = pt1.X + ((I - D) / d) * (pt2.X - pt1.X);
 				double qy = pt1.Y + ((I - D) / d) * (pt2.Y - pt1.Y);
-				PointR q = new PointR(qx, qy);
+				PointR q = new PointR((short)qx, (short)qy);
 				dstPts.add(q); // append new point 'q'
 				srcPts.insertElementAt(q, i); // insert 'q' at position i in
 												// points s.t.
