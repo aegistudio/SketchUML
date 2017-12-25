@@ -88,6 +88,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.Vector;
@@ -123,9 +124,12 @@ public class GraphicLauncher extends Frame implements MouseMotionListener,
 		});
 
 		// read them
+		Arrays.asList(allXMLFiles).parallelStream()
+			.forEach(_rec::loadGesture);
+		/**
 		for (int i = 0; i < allXMLFiles.length; ++i) {
 			_rec.loadGesture(allXMLFiles[i]);
-		}
+		}*/
 
 		new GraphicLauncher();
 	}
@@ -294,7 +298,7 @@ public class GraphicLauncher extends Frame implements MouseMotionListener,
 		}
 
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-		if (_rec.SaveGesture(samplesDir
+		if (_rec.saveGesture(samplesDir
 						+ "\\"
 						+ name
 						+ "_"

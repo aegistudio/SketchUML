@@ -75,6 +75,7 @@ import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -346,7 +347,7 @@ public class NDollarRecognizer {
 	// added the numPtsInStroke argument so we can read and write the gestures
 	// we draw ourselves for testing
 	// Lisa 1/2/2008
-	public boolean SaveGesture(String filename, Vector<Vector<PointR>> strokes,
+	public boolean saveGesture(String filename, Vector<Vector<PointR>> strokes,
 			Vector<Integer> numPtsInStroke) {
 		// add the new prototype with the name extracted from the filename.
 		String name = Gesture.ParseName(filename);
@@ -442,11 +443,49 @@ public class NDollarRecognizer {
 			ex.printStackTrace();
 			success = false;
 		}
+		
+		// Save precomputed file as well if present.
+		File pcxFile = new File(filename + ".pcx");
+		savePcxGesture(pcxFile, newPrototype);
+		
 		return success; // Xml file successfully written (or not)
 	}
 
 	public boolean loadGesture(String filename) {
 		return loadGesture(new File(filename));
+	}
+	
+	private Multistroke loadPcxGesture(File pcx) {
+		if(pcx.exists() && NDollarParameters.getInstance().StorePrecompute) 
+			try(	GZIPInputStream gzipInput = new GZIPInputStream(
+						new FileInputStream(pcx));
+					MultistrokeInputStream pcxInput = 
+						new MultistrokeInputStream(gzipInput);) {
+			return pcxInput.readStroke();
+			}
+			catch(Exception e) {}
+		
+		return null;
+	}
+	
+	private void savePcxGesture(File pcx, Multistroke stroke) {
+		if(!pcx.exists() && NDollarParameters.getInstance().StorePrecompute) {
+			try {
+				pcx.createNewFile();
+				try (	GZIPOutputStream pcxOutput = new GZIPOutputStream(
+						new FileOutputStream(pcx)) 
+						{{ this.def.setLevel(Deflater.BEST_COMPRESSION); }};
+					MultistrokeOutputStream multiStrokeOutput = 
+						new MultistrokeOutputStream(pcxOutput)) {
+				
+					multiStrokeOutput.writeStroke(stroke);
+					pcxOutput.finish();
+				}
+			}
+			catch(IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	static int cnt =0;
@@ -455,21 +494,11 @@ public class NDollarRecognizer {
 		MXParser reader = null;
 		FileInputStream fis = null;
 		try {
-			Multistroke p = null;
-			boolean precomputeFetched = false;
-			File pcx = new File(file.getParentFile(), file.getName() + ".pcx"); 
+			File pcx = new File(file.getParentFile(), file.getName() + ".pcx");
+			Multistroke p = loadPcxGesture(pcx);
 			
-			// Try to fetch raw precomputation.
-			if(pcx.exists() && NDollarParameters.getInstance().StorePrecompute) {
-				System.out.println("Trying to read data from " + pcx);
-				p = new MultistrokeInputStream(new GZIPInputStream(
-						new FileInputStream(pcx))).readStroke();
-				precomputeFetched = true;
-			}
-			
-			if(precomputeFetched) System.out.println("Read precomputed data.");
 			// Fetch raw data if it has not been found yet.
-			if(!precomputeFetched) {
+			if(p == null) {
 				reader = new MXParser();
 				fis = new FileInputStream(file);
 				reader.setInput(fis, "UTF-8");
@@ -478,17 +507,7 @@ public class NDollarRecognizer {
 			}
 
 			// Store the precomputed data.
-			if(!pcx.exists() && NDollarParameters.getInstance().StorePrecompute) {
-				pcx.createNewFile();
-				try (	GZIPOutputStream pcxOutput = new GZIPOutputStream(
-							new FileOutputStream(pcx));
-						MultistrokeOutputStream multiStrokeOutput = 
-							new MultistrokeOutputStream(pcxOutput)) {
-					
-					multiStrokeOutput.writeStroke(p);
-					pcxOutput.finish();
-				}
-			}
+			savePcxGesture(pcx, p);
 			
 			// remove any with the same name and add the prototype gesture
 			if (_gestures.containsKey(p.Name)){
@@ -503,7 +522,9 @@ public class NDollarRecognizer {
 			// _gestures now contains Multistrokes, not just Gestures
 			// Lisa 12/21/2007
 			System.out.println("add "+p.Name);
-			_gestures.put(p.Name, p);
+			synchronized(_gestures) {
+				_gestures.put(p.Name, p);
+			}
 			if (fis != null) {
 				fis.close();
 			}
@@ -513,6 +534,7 @@ public class NDollarRecognizer {
 		} finally {
 
 		}
+		
 		return success;
 	}
 
