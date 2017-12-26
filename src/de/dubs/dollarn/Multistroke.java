@@ -72,6 +72,7 @@ import java.util.Vector;
 
 public class Multistroke implements Comparable<Multistroke> {
 	public String Name;
+	public Object Userdata;
 	public String User;
 	public String Speed;
 	public int NumStrokes = -1; // how many strokes this multistroke has
@@ -84,6 +85,7 @@ public class Multistroke implements Comparable<Multistroke> {
 		this.Name = "";
 		this.User = "";
 		this.Speed = "";
+		this.Userdata = null;
 		this.Gestures = null;
 		this.OriginalGesture = null;
 	}

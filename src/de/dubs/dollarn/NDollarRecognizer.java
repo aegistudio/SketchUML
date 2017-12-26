@@ -81,16 +81,12 @@ import java.util.zip.GZIPOutputStream;
 
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserFactory;
-import org.xmlpull.v1.XmlSerializer;
 
-import net.aegistudio.sketchuml.io.MultistrokeInputStream;
-import net.aegistudio.sketchuml.io.MultistrokeOutputStream;
+import net.aegistudio.sketchuml.stroke.MultistrokeInputStream;
+import net.aegistudio.sketchuml.stroke.MultistrokeOutputStream;
+import net.aegistudio.sketchuml.stroke.SketchInstance;
 
 public class NDollarRecognizer {
-	private final static String NAMESPACE = null;
-	private final static String VERSION = "1.0";
-
 	private static final double DX = 250.0;
 	public static final SizeR ResampleScale = new SizeR(DX, DX);
 	public static final double Diagonal = Math.sqrt(DX * DX + DX * DX);
@@ -199,7 +195,7 @@ public class NDollarRecognizer {
 						// and only add that particular template's score to the
 						// nbest Vector
 						// Lisa 12/22/2007
-						thisMSnbest.AddResult(p.Name, score, best[0], best[1]); // name,
+						thisMSnbest.AddResult(p.Name, score, best[0], best[1], ms.Userdata); // name,
 																				// score,
 																				// distance,
 																				// angle
@@ -210,7 +206,7 @@ public class NDollarRecognizer {
 				// these properties return the property of the top result
 				// Lisa 12/22/2007
 				nbest.AddResult(thisMSnbest.getName(), thisMSnbest.getScore(),
-						thisMSnbest.getDistance(), thisMSnbest.getAngle()); // name,
+						thisMSnbest.getDistance(), thisMSnbest.getAngle(), ms.Userdata); // name,
 																			// score,
 																			// distance,
 																			// angle
@@ -353,7 +349,7 @@ public class NDollarRecognizer {
 		String name = Gesture.ParseName(filename);
 
 		// Lisa 1/2/2008
-		Multistroke newPrototype = new Multistroke(name, "test", "test",
+		Multistroke newPrototype = new Multistroke(name, "sketchuml", "sketchuml",
 				strokes); // points, numPtsInStroke);
 
 		// jso 09/30/2011
@@ -367,92 +363,23 @@ public class NDollarRecognizer {
 
 		_gestures.put(newPrototype.Name, newPrototype);
 
-		Vector<PointR> points = newPrototype.OriginalGesture.RawPoints;
-		// figure out the duration of the gesture
-		PointR p0 = points.elementAt(0);
-		PointR pn = points.elementAt(points.size() - 1);
-
-		// do the xml writing (of the raw points)
-		boolean success = true;
-		boolean indentation = true;
-		XmlSerializer writer = null;
-		OutputStreamWriter osw = null;
-		try {
-			XmlPullParserFactory factory = XmlPullParserFactory.newInstance(
-					System.getProperty(XmlPullParserFactory.PROPERTY_NAME),
-					null);
-			writer = factory.newSerializer();
-			// save the prototype as an Xml file
-			osw = new OutputStreamWriter(new FileOutputStream(filename));
-			writer.setOutput(osw);
-			writer.startTag(NAMESPACE, "Gesture");
-			writer.attribute(NAMESPACE, "Name", name);
-			writer.attribute(NAMESPACE, "Subject", "test");
-			writer.attribute(NAMESPACE, "Speed", "test");
-			writer.attribute(NAMESPACE, "NumPts",
-					Integer.toString(points.size()));
-			writer.attribute(NAMESPACE, "Milliseconds",
-					Integer.toString(pn.T - p0.T));
-			writer.attribute(NAMESPACE, "AppName", getClass().getName()
-					+ "-java");
-			writer.attribute(NAMESPACE, "AppVer", VERSION);
-			SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
-			writer.attribute(NAMESPACE, "Date", dateFormat
-					.format(GregorianCalendar.getInstance().getTime()));
-			SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-			writer.attribute(NAMESPACE, "TimeOfDay", timeFormat
-					.format(GregorianCalendar.getInstance().getTime()));
-			if (indentation)
-				writer.text("\n");
-			// write out the Stroke tags, Lisa 1/2/2008
-			int numStrokesWritten = 0;
-			// write out the raw individual points
-			// fixed to work with strokes, Lisa 8/8/2009
-			for (Vector<PointR> pts : strokes) {
-				writer.startTag(NAMESPACE, "Stroke");
-				writer.attribute(NAMESPACE, "index",
-						Integer.toString(numStrokesWritten + 1));
-				if (indentation)
-					writer.text("\n");
-				numStrokesWritten++;
-				for (PointR p : pts) {
-					writer.startTag(NAMESPACE, "Point");
-					writer.attribute(NAMESPACE, "X", Double.toString(p.X));
-					writer.attribute(NAMESPACE, "Y", Double.toString(p.Y));
-					writer.attribute(NAMESPACE, "T", Integer.toString(p.T));
-					writer.endTag(NAMESPACE, "Point");
-					if (indentation)
-						writer.text("\n");
-				}
-				// write the Stroke tags, Lisa 1/2/2008
-				writer.endTag(NAMESPACE, "Stroke"); // </Stroke>, I hope
-				if (indentation)
-					writer.text("\n");
-			}
-			writer.endTag(NAMESPACE, "Gesture");
-			if (indentation)
-				writer.text("\n");
-			writer.endDocument();
-			writer.flush();
-			if (osw != null)
-				osw.close();
-		} catch (IOException xex) {
-			xex.printStackTrace();
-			success = false;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			success = false;
-		}
+		// Refactor instance class.
+		SketchInstance instance = new SketchInstance();
+		instance.name = name;
+		instance.strokes = strokes;
+		boolean success = instance.save(new File(filename));
 		
 		// Save precomputed file as well if present.
-		File pcxFile = new File(filename + ".pcx");
-		savePcxGesture(pcxFile, newPrototype);
+		if(success) {
+			File pcxFile = new File(filename + ".pcx");
+			savePcxGesture(pcxFile, newPrototype);
+		}
 		
 		return success; // Xml file successfully written (or not)
 	}
 
-	public boolean loadGesture(String filename) {
-		return loadGesture(new File(filename));
+	public boolean loadGesture(String filename, Object userdata) {
+		return loadGesture(new File(filename), userdata);
 	}
 	
 	private Multistroke loadPcxGesture(File pcx) {
@@ -489,7 +416,7 @@ public class NDollarRecognizer {
 	}
 
 	static int cnt =0;
-	public boolean loadGesture(File file) {
+	public boolean loadGesture(File file, Object userdata) {
 		boolean success = true;
 		MXParser reader = null;
 		FileInputStream fis = null;
@@ -521,7 +448,7 @@ public class NDollarRecognizer {
 		
 			// _gestures now contains Multistrokes, not just Gestures
 			// Lisa 12/21/2007
-			System.out.println("add "+p.Name);
+			p.Userdata = userdata;
 			synchronized(_gestures) {
 				_gestures.put(p.Name, p);
 			}
@@ -543,58 +470,12 @@ public class NDollarRecognizer {
 	// pre-processing.
 	// Lisa 1/2/2008
 	private Multistroke ReadGesture(XmlPullParser reader) {
-		String name = "", user = "", speed = "";
-		Vector<PointR> points = new Vector<PointR>();
-		Vector<Vector<PointR>> strokes = new Vector<Vector<PointR>>();
-		try {
-			int next = reader.next();
-			while (next != XmlPullParser.END_DOCUMENT) {
-
-				if (next == XmlPullParser.START_TAG
-						&& reader.getName().equals("Gesture")) {
-					for (int i = 0; i < reader.getAttributeCount(); ++i) {
-						if (reader.getAttributeName(i).equals("Name")) {
-							name = reader.getAttributeValue(i);
-						} else if (reader.getAttributeName(i).equals("Subject")) {
-							user = reader.getAttributeValue(i);
-						} else if (reader.getAttributeName(i).equals("Speed")) {
-							speed = reader.getAttributeValue(i);
-						}
-					}
-				} else if (next == XmlPullParser.START_TAG
-						&& reader.getName().equals("Point")) {
-					PointR p = new PointR();
-					for (int i = 0; i < reader.getAttributeCount(); ++i) {
-						if (reader.getAttributeName(i).equals("X")) {
-							p.X = Double.parseDouble(reader
-									.getAttributeValue(i));
-						} else if (reader.getAttributeName(i).equals("Y")) {
-							p.Y = Double.parseDouble(reader
-									.getAttributeValue(i));
-						} else if (reader.getAttributeName(i).equals("T")) {
-							p.T = Integer.parseInt(reader.getAttributeValue(i));
-						}
-					}
-					points.add(p);
-				} else if (next == XmlPullParser.START_TAG
-						&& reader.getName().equals("Stroke")) {
-					{
-						// set up stroke index for the beginning of this stroke
-						strokes.add(new Vector<PointR>(points));
-						points = new Vector<PointR>();
-					}
-				}
-				next = reader.next();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		// add last stroke size
-		strokes.add(new Vector<PointR>(points));
-		return new Multistroke(name, user, speed, strokes); // keep each stroke
-															// separate until
-															// we're done
-															// pre-processing
+		// COMMENT Haoran Luo
+		// Refactor: enable the system to construct strokes without making it 
+		// an multistroke.
+		SketchInstance instance = new SketchInstance();
+		instance.load(reader);
+		return instance.toMultistroke();
 	}
 
 	// / <summary>

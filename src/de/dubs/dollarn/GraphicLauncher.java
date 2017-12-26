@@ -125,7 +125,7 @@ public class GraphicLauncher extends Frame implements MouseMotionListener,
 
 		// read them
 		Arrays.asList(allXMLFiles).parallelStream()
-			.forEach(_rec::loadGesture);
+			.forEach((file) -> _rec.loadGesture(file, file.getName()));
 		/**
 		for (int i = 0; i < allXMLFiles.length; ++i) {
 			_rec.loadGesture(allXMLFiles[i]);
@@ -268,10 +268,11 @@ public class GraphicLauncher extends Frame implements MouseMotionListener,
 					NBestList.NBestResult currentResult;
 					for(int i = 0; (currentResult = result.get(i)) != null; ++ i) {
 						resultTxt = MessageFormat
-								.format("{0}: {1} ({2}px, {3}{4})", currentResult.getName(),
+								.format("{0}: {1} ({2}px, {3}{4}) ({5})", currentResult.getName(),
 										Utils.round(currentResult.getScore(), 2),
 										Utils.round(currentResult.getDistance(), 2),
-										Utils.round(currentResult.getAngle(), 2), (char) 176);
+										Utils.round(currentResult.getAngle(), 2), (char) 176,
+										currentResult.getUserdata().toString());
 						System.out.println(resultTxt);
 						
 						// Discard result of non-sense.

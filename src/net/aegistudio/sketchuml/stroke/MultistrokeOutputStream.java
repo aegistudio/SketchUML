@@ -1,4 +1,4 @@
-package net.aegistudio.sketchuml.io;
+package net.aegistudio.sketchuml.stroke;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

@@ -116,6 +116,7 @@ public class NBestList {
 
 	class NBestResult implements Comparable<NBestResult> {
 		private String _name;
+		private Object _userdata;
 		private double _score;
 		private double _distance;
 		private double _angle;
@@ -128,14 +129,20 @@ public class NBestList {
 			_angle = 0d;
 		}
 
-		public NBestResult(String name, double score, double distance,
+		public NBestResult(Object userdata, 
+				String name, double score, double distance,
 				double angle) {
 			_name = name;
 			_score = score;
 			_distance = distance;
 			_angle = angle;
+			_userdata = userdata;
 		}
 
+		public Object getUserdata() {
+			return _userdata;
+		}
+		
 		public String getName() {
 			return _name;
 		}
@@ -180,8 +187,8 @@ public class NBestList {
 	}
 
 	public void AddResult(String name, double score, double distance,
-			double angle) {
-		NBestResult r = new NBestResult(name, score, distance, angle);
+			double angle, Object userdata) {
+		NBestResult r = new NBestResult(userdata, name, score, distance, angle);
 		_nBestList.add(r);
 	}
 
