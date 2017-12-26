@@ -114,7 +114,7 @@ import java.util.Collections;
 
 public class NBestList {
 
-	class NBestResult implements Comparable<NBestResult> {
+	public class NBestResult implements Comparable<NBestResult> {
 		private String _name;
 		private Object _userdata;
 		private double _score;

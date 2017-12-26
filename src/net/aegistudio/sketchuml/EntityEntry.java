@@ -1,6 +1,4 @@
-package net.aegistudio.sketchuml.stroke;
-
-import net.aegistudio.sketchuml.EntityFactory;
+package net.aegistudio.sketchuml;
 
 /**
  * A low level entry that serves as candidate of
@@ -8,7 +6,7 @@ import net.aegistudio.sketchuml.EntityFactory;
  * 
  * @author Haoran
  */
-public class SketchMapEntry {
+public class EntityEntry {
 	public final String entry;
 	
 	public final String name;
@@ -17,11 +15,18 @@ public class SketchMapEntry {
 	
 	public final EntityFactory factory;
 	
-	public SketchMapEntry(String entry, String name,
-			String description, EntityFactory factory) {
+	public final PropertyView propertyView;
+	
+	public final SketchView sketchView;
+	
+	public EntityEntry(String entry, String name,
+			String description, EntityFactory factory,
+			PropertyView propertyView, SketchView sketchView) {
 		this.entry = entry;
 		this.name = name;
 		this.description = description;
 		this.factory = factory;
+		this.propertyView = propertyView;
+		this.sketchView = sketchView;
 	}
 }
