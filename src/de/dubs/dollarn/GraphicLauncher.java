@@ -109,7 +109,7 @@ public class GraphicLauncher extends Frame implements MouseMotionListener,
 	Button save;
 	TextField input;
 	
-	static final String samplesDir = "D:\\$N_Gesture";
+	static final String samplesDir = "D:\\$N_Gesture_UML";
 
 	public static void main(String[] args) {
 		_rec = new NDollarRecognizer();

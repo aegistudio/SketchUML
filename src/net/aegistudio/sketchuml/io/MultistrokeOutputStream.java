@@ -1,4 +1,4 @@
-package net.aegistudio.sketchmock.io;
+package net.aegistudio.sketchuml.io;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

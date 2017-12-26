@@ -84,8 +84,8 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 import org.xmlpull.v1.XmlSerializer;
 
-import net.aegistudio.sketchmock.io.MultistrokeInputStream;
-import net.aegistudio.sketchmock.io.MultistrokeOutputStream;
+import net.aegistudio.sketchuml.io.MultistrokeInputStream;
+import net.aegistudio.sketchuml.io.MultistrokeOutputStream;
 
 public class NDollarRecognizer {
 	private final static String NAMESPACE = null;
