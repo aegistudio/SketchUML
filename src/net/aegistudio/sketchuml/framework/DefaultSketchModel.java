@@ -30,12 +30,14 @@ public class DefaultSketchModel implements SketchModel {
 
 	@Override
 	public void create(SketchEntityComponent component) {
+		selectComponent(null);
 		components.add(0, component);
 		notifyUpdate();
 	}
 	
 	@Override
 	public void destroy(SketchEntityComponent component) {
+		selectComponent(null);
 		if(components.remove(component)) 
 			notifyUpdate();
 	}
@@ -135,6 +137,15 @@ public class DefaultSketchModel implements SketchModel {
 	@Override
 	public void notifySelectedChanged() {
 		if(selectedIndex < 0) return;
+		notifyUpdate();
+	}
+
+	@Override
+	public void destroySelected() {
+		if(selectedIndex < 0) return;
+		components.remove(selectedIndex);
+		selectedComponent = null;
+		selectedIndex = -1;
 		notifyUpdate();
 	}
 }

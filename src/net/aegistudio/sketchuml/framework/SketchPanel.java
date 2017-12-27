@@ -101,10 +101,11 @@ public class SketchPanel extends JComponent implements
 	@Override
 	public void mousePressed(MouseEvent arg0) {
 		if(arg0.getButton() == MouseEvent.BUTTON3) {
+			model.selectComponent(null);
 			SketchEntityComponent toSelect = 
 					model.componentAt(arg0.getX(), arg0.getY());
+			
 			model.selectComponent(toSelect);
-
 			if(toSelect == null) return;
 			focusSelected();
 			initMouseX = arg0.getX(); initMouseY = arg0.getY();
@@ -243,6 +244,8 @@ public class SketchPanel extends JComponent implements
 	
 	@Override
 	public void paint(Graphics g) {
+		g.setColor(Color.WHITE);
+		g.fillRect(0, 0, getWidth(), getHeight());
 		Graphics2D g2d = (Graphics2D) g;
 		
 		// Render the objects in order.
@@ -298,12 +301,10 @@ public class SketchPanel extends JComponent implements
 
 	@Override
 	public void keyPressed(KeyEvent arg0) {
-		SketchEntityComponent selected = model.getSelected();
-		
 		// Select the candidate via keyboard input.
 		if(candidates != null && candidates.length > 0) {
 			int keyIndex = arg0.getKeyCode() - KeyEvent.VK_1;
-			if(keyIndex < candidates.length) {
+			if(keyIndex >= 0 && keyIndex < candidates.length) {
 				candidateIndex = keyIndex;
 				updateCandidateObject();
 				repaint();
@@ -311,9 +312,8 @@ public class SketchPanel extends JComponent implements
 		}
 		
 		// Remove the selected object if any.
-		else if(selected != null && arg0.getKeyCode() == KeyEvent.VK_DELETE) {
-			model.destroy(selected);
-		}
+		else if(arg0.getKeyCode() == KeyEvent.VK_DELETE)
+			model.destroySelected();
 	}
 
 	@Override
