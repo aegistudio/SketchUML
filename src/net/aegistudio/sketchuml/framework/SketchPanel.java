@@ -17,6 +17,7 @@ import javax.swing.JComponent;
 
 import de.dubs.dollarn.PointR;
 import net.aegistudio.sketchuml.EntityEntry;
+import net.aegistudio.sketchuml.Main;
 
 public class SketchPanel extends JComponent implements 
 	MouseListener, MouseMotionListener, MouseWheelListener {
@@ -42,15 +43,33 @@ public class SketchPanel extends JComponent implements
 				MouseEvent.BUTTON1_DOWN_MASK);
 	}
 	
+	private boolean rightMouseDown(MouseEvent e) {
+		return 0 != (e.getModifiersEx() & 
+				MouseEvent.BUTTON3_DOWN_MASK);
+	}
+	
+	private SketchEntityComponent selected = null;
+	private int initX, initY, initW, initH;
+	private int initMouseX, initMouseY;
+	private float zoomMultiplier = 1.0f;
+	
 	@Override
 	public void mouseDragged(MouseEvent arg0) {
 		// Left mouse button down, then regard it as stroke input.
 		if(leftMouseDown(arg0)) {
 			// Clear previous candidates.
 			candidate = null; candidates = null;
+			selected = null;
 			
 			Point point = arg0.getPoint();
 			points.add(new PointR(point.x, point.y));
+			repaint();
+		}
+		
+		// Right mouse button down.
+		if(rightMouseDown(arg0) && selected != null) {
+			selected.x = initX + (arg0.getX() - initMouseX);
+			selected.y = initY + (arg0.getY() - initMouseY);
 			repaint();
 		}
 	}
@@ -70,21 +89,41 @@ public class SketchPanel extends JComponent implements
 		
 	}
 
+	private void focusSelected() {
+		zoomMultiplier = 1.0f;
+		initX = selected.x; initY = selected.y;
+		initW = selected.w; initH = selected.h;
+	}
+	
 	@Override
 	public void mousePressed(MouseEvent arg0) {
-		
+		if(arg0.getButton() == MouseEvent.BUTTON3) {
+			selected = model.componentAt(arg0.getX(), arg0.getY());
+			if(selected != null) focusSelected();
+			initMouseX = arg0.getX(); initMouseY = arg0.getY();
+		}
 	}
 
-	private EntityEntry[] candidates = null;
-	private int candidateIndex = 0;
+	public EntityEntry[] candidates = null;
+	public int candidateIndex = 0;
+	public Runnable candidateNotifier = null;
 	private int boxX, boxY, boxW, boxH;
 	private SketchEntityComponent candidate = null;
+	
+	public void selectCandidate(int index) {
+		candidateIndex = index;
+		updateCandidateObject();
+		repaint();
+	}
 
 	private void resetInputState() {
 		candidate = null;
 		candidates = null;
 		points.clear();
 		strokes.clear();
+		
+		if(candidateNotifier != null)
+			candidateNotifier.run(); 
 	}
 	
 	private void updateCandidateObject() {
@@ -94,6 +133,9 @@ public class SketchPanel extends JComponent implements
 				candidates[candidateIndex].factory.create());
 		candidate.x = boxX;	candidate.y = boxY;
 		candidate.w = boxW;	candidate.h = boxH;
+		
+		if(candidateNotifier != null)
+			candidateNotifier.run(); 
 	}
 	
 	@Override
@@ -101,7 +143,7 @@ public class SketchPanel extends JComponent implements
 		// Left button for stroke drawing.
 		if(arg0.getButton() == MouseEvent.BUTTON1) {
 			// Clear previous candidates.
-			candidate = null; candidates = null;
+			selected = null;	candidate = null; candidates = null;
 			if (points.size() > 1) 
 				strokes.add(new Vector<PointR>(points));
 			points.clear();
@@ -147,7 +189,17 @@ public class SketchPanel extends JComponent implements
 			// Right mouse for result confirmation.
 			else if(candidate != null) {
 				model.create(candidate);
+				selected = candidate;
+				focusSelected();
 				resetInputState();
+				repaint();
+			}
+			
+			// Right mouse for location confirmation.
+			else if(selected != null) {
+				zoomMultiplier = 1.0f;
+				initX = selected.x;	initY = selected.y;
+				initW = selected.w;	initH = selected.h;
 				repaint();
 			}
 		}
@@ -186,7 +238,6 @@ public class SketchPanel extends JComponent implements
 			SketchEntityComponent current = model.get(i);
 			paintSketchComponent(g, current, false);
 		}
-			
 		
 		// Render the candidate object.
 		if(candidate != null) paintSketchComponent(g, candidate, true);
@@ -199,8 +250,7 @@ public class SketchPanel extends JComponent implements
 			Vector<PointR> pts = en.nextElement();
 			drawStroke(g2d, pts);
 		}
-		if(points.size() < 2) return;
-		drawStroke(g2d, points);
+		if(!(points.size() < 2)) drawStroke(g2d, points);
 	}
 
 	@Override
@@ -210,16 +260,25 @@ public class SketchPanel extends JComponent implements
 
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent arg0) {
-		if(candidates == null) return;
-		if(candidates.length == 0) return;
-		
-		// Modulus rotation of mouse wheel.
-		candidateIndex = (candidateIndex + 
-				(arg0.getWheelRotation() > 0? 1 : -1)) % candidates.length;
-		if(candidateIndex < 0) candidateIndex += candidates.length;
-		
-		// Generate new preview object.
-		updateCandidateObject();
-		repaint();
+		if(candidates != null && candidates.length > 0) {
+			selected = null;
+			int base =  Math.min(Main.MAX_CANDIDATE, candidates.length);
+			// Modulus rotation of mouse wheel.
+			candidateIndex = (candidateIndex + 
+					(arg0.getWheelRotation() > 0? 1 : -1)) % base;
+			if(candidateIndex < 0) candidateIndex += base;
+			
+			// Generate new preview object.
+			updateCandidateObject();
+			repaint();
+		}
+		else if(selected != null){
+			zoomMultiplier += arg0.getWheelRotation() > 0? -0.1 : +0.1;
+			selected.w = (int)(zoomMultiplier * initW);
+			selected.h = (int)(zoomMultiplier * initH);
+			selected.x = (int)(initX + initW / 2 - zoomMultiplier / 2 * initW);
+			selected.y = (int)(initY + initH / 2 - zoomMultiplier / 2 * initH);
+			repaint();
+		}
 	}
 }
