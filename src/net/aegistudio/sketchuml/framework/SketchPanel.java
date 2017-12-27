@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -20,16 +22,18 @@ import net.aegistudio.sketchuml.EntityEntry;
 import net.aegistudio.sketchuml.Main;
 
 public class SketchPanel extends JComponent implements 
-	MouseListener, MouseMotionListener, MouseWheelListener {
+	MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
 	
 	private static final long serialVersionUID = 1L;
 	private final SketchModel model;
 	
 	public SketchPanel(SketchModel model) {
 		this.model = model;
+		model.connect(this::repaint);
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		addMouseWheelListener(this);
+		addKeyListener(this);
 	}
 	
 	// Current stroke painting points.
@@ -48,18 +52,18 @@ public class SketchPanel extends JComponent implements
 				MouseEvent.BUTTON3_DOWN_MASK);
 	}
 	
-	private SketchEntityComponent selected = null;
-	private int initX, initY, initW, initH;
 	private int initMouseX, initMouseY;
 	private float zoomMultiplier = 1.0f;
 	
 	@Override
 	public void mouseDragged(MouseEvent arg0) {
+		SketchEntityComponent selected;
 		// Left mouse button down, then regard it as stroke input.
 		if(leftMouseDown(arg0)) {
 			// Clear previous candidates.
 			candidate = null; candidates = null;
-			selected = null;
+			updateCandidateObject();
+			model.selectComponent(null);
 			
 			Point point = arg0.getPoint();
 			points.add(new PointR(point.x, point.y));
@@ -67,10 +71,11 @@ public class SketchPanel extends JComponent implements
 		}
 		
 		// Right mouse button down.
-		if(rightMouseDown(arg0) && selected != null) {
-			selected.x = initX + (arg0.getX() - initMouseX);
-			selected.y = initY + (arg0.getY() - initMouseY);
-			repaint();
+		if(rightMouseDown(arg0) && (selected = model.getSelected()) != null) {
+			SketchEntityComponent init = model.getSelectedOriginal();
+			selected.x = init.x + (arg0.getX() - initMouseX);
+			selected.y = init.y + (arg0.getY() - initMouseY);
+			model.notifySelectedChanged();
 		}
 	}
 	
@@ -91,15 +96,17 @@ public class SketchPanel extends JComponent implements
 
 	private void focusSelected() {
 		zoomMultiplier = 1.0f;
-		initX = selected.x; initY = selected.y;
-		initW = selected.w; initH = selected.h;
 	}
 	
 	@Override
 	public void mousePressed(MouseEvent arg0) {
 		if(arg0.getButton() == MouseEvent.BUTTON3) {
-			selected = model.componentAt(arg0.getX(), arg0.getY());
-			if(selected != null) focusSelected();
+			SketchEntityComponent toSelect = 
+					model.componentAt(arg0.getX(), arg0.getY());
+			model.selectComponent(toSelect);
+
+			if(toSelect == null) return;
+			focusSelected();
 			initMouseX = arg0.getX(); initMouseY = arg0.getY();
 		}
 	}
@@ -127,12 +134,13 @@ public class SketchPanel extends JComponent implements
 	}
 	
 	private void updateCandidateObject() {
-		if(candidates == null) return;
-		candidate = new SketchEntityComponent(
-				candidates[candidateIndex], 
-				candidates[candidateIndex].factory.create());
-		candidate.x = boxX;	candidate.y = boxY;
-		candidate.w = boxW;	candidate.h = boxH;
+		if(candidates != null) {
+			candidate = new SketchEntityComponent(
+					candidates[candidateIndex], 
+					candidates[candidateIndex].factory.create());
+			candidate.x = boxX;	candidate.y = boxY;
+			candidate.w = boxW;	candidate.h = boxH;
+		}
 		
 		if(candidateNotifier != null)
 			candidateNotifier.run(); 
@@ -140,10 +148,13 @@ public class SketchPanel extends JComponent implements
 	
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
+		SketchEntityComponent selected = model.getSelected();
 		// Left button for stroke drawing.
 		if(arg0.getButton() == MouseEvent.BUTTON1) {
 			// Clear previous candidates.
-			selected = null;	candidate = null; candidates = null;
+			model.selectComponent(null);
+			candidate = null; candidates = null;
+			
 			if (points.size() > 1) 
 				strokes.add(new Vector<PointR>(points));
 			points.clear();
@@ -189,7 +200,7 @@ public class SketchPanel extends JComponent implements
 			// Right mouse for result confirmation.
 			else if(candidate != null) {
 				model.create(candidate);
-				selected = candidate;
+				model.selectComponent(candidate);
 				focusSelected();
 				resetInputState();
 				repaint();
@@ -197,9 +208,10 @@ public class SketchPanel extends JComponent implements
 			
 			// Right mouse for location confirmation.
 			else if(selected != null) {
-				zoomMultiplier = 1.0f;
-				initX = selected.x;	initY = selected.y;
-				initW = selected.w;	initH = selected.h;
+				// Partial confirmation.
+				model.selectComponent(null);
+				model.selectComponent(selected);
+				focusSelected();
 				repaint();
 			}
 		}
@@ -260,8 +272,9 @@ public class SketchPanel extends JComponent implements
 
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent arg0) {
+		SketchEntityComponent selected = model.getSelected();
 		if(candidates != null && candidates.length > 0) {
-			selected = null;
+			model.selectComponent(null);
 			int base =  Math.min(Main.MAX_CANDIDATE, candidates.length);
 			// Modulus rotation of mouse wheel.
 			candidateIndex = (candidateIndex + 
@@ -273,12 +286,43 @@ public class SketchPanel extends JComponent implements
 			repaint();
 		}
 		else if(selected != null){
+			SketchEntityComponent init = model.getSelectedOriginal();
 			zoomMultiplier += arg0.getWheelRotation() > 0? -0.1 : +0.1;
-			selected.w = (int)(zoomMultiplier * initW);
-			selected.h = (int)(zoomMultiplier * initH);
-			selected.x = (int)(initX + initW / 2 - zoomMultiplier / 2 * initW);
-			selected.y = (int)(initY + initH / 2 - zoomMultiplier / 2 * initH);
-			repaint();
+			selected.w = (int)(zoomMultiplier * init.w);
+			selected.h = (int)(zoomMultiplier * init.h);
+			selected.x = (int)(init.x + init.w / 2 - zoomMultiplier / 2 * init.w);
+			selected.y = (int)(init.y + init.h / 2 - zoomMultiplier / 2 * init.h);
+			model.notifySelectedChanged();
 		}
+	}
+
+	@Override
+	public void keyPressed(KeyEvent arg0) {
+		SketchEntityComponent selected = model.getSelected();
+		
+		// Select the candidate via keyboard input.
+		if(candidates != null && candidates.length > 0) {
+			int keyIndex = arg0.getKeyCode() - KeyEvent.VK_1;
+			if(keyIndex < candidates.length) {
+				candidateIndex = keyIndex;
+				updateCandidateObject();
+				repaint();
+			}
+		}
+		
+		// Remove the selected object if any.
+		else if(selected != null && arg0.getKeyCode() == KeyEvent.VK_DELETE) {
+			model.destroy(selected);
+		}
+	}
+
+	@Override
+	public void keyReleased(KeyEvent arg0) {
+		
+	}
+
+	@Override
+	public void keyTyped(KeyEvent arg0) {
+		
 	}
 }

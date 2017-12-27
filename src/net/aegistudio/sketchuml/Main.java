@@ -4,6 +4,10 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -65,12 +69,13 @@ public class Main {
 		
 		// Update selection panel while sketch scrolling.
 		sketchPanel.candidateNotifier = () -> {
-			if(sketchPanel.candidates == null) 
-				for(JLabel label : selectionLabels)
-					label.setText("");
-			else {
-				for(int i = 0; i < selectionLabels.length; ++ i) {
-					String nameText = "" + (i + 1) + ": " + sketchPanel.candidates[i].name;
+			for(JLabel label : selectionLabels)
+				label.setText("");
+			if(sketchPanel.candidates != null) {
+				for(int i = 0; i < sketchPanel.candidates.length 
+						&& i < MAX_CANDIDATE; ++ i) {
+					String nameText = "" + (i + 1) + ": " 
+						+ sketchPanel.candidates[i].name;
 					selectionLabels[i].setText(
 						(sketchPanel.candidateIndex != i)? nameText :
 							"<html><b style=\"background:yellow\">" 
@@ -80,6 +85,17 @@ public class Main {
 			selectionPanel.repaint();
 		};
 		
+		frame.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent ke) {
+				Point mouseLocation = MouseInfo.getPointerInfo()
+						.getLocation();
+				Point sketchLocation = sketchPanel.getLocationOnScreen();
+				if(sketchPanel.contains(new Point(
+						mouseLocation.x - sketchLocation.x, 
+						mouseLocation.y - sketchLocation.y)))
+					sketchPanel.keyPressed(ke);
+			}
+		});
 		
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
