@@ -7,9 +7,9 @@ import java.io.IOException;
 import net.aegistudio.sketchuml.Entity;
 
 public class EntityStateObject implements Entity {
-	public String name;
+	public String name = "";
 	
-	public String actions;
+	public String actions = "";
 	
 	public boolean isBrief = false;
 

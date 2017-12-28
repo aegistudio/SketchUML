@@ -7,8 +7,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-import javax.swing.JPanel;
-
 /**
  * The simplest entity that stores no data or state, and will be 
  * represented as a single icon on screen.
@@ -16,8 +14,6 @@ import javax.swing.JPanel;
  * @author Haoran Luo
  */
 public abstract class SimpleEntity implements Entity, PropertyView, SketchView, EntityFactory {
-	private static final JPanel SIMPLE_PANEL = new JPanel();
-	
 	public Entity create() { return this; }
 	
 	@Override
@@ -32,7 +28,7 @@ public abstract class SimpleEntity implements Entity, PropertyView, SketchView, 
 	
 	@Override
 	public final Component getViewObject(Consumer<Entity> notifier) {
-		return SIMPLE_PANEL;
+		return null;
 	}
 
 	@Override

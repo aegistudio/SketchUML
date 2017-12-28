@@ -258,6 +258,8 @@ public class SketchPanel extends JComponent implements
 	
 	@Override
 	public void paint(Graphics g) {
+		SketchEntityComponent selected = model.getSelected();
+		
 		g.setFont(Configuration.getInstance().HANDWRITING_FONT);
 		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, getWidth(), getHeight());
@@ -266,6 +268,11 @@ public class SketchPanel extends JComponent implements
 		// Render the objects in order.
 		for(int i = model.numComponents() - 1; i >= 0; -- i) {
 			SketchEntityComponent current = model.get(i);
+			if(current == selected) {
+				g.setColor(Color.LIGHT_GRAY);
+				g.fillRect(selected.x, selected.y, 
+						selected.w, selected.h);
+			}
 			paintSketchComponent(g, current, false);
 		}
 		

@@ -1,6 +1,7 @@
 package net.aegistudio.sketchuml.framework;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.util.function.BiConsumer;
@@ -17,6 +18,7 @@ import net.aegistudio.sketchuml.Configuration;
 public class ComponentPropertyPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private final SketchModel model;
+	private Component property;
 	
 	// The editing operations.
 	private final JButton delete, moveFront, sendBack;
@@ -122,13 +124,18 @@ public class ComponentPropertyPanel extends JPanel {
 		this.w.setText(""); this.w.setEnabled(false);
 		this.h.setText(""); this.h.setEnabled(false);
 		
-		// Continue on only if component is specified.
-		if(component == null) return;
+		if(property != null) super.remove(property);
+		property = null;
 		
+		// Continue on only if component is specified.
+		if(component == null) { repaint(); return; }
+		
+		// Re-enable control buttons.
 		delete.setEnabled(true);
 		moveFront.setEnabled(true);
 		sendBack.setEnabled(true);
 		
+		// Fill in fundamental parameters for component.
 		this.x.setEnabled(true);
 		this.y.setEnabled(true);
 		this.w.setEnabled(true);
@@ -138,5 +145,15 @@ public class ComponentPropertyPanel extends JPanel {
 		this.y.setText(Integer.toString(component.y));
 		this.w.setText(Integer.toString(component.w));
 		this.h.setText(Integer.toString(component.h));
+		
+		// Set the property editing panel.
+		property = component.entry.propertyView.getViewObject(
+				e -> model.notifySelectedChanged());
+		if(property != null) {
+			component.entry.propertyView.updateEntity(component.entity);
+			super.add(property);
+		}
+		
+		updateUI();
 	}
 }

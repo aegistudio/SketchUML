@@ -46,6 +46,7 @@ public class DefaultSketchModel implements SketchModel {
 	public void create(SketchEntityComponent component) {
 		// Discard for the duplicated element.
 		if(isSelected(component)) return;
+		if(components.contains(component)) return;
 		
 		// Create a new component here.
 		components.add(0, component);
