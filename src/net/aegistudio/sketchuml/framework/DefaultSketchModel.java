@@ -1,7 +1,9 @@
 package net.aegistudio.sketchuml.framework;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.aegistudio.sketchuml.stroke.SketchRecognizer;
 
@@ -43,7 +45,7 @@ public class DefaultSketchModel implements SketchModel {
 	}
 
 	@Override
-	public void create(SketchEntityComponent component) {
+	public void create(Object key, SketchEntityComponent component) {
 		// Discard for the duplicated element.
 		if(isSelected(component)) return;
 		if(components.contains(component)) return;
@@ -51,17 +53,17 @@ public class DefaultSketchModel implements SketchModel {
 		// Create a new component here.
 		components.add(0, component);
 		if(selectedIndex >= 0) selectedIndex ++;
-		notifyUpdate();
+		notifyUpdate(key);
 	}
 	
 	@Override
-	public void destroy(SketchEntityComponent component) {
+	public void destroy(Object key, SketchEntityComponent component) {
 		// Judge whether the component to remove is selected.
 		if(isSelected(component)) {
 			components.remove(selectedIndex);
 			selectedIndex = -1;
 			selectedComponent = null;
-			notifyUpdate();
+			notifyUpdate(key);
 		}
 		else {
 			// Try to get the component index for removing.
@@ -71,19 +73,19 @@ public class DefaultSketchModel implements SketchModel {
 			// Remove the component by status.
 			if((components.remove(index)) == null) return;
 			if(index < selectedIndex) selectedIndex --;
-			notifyUpdate();
+			notifyUpdate(key);
 		}
 	}
 
 	@Override
-	public void moveToBack(SketchEntityComponent c) {
+	public void moveToBack(Object key, SketchEntityComponent c) {
 		// Judge whether the moving component is selected.
 		if(isSelected(c)) {
 			// If it is selected, just move it to the end.
 			components.add(components
 					.remove(selectedIndex));
 			selectedIndex = components.size() - 1;
-			notifyUpdate();
+			notifyUpdate(key);
 		}
 		else {
 			// Else judge by the index to update the selected 
@@ -94,19 +96,19 @@ public class DefaultSketchModel implements SketchModel {
 			// Judge by index.
 			components.add(components.get(selectedIndex));
 			if(index < selectedIndex) selectedIndex --;
-			notifyUpdate();
+			notifyUpdate(key);
 		}
 	}
 
 	@Override
-	public void moveToFront(SketchEntityComponent c) {
+	public void moveToFront(Object key, SketchEntityComponent c) {
 		// Judge whether the moving component is selected.
 		if(isSelected(c)) {
 			// If it is selected, just move it to the front.
 			components.add(0, components
 					.remove(selectedIndex));
 			selectedIndex = 0;
-			notifyUpdate();
+			notifyUpdate(key);
 		}
 		else {
 			int index = components.indexOf(c);
@@ -115,7 +117,7 @@ public class DefaultSketchModel implements SketchModel {
 			// Judge by index.
 			components.add(0, components.get(selectedIndex));
 			if(index < selectedIndex) selectedIndex ++;
-			notifyUpdate();
+			notifyUpdate(key);
 		}
 	}
 
@@ -136,18 +138,18 @@ public class DefaultSketchModel implements SketchModel {
 		return components.get(i);
 	}
 
-	List<Runnable> connections = new ArrayList<>();
+	Map<Object, Runnable> connections = new HashMap<>();
 	@Override
-	public void connect(Runnable changeListener) {
-		connections.add(changeListener);
+	public void connect(Object key, Runnable changeListener) {
+		connections.put(key, changeListener);
 	}
 	
-	private void notifyUpdate() {
-		connections.forEach(Runnable::run);
+	private void notifyUpdate(Object key) {
+		connections.forEach((k, v) -> { if(k != key) v.run(); });
 	}
 
 	@Override
-	public void selectComponent(SketchEntityComponent component) {
+	public void selectComponent(Object key, SketchEntityComponent component) {
 		int newSelectedIndex = -1;
 		if(component != null) 
 			newSelectedIndex = components.indexOf(component);
@@ -177,7 +179,7 @@ public class DefaultSketchModel implements SketchModel {
 			}
 		}
 		
-		if(isUpdated) notifyUpdate();
+		if(isUpdated) notifyUpdate(key);
 	}
 	
 	@Override
@@ -193,8 +195,8 @@ public class DefaultSketchModel implements SketchModel {
 	}
 	
 	@Override
-	public void notifySelectedChanged() {
+	public void notifySelectedChanged(Object sourceObject) {
 		if(selectedIndex < 0) return;
-		notifyUpdate();
+		notifyUpdate(sourceObject);
 	}
 }

@@ -9,29 +9,34 @@ public interface SketchModel {
 	public SketchEntityComponent componentAt(int x, int y);
 	
 	/**
+	 * @param key the notifier's key.
 	 * @param component the component to create.
 	 */
-	public void create(SketchEntityComponent component);
+	public void create(Object key, SketchEntityComponent component);
 	
 	/**
+	 * @param key the notifier's key.
 	 * @param component the component to set selected.
 	 */
-	public void selectComponent(SketchEntityComponent component);
+	public void selectComponent(Object key, SketchEntityComponent component);
 	
 	/**
+	 * @param key the notifier's key.
 	 * @param component the component to remove.
 	 */
-	public void destroy(SketchEntityComponent component);
+	public void destroy(Object key, SketchEntityComponent component);
 	
 	/**
+	 * @param key the notifier's key.
 	 * @param c the component to move to the back.
 	 */
-	public void moveToBack(SketchEntityComponent c);
+	public void moveToBack(Object key, SketchEntityComponent c);
 	
 	/**
+	 * @param key the notifier's key.
 	 * @param c the component to send to the front.
 	 */
-	public void moveToFront(SketchEntityComponent c);
+	public void moveToFront(Object key, SketchEntityComponent c);
 	
 	/**
 	 * @return the recognizer of a newly coming strokes.
@@ -52,13 +57,17 @@ public interface SketchModel {
 	/**
 	 * Used to notify UI update if the underlying model is changed.
 	 * 
+	 * @param sourceKey the object representing the caller object.
 	 * @param changeListener the closure the connect to model.
 	 */
-	public void connect(Runnable changeListener);
+	public void connect(Object sourceKey, Runnable changeListener);
 
 	SketchEntityComponent getSelected();
 
 	SketchEntityComponent getSelectedOriginal();
 
-	void notifySelectedChanged();
+	/**
+	 * @param source the source's caller object.
+	 */
+	void notifySelectedChanged(Object source);
 }

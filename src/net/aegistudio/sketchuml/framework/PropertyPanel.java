@@ -93,6 +93,8 @@ public class PropertyPanel<T extends Entity> extends JPanel {
 				safeRun(setter, fieldField.getText());
 			}
 		});
+		fieldField.addCaretListener(c ->
+			safeRun(setter, fieldField.getText()));
 		addGetterReactor(fieldField::setText, getter);
 		
 		super.add(fieldPanel);
@@ -145,6 +147,8 @@ public class PropertyPanel<T extends Entity> extends JPanel {
 				safeRun(setter, area.getText());
 			}
 		});
+		area.addCaretListener(c ->
+			safeRun(setter, area.getText()));
 		addGetterReactor(area::setText, getter);
 		
 		super.add(areaPanel);

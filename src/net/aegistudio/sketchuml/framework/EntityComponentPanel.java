@@ -4,8 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -24,13 +25,13 @@ public class EntityComponentPanel extends JPanel {
 	private final JButton delete, moveFront, sendBack;
 	
 	private JButton createEditingButton(String tag, JPanel operationPanel,
-			Consumer<SketchEntityComponent> action) {
+			BiConsumer<Object, SketchEntityComponent> action) {
 		JButton result = new JButton();
 		result.setFont(Configuration.getInstance().EDITING_FONT);
 		result.setText(tag);
 		result.addActionListener(a -> {
 			SketchEntityComponent selected = model.getSelected();
-			if(selected != null) action.accept(selected);
+			if(selected != null) action.accept(null, selected);
 		});
 		operationPanel.add(result);
 		return result;
@@ -45,7 +46,7 @@ public class EntityComponentPanel extends JPanel {
 		JTextField field = new JTextField();
 		field.setFont(propertyFont);
 		field.setHorizontalAlignment(JTextField.RIGHT);
-		field.addActionListener((a) -> {
+		Runnable actionRunnable = () -> {
 			try {
 				// Parse and apply input.
 				String currentText = field.getText();
@@ -57,13 +58,17 @@ public class EntityComponentPanel extends JPanel {
 				processing.accept(selected, newValue);
 				
 				// Notify change but retain the input location.
-				int previous = field.getSelectionStart();
-				model.notifySelectedChanged();
-				field.requestFocusInWindow();
-				field.setSelectionStart(previous);
-				field.setSelectionEnd(previous);
+				model.notifySelectedChanged(this);
 			}
 			catch(Exception e) {	}
+		};
+		field.addActionListener((a) -> actionRunnable.run());
+		field.addCaretListener((a) -> actionRunnable.run());
+		field.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent fe) {
+				actionRunnable.run();
+			}
 		});
 		
 		JLabel label = new JLabel(tag);
@@ -109,7 +114,7 @@ public class EntityComponentPanel extends JPanel {
 		this.h = this.createLocationField("H:", 
 				locationPanel, (c, v) -> c.h = v);
 		
-		model.connect(() -> updateComponent(model.getSelected()));
+		model.connect(this, () -> updateComponent(model.getSelected()));
 		updateComponent(null);
 	}
 	
@@ -148,7 +153,7 @@ public class EntityComponentPanel extends JPanel {
 		
 		// Set the property editing panel.
 		property = component.entry.propertyView.getViewObject(
-				e -> model.notifySelectedChanged());
+				e -> model.notifySelectedChanged(this));
 		if(property != null) {
 			component.entry.propertyView.updateEntity(component.entity);
 			super.add(property);

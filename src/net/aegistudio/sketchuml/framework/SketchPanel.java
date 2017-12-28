@@ -27,7 +27,7 @@ public class SketchPanel extends JComponent implements
 	
 	public SketchPanel(SketchModel model) {
 		this.model = model;
-		model.connect(this::repaint);
+		model.connect(this, this::repaint);
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		addMouseWheelListener(this);
@@ -61,7 +61,7 @@ public class SketchPanel extends JComponent implements
 			// Clear previous candidates.
 			candidate = null; candidates = null;
 			updateCandidateObject();
-			model.selectComponent(null);
+			model.selectComponent(null, null);
 			
 			Point point = arg0.getPoint();
 			points.add(new PointR(point.x, point.y));
@@ -73,7 +73,7 @@ public class SketchPanel extends JComponent implements
 			SketchEntityComponent init = model.getSelectedOriginal();
 			selected.x = init.x + (arg0.getX() - initMouseX);
 			selected.y = init.y + (arg0.getY() - initMouseY);
-			model.notifySelectedChanged();
+			model.notifySelectedChanged(null);
 		}
 	}
 	
@@ -102,11 +102,11 @@ public class SketchPanel extends JComponent implements
 		
 		// Initial editing parameters when right clicked.
 		if(arg0.getButton() == MouseEvent.BUTTON3) {
-			model.selectComponent(null);
+			model.selectComponent(null, null);
 			SketchEntityComponent toSelect = 
 					model.componentAt(arg0.getX(), arg0.getY());
 			
-			model.selectComponent(toSelect);
+			model.selectComponent(null, toSelect);
 			if(toSelect == null) return;
 			focusSelected();
 			initMouseX = arg0.getX(); initMouseY = arg0.getY();
@@ -186,7 +186,7 @@ public class SketchPanel extends JComponent implements
 		// Left button for stroke drawing.
 		if(arg0.getButton() == MouseEvent.BUTTON1) {
 			// Clear previous candidates.
-			model.selectComponent(null);
+			model.selectComponent(null, null);
 			candidate = null; candidates = null;
 			
 			// Transport the points to the troke.
@@ -214,8 +214,8 @@ public class SketchPanel extends JComponent implements
 			
 			// Right mouse for result confirmation.
 			else if(candidate != null) {
-				model.create(candidate);
-				model.selectComponent(candidate);
+				model.create(null, candidate);
+				model.selectComponent(null, candidate);
 				focusSelected();
 				resetInputState();
 				repaint();
@@ -224,8 +224,8 @@ public class SketchPanel extends JComponent implements
 			// Right mouse for location confirmation.
 			else if(selected != null) {
 				// Partial confirmation.
-				model.selectComponent(null);
-				model.selectComponent(selected);
+				model.selectComponent(null, null);
+				model.selectComponent(null, selected);
 				focusSelected();
 				repaint();
 			}
@@ -299,7 +299,7 @@ public class SketchPanel extends JComponent implements
 	public void mouseWheelMoved(MouseWheelEvent arg0) {
 		SketchEntityComponent selected = model.getSelected();
 		if(candidates != null && candidates.length > 0) {
-			model.selectComponent(null);
+			model.selectComponent(null, null);
 			int base =  Math.min(Configuration.getInstance()
 					.MAX_CANDIDATE, candidates.length);
 			// Modulus rotation of mouse wheel.
@@ -321,7 +321,7 @@ public class SketchPanel extends JComponent implements
 			selected.h = (int)(zoomMultiplier * init.h);
 			selected.x = (int)(init.x + init.w / 2 - zoomMultiplier / 2 * init.w);
 			selected.y = (int)(init.y + init.h / 2 - zoomMultiplier / 2 * init.h);
-			model.notifySelectedChanged();
+			model.notifySelectedChanged(null);
 		}
 	}
 
@@ -340,7 +340,7 @@ public class SketchPanel extends JComponent implements
 		
 		// Remove the selected object if any.
 		else if(selected != null && e.getKeyCode() == KeyEvent.VK_DELETE)
-			model.destroy(selected);
+			model.destroy(null, selected);
 	}
 
 	@Override
