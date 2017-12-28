@@ -8,10 +8,24 @@ import net.aegistudio.sketchuml.stroke.SketchRecognizer;
 public class DefaultSketchModel implements SketchModel {
 	private final SketchRecognizer recognizer;
 	private final List<SketchEntityComponent> components;
+	private int selectedIndex = -1;
+	private SketchEntityComponent selectedComponent;
 	
 	public DefaultSketchModel(SketchRecognizer recognizer) {
 		this.recognizer = recognizer;
 		this.components = new ArrayList<>();
+	}
+	
+	/**
+	 * Judge whether the current component is the selected or 
+	 * original one of the selected.
+	 */
+	private boolean isSelected(SketchEntityComponent component) {
+		if(selectedIndex < 0) return false;
+		if(component == selectedComponent) return true;
+		if(component == components.get(selectedIndex))
+			return true;
+		return false;
 	}
 	
 	@Override
@@ -30,30 +44,74 @@ public class DefaultSketchModel implements SketchModel {
 
 	@Override
 	public void create(SketchEntityComponent component) {
-		selectComponent(null);
+		// Discard for the duplicated element.
+		if(isSelected(component)) return;
+		
+		// Create a new component here.
 		components.add(0, component);
+		if(selectedIndex >= 0) selectedIndex ++;
 		notifyUpdate();
 	}
 	
 	@Override
 	public void destroy(SketchEntityComponent component) {
-		selectComponent(null);
-		if(components.remove(component)) 
+		// Judge whether the component to remove is selected.
+		if(isSelected(component)) {
+			components.remove(selectedIndex);
+			selectedIndex = -1;
+			selectedComponent = null;
 			notifyUpdate();
+		}
+		else {
+			// Try to get the component index for removing.
+			int index = components.indexOf(component);
+			if(index < 0) return;
+			
+			// Remove the component by status.
+			if((components.remove(index)) == null) return;
+			if(index < selectedIndex) selectedIndex --;
+			notifyUpdate();
+		}
 	}
 
 	@Override
 	public void moveToBack(SketchEntityComponent c) {
-		if(components.remove(c)) {
-			components.add(c);
+		// Judge whether the moving component is selected.
+		if(isSelected(c)) {
+			// If it is selected, just move it to the end.
+			components.add(components
+					.remove(selectedIndex));
+			selectedIndex = components.size() - 1;
+		}
+		else {
+			// Else judge by the index to update the selected 
+			// component's index.
+			int index = components.indexOf(c);
+			if(index < 0) return;
+			
+			// Judge by index.
+			components.add(components.get(selectedIndex));
+			if(index < selectedIndex) selectedIndex --;
 			notifyUpdate();
 		}
 	}
 
 	@Override
 	public void moveToFront(SketchEntityComponent c) {
-		if(components.remove(c)) {
-			components.add(0, c);
+		// Judge whether the moving component is selected.
+		if(isSelected(c)) {
+			// If it is selected, just move it to the front.
+			components.add(0, components
+					.remove(selectedIndex));
+			selectedIndex = 0;
+		}
+		else {
+			int index = components.indexOf(c);
+			if(index < 0) return;
+			
+			// Judge by index.
+			components.add(0, components.get(selectedIndex));
+			if(index < selectedIndex) selectedIndex ++;
 			notifyUpdate();
 		}
 	}
@@ -67,9 +125,6 @@ public class DefaultSketchModel implements SketchModel {
 	public int numComponents() {
 		return components.size();
 	}
-
-	private int selectedIndex = -1;
-	private SketchEntityComponent selectedComponent;
 	
 	@Override
 	public SketchEntityComponent get(int i) {
@@ -137,15 +192,6 @@ public class DefaultSketchModel implements SketchModel {
 	@Override
 	public void notifySelectedChanged() {
 		if(selectedIndex < 0) return;
-		notifyUpdate();
-	}
-
-	@Override
-	public void destroySelected() {
-		if(selectedIndex < 0) return;
-		components.remove(selectedIndex);
-		selectedComponent = null;
-		selectedIndex = -1;
 		notifyUpdate();
 	}
 }

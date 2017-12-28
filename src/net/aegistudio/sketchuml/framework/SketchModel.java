@@ -23,8 +23,6 @@ public interface SketchModel {
 	 */
 	public void destroy(SketchEntityComponent component);
 	
-	public void destroySelected();
-	
 	/**
 	 * @param c the component to move to the back.
 	 */

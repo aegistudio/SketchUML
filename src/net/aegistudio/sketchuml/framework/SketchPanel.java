@@ -300,10 +300,11 @@ public class SketchPanel extends JComponent implements
 	}
 
 	@Override
-	public void keyPressed(KeyEvent arg0) {
+	public void keyPressed(KeyEvent e) {
+		SketchEntityComponent selected = model.getSelected();
 		// Select the candidate via keyboard input.
 		if(candidates != null && candidates.length > 0) {
-			int keyIndex = arg0.getKeyCode() - KeyEvent.VK_1;
+			int keyIndex = e.getKeyCode() - KeyEvent.VK_1;
 			if(keyIndex >= 0 && keyIndex < candidates.length) {
 				candidateIndex = keyIndex;
 				updateCandidateObject();
@@ -312,8 +313,8 @@ public class SketchPanel extends JComponent implements
 		}
 		
 		// Remove the selected object if any.
-		else if(arg0.getKeyCode() == KeyEvent.VK_DELETE)
-			model.destroySelected();
+		else if(selected != null && e.getKeyCode() == KeyEvent.VK_DELETE)
+			model.destroy(selected);
 	}
 
 	@Override
