@@ -33,9 +33,12 @@ public class EntityMetaStateObject implements SketchView, PropertyView {
 		Graphics2D g2d = (Graphics2D)g;
 		g2d.setStroke(new BasicStroke(2));
 		
-		g.setColor(preview? Color.GRAY : Color.BLACK);
 		
 		// Draw outline.
+		g.setColor(Color.WHITE);
+		g.fillRoundRect(1, 1, bound.width - 2, bound.height - 2, 
+				STATE_ROUNDSIZE, STATE_ROUNDSIZE);
+		g.setColor(preview? Color.GRAY : Color.BLACK);
 		g.drawRoundRect(1, 1, bound.width - 2, bound.height - 2, 
 				STATE_ROUNDSIZE, STATE_ROUNDSIZE);
 		
