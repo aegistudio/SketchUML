@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 
 import net.aegistudio.sketchuml.framework.DefaultSketchModel;
+import net.aegistudio.sketchuml.framework.ComponentPropertyPanel;
 import net.aegistudio.sketchuml.framework.SketchPanel;
 import net.aegistudio.sketchuml.statechart.TemplateStateChart;
 import net.aegistudio.sketchuml.stroke.SketchRecognizer;
@@ -42,6 +43,14 @@ public class Main {
 				Configuration.getInstance().HANDWRITING_FONTNAME).deriveFont(
 					Configuration.getInstance().HANDWRITING_FONTSTYLE, 
 					Configuration.getInstance().HANDWRITING_FONTSIZE);
+		Configuration.getInstance().EDITING_FONT = Main.fonts.get(
+				Configuration.getInstance().EDITING_FONTNAME).deriveFont(
+					Configuration.getInstance().EDITING_FONTSTYLE,
+					Configuration.getInstance().EDITING_FONTSIZE);
+		Configuration.getInstance().PROPERTY_FONT = Main.fonts.get(
+				Configuration.getInstance().PROPERTY_FONTNAME).deriveFont(
+					Configuration.getInstance().PROPERTY_FONTSTYLE,
+					Configuration.getInstance().PROPERTY_FONTSIZE);
 		
 		// Initialize the recognizers.
 		SketchRecognizer recognizer = new SketchRecognizer(
@@ -58,9 +67,20 @@ public class Main {
 		
 		// Create the sketch painting panel.
 		SketchPanel sketchPanel = new SketchPanel(model);
+		frame.add(sketchPanel, BorderLayout.CENTER);
+		
+		// Create the property panel.
+		JPanel propertyTempPanel = new JPanel();
+		ComponentPropertyPanel propertyPanel 
+			= new ComponentPropertyPanel(model);
+		propertyTempPanel.add(propertyPanel);
+		frame.add(propertyTempPanel, BorderLayout.EAST);
+		
+		// Add the result selection panel.
 		JPanel selectionPanel = new JPanel();
 		JLabel[] selectionLabels = new JLabel[
-			Configuration.getInstance().MAX_CANDIDATE]; 
+			Configuration.getInstance().MAX_CANDIDATE];
+		frame.add(selectionPanel, BorderLayout.SOUTH);
 		for(int i = 0; i < selectionLabels.length; ++ i) {
 			final int current = i;
 			selectionLabels[i] = new JLabel();
@@ -75,8 +95,6 @@ public class Main {
 				}
 			});
 		}
-		frame.add(sketchPanel, BorderLayout.CENTER);
-		frame.add(selectionPanel, BorderLayout.SOUTH);
 		
 		// Update selection panel while sketch scrolling.
 		sketchPanel.candidateNotifier = () -> {

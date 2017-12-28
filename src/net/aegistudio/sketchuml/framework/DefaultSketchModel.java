@@ -82,6 +82,7 @@ public class DefaultSketchModel implements SketchModel {
 			components.add(components
 					.remove(selectedIndex));
 			selectedIndex = components.size() - 1;
+			notifyUpdate();
 		}
 		else {
 			// Else judge by the index to update the selected 
@@ -104,6 +105,7 @@ public class DefaultSketchModel implements SketchModel {
 			components.add(0, components
 					.remove(selectedIndex));
 			selectedIndex = 0;
+			notifyUpdate();
 		}
 		else {
 			int index = components.indexOf(c);

@@ -98,6 +98,9 @@ public class SketchPanel extends JComponent implements
 	
 	@Override
 	public void mousePressed(MouseEvent arg0) {
+		this.requestFocusInWindow();
+		
+		// Initial editing parameters when right clicked.
 		if(arg0.getButton() == MouseEvent.BUTTON3) {
 			model.selectComponent(null);
 			SketchEntityComponent toSelect = 
@@ -255,6 +258,7 @@ public class SketchPanel extends JComponent implements
 	
 	@Override
 	public void paint(Graphics g) {
+		g.setFont(Configuration.getInstance().HANDWRITING_FONT);
 		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, getWidth(), getHeight());
 		Graphics2D g2d = (Graphics2D) g;
@@ -303,6 +307,9 @@ public class SketchPanel extends JComponent implements
 		else if(selected != null){
 			SketchEntityComponent init = model.getSelectedOriginal();
 			zoomMultiplier += arg0.getWheelRotation() > 0? -0.1 : +0.1;
+			if(zoomMultiplier < 0) zoomMultiplier = 
+					(float)Math.max(1.0 / init.w, 1.0 / init.h);
+			
 			selected.w = (int)(zoomMultiplier * init.w);
 			selected.h = (int)(zoomMultiplier * init.h);
 			selected.x = (int)(init.x + init.w / 2 - zoomMultiplier / 2 * init.w);
