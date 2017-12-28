@@ -18,6 +18,9 @@ public class Configuration {
 	/** The font instance of the handwriting font. */
 	public Font HANDWRITING_FONT;
 	
+	/** Will the program recognize strokes soon after painting */
+	public boolean INSTANT_RECOGNIZE = true;
+	
 	private static final Configuration instance = new Configuration();
 	public static Configuration getInstance() {
 		return instance;	

@@ -145,6 +145,38 @@ public class SketchPanel extends JComponent implements
 			candidateNotifier.run(); 
 	}
 	
+	private void performRecognition() {
+		Vector<PointR> allPoints = new Vector<PointR>();
+		Enumeration<Vector<PointR>> en = strokes.elements();
+		while (en.hasMoreElements()) {
+			Vector<PointR> pts = en.nextElement();
+			allPoints.addAll(pts);
+		}
+		
+		// Recognize input stroke.
+		candidates = model.getRecognizer().recognize(allPoints, strokes.size());
+		if(candidates == null) return;
+		if(candidates.length == 0) { candidates = null; return; }
+		
+		// Find the boundary of points.
+		int minX = (int)allPoints.get(0).X; 
+		int minY = (int)allPoints.get(0).Y;
+		int maxX = minX, maxY = minY;
+		for(int i = 1; i < allPoints.size(); ++ i) {
+			PointR current = allPoints.get(i);
+			int x = (int)current.X; int y = (int)current.Y;
+			minX = Math.min(x, minX); maxX = Math.max(x, maxX);
+			minY = Math.min(y, minY); maxY = Math.max(y, maxY);
+		}
+		
+		boxX = minX;		boxY = minY;
+		boxW = maxX - minX;	boxH = maxY - minY;
+		
+		// Render the first candidate.
+		candidateIndex = 0;
+		updateCandidateObject();
+	}
+	
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
 		SketchEntityComponent selected = model.getSelected();
@@ -154,9 +186,17 @@ public class SketchPanel extends JComponent implements
 			model.selectComponent(null);
 			candidate = null; candidates = null;
 			
+			// Transport the points to the troke.
 			if (points.size() > 1) 
 				strokes.add(new Vector<PointR>(points));
 			points.clear();
+			
+			// Judge whether to perform soon recognizing.
+			if(strokes.size() > 0) {
+				if(Configuration.getInstance().INSTANT_RECOGNIZE)
+					performRecognition();
+			}
+			
 			repaint();
 		}
 		
@@ -164,35 +204,8 @@ public class SketchPanel extends JComponent implements
 			
 			// Right mouse for stroke recognizing.
 			if(candidates == null && strokes.size() > 0) {
-				Vector<PointR> allPoints = new Vector<PointR>();
-				Enumeration<Vector<PointR>> en = strokes.elements();
-				while (en.hasMoreElements()) {
-					Vector<PointR> pts = en.nextElement();
-					allPoints.addAll(pts);
-				}
-				
-				// Recognize input stroke.
-				candidates = model.getRecognizer().recognize(allPoints, strokes.size());
-				if(candidates == null) return;
-				if(candidates.length == 0) { candidates = null; return; }
-				
-				// Find the boundary of points.
-				int minX = (int)allPoints.get(0).X; 
-				int minY = (int)allPoints.get(0).Y;
-				int maxX = minX, maxY = minY;
-				for(int i = 1; i < allPoints.size(); ++ i) {
-					PointR current = allPoints.get(i);
-					int x = (int)current.X; int y = (int)current.Y;
-					minX = Math.min(x, minX); maxX = Math.max(x, maxX);
-					minY = Math.min(y, minY); maxY = Math.max(y, maxY);
-				}
-				
-				boxX = minX;		boxY = minY;
-				boxW = maxX - minX;	boxH = maxY - minY;
-				
-				// Render the first candidate.
-				candidateIndex = 0;
-				updateCandidateObject();
+				if(!Configuration.getInstance().INSTANT_RECOGNIZE)
+					performRecognition();
 				repaint();
 			}
 			
