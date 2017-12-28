@@ -13,13 +13,11 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.Enumeration;
-import java.util.Vector;
-
-import javax.swing.JComponent;
+import java.util.Vector;import javax.swing.JComponent;
 
 import de.dubs.dollarn.PointR;
+import net.aegistudio.sketchuml.Configuration;
 import net.aegistudio.sketchuml.EntityEntry;
-import net.aegistudio.sketchuml.Main;
 
 public class SketchPanel extends JComponent implements 
 	MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
@@ -278,7 +276,8 @@ public class SketchPanel extends JComponent implements
 		SketchEntityComponent selected = model.getSelected();
 		if(candidates != null && candidates.length > 0) {
 			model.selectComponent(null);
-			int base =  Math.min(Main.MAX_CANDIDATE, candidates.length);
+			int base =  Math.min(Configuration.getInstance()
+					.MAX_CANDIDATE, candidates.length);
 			// Modulus rotation of mouse wheel.
 			candidateIndex = (candidateIndex + 
 					(arg0.getWheelRotation() > 0? 1 : -1)) % base;
