@@ -20,7 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 
 import net.aegistudio.sketchuml.framework.DefaultSketchModel;
-import net.aegistudio.sketchuml.framework.ComponentPropertyPanel;
+import net.aegistudio.sketchuml.framework.EntityComponentPanel;
 import net.aegistudio.sketchuml.framework.SketchPanel;
 import net.aegistudio.sketchuml.statechart.TemplateStateChart;
 import net.aegistudio.sketchuml.stroke.SketchRecognizer;
@@ -71,8 +71,8 @@ public class Main {
 		
 		// Create the property panel.
 		JPanel propertyTempPanel = new JPanel();
-		ComponentPropertyPanel propertyPanel 
-			= new ComponentPropertyPanel(model);
+		EntityComponentPanel propertyPanel 
+			= new EntityComponentPanel(model);
 		propertyTempPanel.add(propertyPanel);
 		frame.add(propertyTempPanel, BorderLayout.EAST);
 		

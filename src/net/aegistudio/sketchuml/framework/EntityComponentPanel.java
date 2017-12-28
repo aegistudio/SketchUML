@@ -15,7 +15,7 @@ import javax.swing.JTextField;
 
 import net.aegistudio.sketchuml.Configuration;
 
-public class ComponentPropertyPanel extends JPanel {
+public class EntityComponentPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private final SketchModel model;
 	private Component property;
@@ -78,7 +78,7 @@ public class ComponentPropertyPanel extends JPanel {
 		return field;
 	}
 	
-	public ComponentPropertyPanel(SketchModel model) {
+	public EntityComponentPanel(SketchModel model) {
 		this.model = model;
 		super.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		

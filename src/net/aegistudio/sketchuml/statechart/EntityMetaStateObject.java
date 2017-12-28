@@ -1,124 +1,51 @@
 package net.aegistudio.sketchuml.statechart;
 
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridLayout;
 import java.awt.Rectangle;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.geom.Rectangle2D;
-import java.util.Arrays;
 import java.util.function.Consumer;
 
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-
-import net.aegistudio.sketchuml.Configuration;
 import net.aegistudio.sketchuml.Entity;
 import net.aegistudio.sketchuml.PropertyView;
 import net.aegistudio.sketchuml.SketchView;
+import net.aegistudio.sketchuml.framework.PropertyPanel;
 
 public class EntityMetaStateObject implements SketchView, PropertyView {
 	public static int STATE_ROUNDSIZE = 50;
 	public static int STATE_NAMEHEIGHT = 24;
-	private JPanel viewObject;
-
-	private EntityStateObject entity;
-	private Consumer<Entity> notifier;
-	
-	private JTextField nameField;
-	private JCheckBox isBrief;
-	private JTextArea actionArea;
-	
-	private ActionListener safeAction(Runnable action) {
-		return a -> {
-			if(entity == null) return;
-			if(notifier == null) return;
-			action.run();
-			notifier.accept(entity);
-		};
-	}
+	private PropertyPanel<EntityStateObject> viewObject;
 	
 	@Override
 	public Component getViewObject(Consumer<Entity> notifier) {
 		if(viewObject == null) {
-			Font font = Configuration.getInstance().PROPERTY_FONT;
+			viewObject = new PropertyPanel<EntityStateObject>();
 			
-			viewObject = new JPanel();
-			viewObject.setLayout(new BoxLayout(viewObject, BoxLayout.Y_AXIS));
+			// Add the state name.
+			viewObject.registerTextField("State Name: ", 
+					(entity) -> entity.name, 
+					(entity, name) -> entity.name = name);
 			
-			// The state name.
-			JPanel namePanel = new JPanel();
-			namePanel.setLayout(new BorderLayout());
-			JLabel nameLabel = new JLabel("State Name");
-			nameField = new JTextField();
-			nameField.addActionListener(safeAction(() -> {
-				entity.name = nameField.getText();
-			}));
-			namePanel.add(nameLabel, BorderLayout.WEST);
-			namePanel.add(nameField, BorderLayout.CENTER);
-			viewObject.add(namePanel);
+			// Add is brief option.
+			viewObject.registerCheckBox("Hide actions",
+					(entity) -> entity.isBrief, 
+					(entity, isBrief) -> entity.isBrief = isBrief);
 			
-			// The is brief option.
-			JPanel isBriefPanel = new JPanel();
-			isBrief = new JCheckBox("Hide actions");
-			isBrief.addActionListener(safeAction(() -> {
-				entity.isBrief = isBrief.isSelected();
-			}));
-			isBriefPanel.setLayout(new GridLayout(1, 1));
-			isBriefPanel.add(isBrief);
-			viewObject.add(isBriefPanel);
-			
-			// The concrete action area.
-			JPanel actionPanel = new JPanel();
-			actionPanel.setLayout(new BoxLayout(
-					actionPanel, BoxLayout.Y_AXIS));
-			JLabel actionLabel = new JLabel("Actions:");
-			JPanel actionLabelPanel = new JPanel();
-			actionLabelPanel.setLayout(new BorderLayout());
-			actionLabelPanel.add(actionLabel);
-			actionPanel.add(actionLabelPanel);
-			actionArea = new JTextArea();
-			ActionListener areaListener = safeAction(() -> {
-				entity.actions = actionArea.getText();
-			});
-			actionArea.addFocusListener(new FocusAdapter() {
-				@Override
-				public void focusLost(FocusEvent fe) {
-					areaListener.actionPerformed(null);
-				}
-			});
-			
-			actionArea.setRows(4);
-			actionPanel.add(new JScrollPane(actionArea));
-			viewObject.add(actionPanel);
-			
-			Arrays.asList((Component)
-				nameLabel, nameField, isBrief, 
-				actionLabel, actionArea
-			).forEach(c -> c.setFont(font));
+			// The concrete actions area.
+			viewObject.registerTextArea("Actions:", 
+					(entity) -> entity.actions,
+					(entity, actions) -> entity.actions = actions);
 		}
-		this.notifier = notifier;
+		viewObject.setNotifier(notifier);
 		return viewObject;
 	}
 
 	@Override
 	public void updateEntity(Entity entity) {
-		this.entity = (EntityStateObject)entity;
-		nameField.setText(this.entity.name);
-		isBrief.setSelected(this.entity.isBrief);
-		actionArea.setText(this.entity.actions);
+		viewObject.updateEntity((EntityStateObject)entity);
 	}
 
 	@Override
