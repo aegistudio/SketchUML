@@ -43,6 +43,44 @@ public class DefaultPathView implements PathView<DefaultPath> {
 				+ vectorLength * resultDirection.Y;
 	}
 	
+	private void intersectBezier(Rectangle2D rect, QuadCurve2D bezier,
+			PointR resultDirection, PointR resultIntersection) {
+		
+		// The control point coordinates.
+		double p1X = bezier.getCtrlX();
+		double p1Y = bezier.getCtrlY();
+		double p0X = bezier.getX1();
+		double p0Y = bezier.getY1();
+		double p2X = bezier.getX2();
+		double p2Y = bezier.getY2();
+		
+		for(double t = 0.0; t <= 1.0; t += 0.01) {
+			double x = (1 - t) * (1 - t) * p0X + 
+					2 * (1 - t) * t * p1X + t * t * p2X;
+			double y = (1 - t) * (1 - t) * p0Y + 
+					2 * (1 - t) * t * p1Y + t * t * p2Y;
+			
+			if(!rect.contains(x, y)) {
+				// Calculate intersection.
+				resultIntersection.X = x;
+				resultIntersection.Y = y;
+				
+				// Calculate bezier curve's tangent.
+				resultDirection.X = 2 * (1 - t) * (p1X - p0X)
+						+ 2 * t * (p2X - p1X);
+				resultDirection.Y = 2 * (1 - t) * (p1Y - p0Y)
+						+ 2 * t * (p2Y - p1Y);
+				double modulus = Math.sqrt(
+						resultDirection.X * resultDirection.X +
+						resultDirection.Y * resultDirection.Y);
+				resultDirection.X /= modulus; 
+				resultDirection.Y /= modulus;
+				
+				return;
+			}
+		}
+	}
+	
 	@Override
 	public void render(Graphics2D g2d, boolean selected,
 			DefaultPath pathObject, LineStyle line, 
@@ -115,10 +153,13 @@ public class DefaultPathView implements PathView<DefaultPath> {
 				g2d.draw(q2d);
 				
 				// Find intersection.
-				if(i == 0) intersectBox(boundBegin, control,
-						directionBegin, intersectBegin);
-				if(i == numPoints) intersectBox(boundEnd, control,
-						directionEnd, intersectEnd);
+				if(i == 0) intersectBezier(boundBegin, 
+						q2d, directionBegin, intersectBegin);
+				if(i == numPoints) {
+					// Makes it easier for intersection.
+					q2d.setCurve(xEnd, yEnd, xCtrl, yCtrl, xBegin, yBegin);
+					intersectBezier(boundEnd, q2d, directionEnd, intersectEnd);
+				}
 				
 				// Render control points when selected.
 				g2d.setStroke(new BasicStroke(selected? 3.0f : 2.0f));

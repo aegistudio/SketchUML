@@ -71,8 +71,8 @@ public class PathPreview extends JComponent {
 		
 		if(path != null) view.render((Graphics2D)g, 
 				false, path, PathView.LineStyle.DASHDOT, 
-				boundBegin, PathView.ArrowStyle.CIRCLE_EMPTY, 
-				boundEnd, PathView.ArrowStyle.CIRCLE_FILLED);
+				boundBegin, PathView.ArrowStyle.DIAMOND_FILLED, 
+				boundEnd, PathView.ArrowStyle.DIAMOND_EMPTY);
 	}
 	
 	public static void main(String[] arguments) {
