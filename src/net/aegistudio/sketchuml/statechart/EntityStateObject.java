@@ -15,11 +15,15 @@ public class EntityStateObject implements Entity {
 
 	@Override
 	public void load(DataInputStream inputStream) throws IOException {
-		
+		name = inputStream.readUTF();
+		actions = inputStream.readUTF();
+		isBrief = inputStream.readBoolean();
 	}
 
 	@Override
 	public void save(DataOutputStream outputStream) throws IOException {
-		
+		outputStream.writeUTF(name);
+		outputStream.writeUTF(actions);
+		outputStream.writeBoolean(isBrief);
 	}
 }

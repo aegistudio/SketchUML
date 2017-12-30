@@ -5,9 +5,13 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-import net.aegistudio.sketchuml.RegularEntityAdapter;
+import net.aegistudio.sketchuml.Entity;
+import net.aegistudio.sketchuml.EntityAdapter;
+import net.aegistudio.sketchuml.framework.RegularRenderer;
 
-public class EntityStateExit extends RegularEntityAdapter {
+public class EntityStateExit extends EntityAdapter implements RegularRenderer.Painter {
+	private final RegularRenderer renderer = new RegularRenderer(this);
+	
 	@Override
 	public void render(Graphics g, int size, boolean preview) {
 		Graphics2D g2d = (Graphics2D)g;
@@ -24,5 +28,10 @@ public class EntityStateExit extends RegularEntityAdapter {
 				div2Size + sqr2Size, div2Size + sqr2Size);
 		g2d.drawLine(div2Size + sqr2Size, div2Size - sqr2Size, 
 				div2Size - sqr2Size, div2Size + sqr2Size);
+	}
+	
+	@Override
+	public void renderEntity(Graphics g, Entity entity, boolean preview) {
+		renderer.renderEntity(g, entity, preview);
 	}
 }

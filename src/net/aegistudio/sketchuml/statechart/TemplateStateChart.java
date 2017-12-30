@@ -2,12 +2,15 @@ package net.aegistudio.sketchuml.statechart;
 
 import net.aegistudio.sketchuml.EntityEntry;
 import net.aegistudio.sketchuml.Template;
+import net.aegistudio.sketchuml.general.EntityDecision;
+import net.aegistudio.sketchuml.general.EntityMetaDecision;
 
 public class TemplateStateChart implements Template {
 	private final EntityStateStart entityStart = new EntityStateStart();
 	private final EntityStateEnd entityEnd = new EntityStateEnd();
 	private final EntityStateExit entityExit = new EntityStateExit();
 	private final EntityMetaStateObject entityMetaState = new EntityMetaStateObject();
+	private final EntityMetaDecision entityMetaDecision = new EntityMetaDecision();
 	
 	@Override
 	public EntityEntry[] entities() {
@@ -40,8 +43,14 @@ public class TemplateStateChart implements Template {
 					obj.isBrief = false; return obj;
 				}, entityMetaState, entityMetaState);
 		
+		EntityEntry decision = new EntityEntry(
+				"general/decision", "Decision",
+				"A conditional branch of decision", 
+				EntityDecision::new, entityMetaDecision, 
+				entityMetaDecision);
+		
 		return new EntityEntry[]{ stateStart, stateEnd, stateExit, 
-				stateBrief, stateComplete };
+				stateBrief, stateComplete, decision };
 	}
 
 }
