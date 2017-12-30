@@ -13,29 +13,34 @@ import java.util.function.Consumer;
  * 
  * @author Haoran Luo
  */
-public abstract class SimpleEntity implements Entity, PropertyView, SketchView, EntityFactory {
+public abstract class EntityAdapter implements Entity, PropertyView, SketchView, EntityFactory {
 	public Entity create() { return this; }
 	
 	@Override
-	public final void load(DataInputStream inputStream) throws IOException {
+	public void load(DataInputStream inputStream) throws IOException {
 		
 	}
 
 	@Override
-	public final void save(DataOutputStream outputStream) throws IOException {
+	public void save(DataOutputStream outputStream) throws IOException {
 		
 	}
 	
 	@Override
-	public final Component getViewObject(Consumer<Entity> notifier) {
+	public Component getViewObject(Consumer<Entity> notifier) {
 		return null;
 	}
 
 	@Override
-	public final void updateEntity(Entity entity) {
+	public void updateEntity(Entity entity) {
 		
 	}
 
+	@Override
+	public String overlayEntity(Entity entity, OverlayDirection old) {
+		return null;
+	}
+	
 	@Override
 	public abstract void renderEntity(Graphics g, Entity entity, boolean preview);
 }

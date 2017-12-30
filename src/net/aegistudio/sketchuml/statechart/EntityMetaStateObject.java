@@ -89,4 +89,9 @@ public class EntityMetaStateObject implements SketchView, PropertyView {
 		}
 	}
 
+	@Override
+	public String overlayEntity(Entity entity, OverlayDirection old) {
+		return null;
+	}
+
 }

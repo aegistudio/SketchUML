@@ -12,12 +12,14 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.geom.Rectangle2D;
 import java.util.Enumeration;
 import java.util.Vector;import javax.swing.JComponent;
 
 import de.dubs.dollarn.PointR;
 import net.aegistudio.sketchuml.Configuration;
 import net.aegistudio.sketchuml.EntityEntry;
+import net.aegistudio.sketchuml.SketchView;
 
 public class SketchPanel extends JComponent implements 
 	MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
@@ -250,10 +252,33 @@ public class SketchPanel extends JComponent implements
 	
 	private void paintSketchComponent(Graphics g, 
 			SketchEntityComponent current, boolean preview) {
+		
+		// The concrete part of the rendering object.
 		Graphics currentGraphics = g.create(
 				current.x, current.y, current.w, current.h);
 		current.entry.sketchView.renderEntity(
 				currentGraphics, current.entity, preview);
+		
+		// The overlaying part of the rendering object.
+		g.setColor(preview? Color.GRAY : Color.BLACK);
+		Rectangle2D boundObject = new Rectangle2D.Double(
+				current.x, current.y, current.w, current.h);
+		for(SketchView.OverlayDirection direction 
+				: SketchView.OverlayDirection.values()) {
+			// Ensure there's overlaying text.
+			String overlayText = current.entry.sketchView
+					.overlayEntity(current.entity, direction);
+			if(overlayText == null) continue;
+			
+			// Calculate bound and draw location.
+			Rectangle2D boundText = g.getFontMetrics()
+					.getStringBounds(overlayText, g);
+			Point position = direction.getLocation(
+					boundText, boundObject);
+			
+			// Render the overlay text.
+			g.drawString(overlayText, position.x, position.y);
+		}
 	}
 	
 	@Override
@@ -268,11 +293,15 @@ public class SketchPanel extends JComponent implements
 		// Render the objects in order.
 		for(int i = model.numComponents() - 1; i >= 0; -- i) {
 			SketchEntityComponent current = model.get(i);
+			
+			// Selection box if the object is selected.
 			if(current == selected) {
 				g.setColor(Color.LIGHT_GRAY);
 				g.fillRect(selected.x, selected.y, 
 						selected.w, selected.h);
 			}
+			
+			// Default object component.
 			paintSketchComponent(g, current, false);
 		}
 		

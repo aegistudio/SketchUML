@@ -5,9 +5,9 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-import net.aegistudio.sketchuml.SimpleRegularEntity;
+import net.aegistudio.sketchuml.RegularEntityAdapter;
 
-public class EntityStateExit extends SimpleRegularEntity {
+public class EntityStateExit extends RegularEntityAdapter {
 	@Override
 	public void render(Graphics g, int size, boolean preview) {
 		Graphics2D g2d = (Graphics2D)g;

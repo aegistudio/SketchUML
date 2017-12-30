@@ -2,9 +2,9 @@ package net.aegistudio.sketchuml.statechart;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import net.aegistudio.sketchuml.SimpleRegularEntity;
+import net.aegistudio.sketchuml.RegularEntityAdapter;
 
-public class EntityStateStart extends SimpleRegularEntity {
+public class EntityStateStart extends RegularEntityAdapter {
 	@Override
 	public void render(Graphics g, int size, boolean preview) {
 		g.setColor(preview? Color.GRAY : Color.BLACK);

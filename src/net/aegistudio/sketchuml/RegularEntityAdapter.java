@@ -3,7 +3,7 @@ package net.aegistudio.sketchuml;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
-public abstract class SimpleRegularEntity extends SimpleEntity {
+public abstract class RegularEntityAdapter extends EntityAdapter {
 
 	@Override
 	public final void renderEntity(Graphics g, Entity entity, boolean preview) {
