@@ -356,7 +356,6 @@ public class SketchPanel extends JComponent implements
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		SketchEntityComponent selected = model.getSelected();
 		// Select the candidate via keyboard input.
 		if(candidates != null && candidates.length > 0) {
 			int keyIndex = e.getKeyCode() - KeyEvent.VK_1;
@@ -364,12 +363,44 @@ public class SketchPanel extends JComponent implements
 				candidateIndex = keyIndex;
 				updateCandidateObject();
 				repaint();
+				return;
 			}
 		}
 		
-		// Remove the selected object if any.
-		else if(selected != null && e.getKeyCode() == KeyEvent.VK_DELETE)
-			model.destroy(null, selected);
+		SketchEntityComponent selected = model.getSelected();
+		if(selected != null) {
+			if(e.getKeyCode() == KeyEvent.VK_DELETE)
+				// Remove the selected object if any.
+				model.destroy(null, selected);
+			else {
+				// Perform object moving if direction is pressed.
+				boolean moved = true;
+				boolean shiftPressed = (e.getModifiersEx() 
+						& KeyEvent.SHIFT_DOWN_MASK) != 0;
+				switch(e.getKeyCode()) {
+					case KeyEvent.VK_UP:
+						if(shiftPressed) selected.h --;
+						else selected.y --;
+						break;
+					case KeyEvent.VK_DOWN:
+						if(shiftPressed) selected.h ++;
+						else selected.y ++;
+						break;
+					case KeyEvent.VK_LEFT:
+						if(shiftPressed) selected.w --;
+						else selected.x --;
+						break;
+					case KeyEvent.VK_RIGHT:
+						if(shiftPressed) selected.w ++;
+						else selected.x ++;
+						break;
+					default:
+						moved = false;
+						break;
+				}
+				if(moved) model.notifySelectedChanged(null);
+			}
+		}
 	}
 
 	@Override
