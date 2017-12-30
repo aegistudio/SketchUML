@@ -9,7 +9,40 @@ import java.awt.geom.Rectangle2D;
 import de.dubs.dollarn.PointR;
 
 public class DefaultPathView implements PathView<DefaultPath> {
-
+	public static final float[][] DASH_DECORATION= { 
+			/*DASH*/{10.f}, /*DOT*/{2.f}, /*DASHDOT*/{10.f, 4.0f, 4.f} };
+	public static final float ARROW_ZONAL = 20;
+	public static final float ARROW_HORIZONTAL = 7;
+	
+	private void intersectBox(Rectangle2D rect, PointR outPoint,
+			PointR resultDirection, PointR resultIntersection) {
+		
+		// Difference and normalization.
+		resultDirection.X = outPoint.X - rect.getCenterX();
+		resultDirection.Y = outPoint.Y - rect.getCenterY();
+		double modulus = Math.sqrt(
+				resultDirection.X * resultDirection.X +
+				resultDirection.Y * resultDirection.Y);
+		resultDirection.X /= modulus; 
+		resultDirection.Y /= modulus;
+		
+		// Calculate vector length.
+		double widthRatio = Math.abs(rect.getWidth() 
+				/ (2 * resultDirection.X));
+		double heightRatio = Math.abs(rect.getHeight() 
+				/ (2 * resultDirection.Y));
+		double vectorLength = 
+				resultDirection.X == 0? heightRatio:
+				resultDirection.Y == 0? widthRatio:
+				Math.min(widthRatio, heightRatio);
+		
+		// Output result intersection.
+		resultIntersection.X = rect.getCenterX() 
+				+ vectorLength * resultDirection.X;
+		resultIntersection.Y = rect.getCenterY() 
+				+ vectorLength * resultDirection.Y;
+	}
+	
 	@Override
 	public void render(Graphics2D g2d, boolean selected,
 			DefaultPath pathObject, LineStyle line, 
@@ -18,7 +51,6 @@ public class DefaultPathView implements PathView<DefaultPath> {
 		
 		// Prepare for rendering.
 		g2d.setColor(selected? Color.GRAY : Color.BLACK);
-		g2d.setStroke(new BasicStroke(selected? 4.0f : 3.0f));
 		
 		// Collect path object information.
 		int numPoints = pathObject.separatePoints.size();
@@ -34,6 +66,12 @@ public class DefaultPathView implements PathView<DefaultPath> {
 		for(int i = 0; i < numPoints; ++ i) 
 			points[i + 1] = pathObject.separatePoints.get(i);
 		
+		// The intersection and direction points.
+		PointR intersectBegin = new PointR();
+		PointR intersectEnd = new PointR();
+		PointR directionBegin = new PointR();
+		PointR directionEnd = new PointR();
+		
 		// Perform drawings.
 		QuadCurve2D q2d = new QuadCurve2D.Double();
 		for(int i = 0; i < numPoints + 1; ++ i) {
@@ -48,19 +86,140 @@ public class DefaultPathView implements PathView<DefaultPath> {
 				g2d.fillRect(xEnd - 3, yEnd - 3, 6, 6);
 			}
 			
+			// Configure line style.
+			if(!LineStyle.COHERENT.equals(line)) {
+				int order = line.ordinal() - 1/*COHERENT*/;
+				float[] dash = DASH_DECORATION[order];
+				g2d.setStroke(new BasicStroke(selected? 3.0f : 2.0f, 
+						BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 
+						1.0f, dash, 0.0f));
+			}
+			else g2d.setStroke(new BasicStroke(selected? 3.0f : 2.0f));
+			
 			if(pathObject.controlPoints.size() <= i || 
-					pathObject.controlPoints.get(i) == null)
+					pathObject.controlPoints.get(i) == null) {
+				// Just draw a direct line.
 				g2d.drawLine(xBegin, yBegin, xEnd, yEnd);
+				
+				// Find intersection.
+				if(i == 0) intersectBox(boundBegin, points[1], 
+						directionBegin, intersectBegin);
+				if(i == numPoints) intersectBox(boundEnd, 
+						points[numPoints], directionEnd, intersectEnd);
+			}
 			else {
+				// Retrieve control point and paint.
 				PointR control = pathObject.controlPoints.get(i);
 				int xCtrl = (int)control.X; int yCtrl = (int)control.Y;
 				q2d.setCurve(xBegin, yBegin, xCtrl, yCtrl, xEnd, yEnd);
 				g2d.draw(q2d);
 				
+				// Find intersection.
+				if(i == 0) intersectBox(boundBegin, control,
+						directionBegin, intersectBegin);
+				if(i == numPoints) intersectBox(boundEnd, control,
+						directionEnd, intersectEnd);
+				
 				// Render control points when selected.
+				g2d.setStroke(new BasicStroke(selected? 3.0f : 2.0f));
 				if(selected)
 					g2d.fillRect(xCtrl - 3, yCtrl - 3, 6, 6);
 			}
+		}
+		
+		// Perform arrow rendering.
+		g2d.setStroke(new BasicStroke(3));
+		g2d.setColor(selected? Color.GRAY : Color.BLACK);
+		renderArrow(g2d, intersectBegin, directionBegin, 
+				arrowBegin, selected);
+		renderArrow(g2d, intersectEnd, directionEnd, 
+				arrowEnd, selected);
+	}
+	
+	private void renderArrow(Graphics2D g2d, PointR origin, 
+			PointR direction, ArrowStyle arrow, boolean selected) {
+		
+		PointR orthoDirection = new PointR();
+		orthoDirection.X = direction.Y;
+		orthoDirection.Y = -direction.X;
+		
+		// Basic two points.
+		int x0 = (int)origin.X; int y0 = (int)origin.Y;
+		int x1 = (int)(origin.X + ARROW_ZONAL * direction.X);
+		int y1 = (int)(origin.Y + ARROW_ZONAL * direction.Y);
+		
+		// Orthogonal extension.
+		int x2 = x1 + (int)(ARROW_HORIZONTAL * orthoDirection.X);
+		int y2 = y1 + (int)(ARROW_HORIZONTAL * orthoDirection.Y);
+		int x3 = x1 - (int)(ARROW_HORIZONTAL * orthoDirection.X);
+		int y3 = y1 - (int)(ARROW_HORIZONTAL * orthoDirection.Y);
+		
+		switch(arrow) {
+			// Render the fish bone arrows.
+			case FISHBONE:
+				g2d.drawLine(x0, y0, x1, y1);
+				g2d.drawLine(x0, y0, x2, y2);
+				g2d.drawLine(x0, y0, x3, y3);
+			break;
+			
+			// Render the triangle families.
+			case TRIANGLE_EMPTY:
+			case TRIANGLE_FILLED:
+				int[] xsT = new int[] {x0, x2, x3};
+				int[] ysT = new int[] {y0, y2, y3};
+				
+				// Fill with color.
+				if(arrow.equals(ArrowStyle.TRIANGLE_EMPTY))
+					g2d.setColor(Color.WHITE);
+				else g2d.setColor(selected? Color.GRAY : Color.BLACK);
+				g2d.fillPolygon(xsT, ysT, 3);
+				
+				// Draw out border.
+				g2d.setColor(selected? Color.GRAY : Color.BLACK);
+				g2d.drawPolygon(xsT, ysT, 3);
+			break;
+			
+			// Render the diamond families.
+			case DIAMOND_EMPTY:
+			case DIAMOND_FILLED:
+				int xRD = (int)(ARROW_ZONAL * - 0.5 * direction.X);
+				int yRD = (int)(ARROW_ZONAL * - 0.5 * direction.Y);
+				int[] xsD = new int[] {x0, x2 + xRD, x1, x3 + xRD };
+				int[] ysD = new int[] {y0, y2 + yRD, y1, y3 + yRD };
+				
+				// Fill with color.
+				if(arrow.equals(ArrowStyle.DIAMOND_EMPTY))
+					g2d.setColor(Color.WHITE);
+				else g2d.setColor(selected? Color.GRAY : Color.BLACK);
+				g2d.fillPolygon(xsD, ysD, 4);
+				
+				// Draw out border.
+				g2d.setColor(selected? Color.GRAY : Color.BLACK);
+				g2d.drawPolygon(xsD, ysD, 4);
+			break;
+			
+			// Render the circle families.
+			case CIRCLE_EMPTY:
+			case CIRCLE_FILLED:
+				float diameter = Math.min(ARROW_ZONAL, ARROW_HORIZONTAL);
+				int xcC = (int)(x0 + 0.5 * diameter * direction.X);
+				int ycC = (int)(y0 + 0.5 * diameter * direction.Y);
+				int radius = (int)(0.5 * diameter);
+				
+				// Fill with color.
+				if(arrow.equals(ArrowStyle.CIRCLE_EMPTY))
+					g2d.setColor(Color.WHITE);
+				else g2d.setColor(selected? Color.GRAY : Color.BLACK);
+				g2d.fillOval(xcC - radius, ycC - radius, 
+						2 * radius, 2 * radius);
+				
+				// Draw out border.
+				g2d.setColor(selected? Color.GRAY : Color.BLACK);
+				g2d.drawOval(xcC - radius, ycC - radius, 
+						2 * radius, 2 * radius);
+			break;
+			
+			default: break;
 		}
 	}
 

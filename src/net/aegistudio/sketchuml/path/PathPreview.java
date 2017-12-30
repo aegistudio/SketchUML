@@ -22,8 +22,8 @@ public class PathPreview extends JComponent {
 	
 	private final Vector<PointR> points = new Vector<>();
 	
-	private Rectangle2D boundBegin = new Rectangle2D.Double(175, 100, 50, 50);
-	private Rectangle2D boundEnd = new Rectangle2D.Double(375, 100, 50, 50);
+	private Rectangle2D boundBegin = new Rectangle2D.Double(165, 100, 50, 70);
+	private Rectangle2D boundEnd = new Rectangle2D.Double(365, 100, 50, 70);
 	
 	private final MouseAdapter adapter = new MouseAdapter() {
 		@Override
@@ -70,9 +70,9 @@ public class PathPreview extends JComponent {
 				(int)boundEnd.getHeight());
 		
 		if(path != null) view.render((Graphics2D)g, 
-				true, path, PathView.LineStyle.COHERENT, 
-				boundBegin, PathView.ArrowStyle.NONE, 
-				boundEnd, PathView.ArrowStyle.NONE);
+				false, path, PathView.LineStyle.DASHDOT, 
+				boundBegin, PathView.ArrowStyle.CIRCLE_EMPTY, 
+				boundEnd, PathView.ArrowStyle.CIRCLE_FILLED);
 	}
 	
 	public static void main(String[] arguments) {

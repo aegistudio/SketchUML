@@ -13,7 +13,7 @@ import java.util.Vector;
 import de.dubs.dollarn.PointR;
 
 public class DefaultPathManager implements PathManager<DefaultPath> {
-	public static float MERGE_RMSTHRESHOLD = 0.6f;
+	public static float MERGE_RMSTHRESHOLD = 0.47f;
 	public static float MERGE_MINIMAL = 5.f;
 	
 	private double minusModulus(PointR result, 
