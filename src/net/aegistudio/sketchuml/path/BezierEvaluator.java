@@ -13,6 +13,10 @@ public class BezierEvaluator {
 		this.y0 = y0; this.yCtrl = yCtrl; this.y1 = y1;
 	}
 	
+	public BezierEvaluator(PointR p0, PointR pctrl, PointR p1) {
+		this(p0.X, pctrl.X, p1.X, p0.Y, pctrl.Y, p1.Y);
+	}
+	
 	public void evaluate(double t, PointR result) {
 		double tP = 1 - t;
 		// Calculate bezier curve's position.

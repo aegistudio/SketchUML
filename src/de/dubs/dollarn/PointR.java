@@ -128,4 +128,10 @@ public class PointR {
 		else { X /= modulus; Y /= modulus; }
 		return modulus;
 	}
+	
+	public void interpolate(double ratio, PointR begin, PointR end) {
+		double ratioP = 1.0 - ratio;
+		X = ratioP * begin.X + ratio * end.X;
+		Y = ratioP * begin.Y + ratio * end.Y;
+	}
 }

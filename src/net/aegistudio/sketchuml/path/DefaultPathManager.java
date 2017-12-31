@@ -15,6 +15,7 @@ import de.dubs.dollarn.PointR;
 public class DefaultPathManager implements PathManager<DefaultPath> {
 	public static float MERGE_RMSTHRESHOLD = 0.47f;
 	public static float MERGE_MINIMAL = 5.f;
+	//public static float REGULATION_THRESHOLD = 0.5f;
 	
 	private double minusModulus(PointR result, 
 			PointR pointBegin, PointR pointEnd) {
@@ -38,10 +39,30 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 		return area;
 	}
 	
+	private double midpoint(int begin, int end, double[] modulus) {
+		// Calculate modulus sum.
+		double sumModulus = 0.0;
+		for(int i = begin; i <= end && i < modulus.length; ++ i)
+			sumModulus += modulus[i];
+		
+		// Find midpoint.
+		double halfModulus = sumModulus * 0.5;
+		sumModulus = 0;
+		for(int i = begin; i <= end && i < modulus.length; ++ i) {
+			double distance = halfModulus - sumModulus;
+			if(modulus[i] > distance) 
+				return i + (distance / modulus[i]);
+			else sumModulus += modulus[i];
+		}
+		return (begin + end) * 0.5;
+	}
+	
 	@Override
 	public DefaultPath quantize(Vector<PointR> stroke, 
 			Rectangle2D boundBegin, Rectangle2D boundEnd) {
 		DefaultPath resultPath = new DefaultPath();
+		stroke.removeIf(point -> boundBegin.contains(point.X, point.Y));
+		stroke.removeIf(point -> boundEnd.contains(point.X, point.Y));
 		
 		// Calculate tangent line for every two points, 
 		// including the end and begin.
@@ -112,13 +133,28 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 			}
 		}
 		
+		// Add last point.
+		/*PointR lastTangent = new PointR();
+		for(int j = points.size() - 2; j >= 0; -- j) {
+			PointR current = points.get(j);
+			minusModulus(lastTangent, 
+					pointEnd, current);
+			if(!boundEnd.contains(
+					current.X, current.Y)) break;
+		}
+		representIndex.add(points.size() - 1);
+		representTangent.add(lastTangent);*/
+		
 		// Calculate intersections between representative tangent points.
 		Set<Integer> acquaintedIndices = new TreeSet<>();
 		acquaintedIndices.add(0); 
 		acquaintedIndices.add(representIndex.size() - 1);
+		PointR ignoreRepresent = new PointR();
 		for(int i = 0; i < representIndex.size() - 1; ++ i) {
-			PointR before = points.get(representIndex.get(i));
-			PointR after = points.get(representIndex.get(i + 1));
+			int startIndex = representIndex.get(i);
+			int endIndex = representIndex.get(i + 1);
+			PointR before = points.get(startIndex);
+			PointR after = points.get(endIndex);
 			PointR beforeTangent = representTangent.get(i);
 			PointR afterTangent = representTangent.get(i + 1);
 			
@@ -134,17 +170,91 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 					- afterTangent.X * dy) / delta;
 			double xi = before.X + beforeTangent.X * t;
 			double yi = before.Y + beforeTangent.Y * t;
+			PointR intersect = new PointR(xi, yi);
+			
+			// Calculate midpoint index for current strip.
+			double midPointIndex = midpoint(startIndex, endIndex, modulus);
+			int lowerMidPoint = (int)Math.floor(midPointIndex);
+			double difference = midPointIndex - lowerMidPoint;
+			int higherMidPoint = Math.min(lowerMidPoint + 1, points.size() - 1);
+			
+			// Calculate midpoint for current strip.
+			PointR midPoint = new PointR();
+			PointR pointLower = points.get(lowerMidPoint);
+			PointR pointHigher = points.get(higherMidPoint);
+			midPoint.interpolate(difference, pointLower, pointHigher);
+			
+			// Calculate distance between intersection point.
+			PointR pointFitting = new PointR(); 
+			double distanceStart = minusModulus(ignoreRepresent, intersect, before);
+			double distanceEnd = minusModulus(ignoreRepresent, intersect, after);
+			double distanceMiddle = 0.5 * (distanceStart + distanceEnd);
+			if(distanceStart >= distanceEnd) pointFitting.interpolate(
+					distanceMiddle / distanceStart, before, intersect);
+			else pointFitting.interpolate((distanceMiddle - distanceStart) 
+					/ distanceEnd, intersect, after);
+			double distanceIntersect = minusModulus(
+					ignoreRepresent, midPoint, pointFitting);
+			
+			// Calculate distance between bezier subdivide point.
+			BezierEvaluator bezier = new BezierEvaluator(
+					before, intersect, after);
+			bezier.evaluate(0.5, pointFitting);
+			double distanceBezier = minusModulus(
+					ignoreRepresent, midPoint, pointFitting);
 			
 			// Append the calculated point.
 			if(acquaintedIndices.add(i)) 
 				resultPath.separatePoints.add(new PointR(before));
+			
+			if(distanceIntersect < distanceBezier)
+				resultPath.separatePoints.add(intersect);
+			
 			if(acquaintedIndices.add(i + 1)) 
 				resultPath.separatePoints.add(new PointR(after));
-			resultPath.controlPoints.add(new PointR(xi, yi));
+			
+			if(distanceIntersect < distanceBezier)
+				resultPath.controlPoints.add(null);
+			else resultPath.controlPoints.add(intersect);
 		}
+		
+		// Perform point regulations.
+		/*PointR beforeRegulate, regulateVector = new PointR();
+		
+		beforeRegulate = pointBegin;
+		for(int i = 0; i < resultPath.separatePoints.size(); ++ i) {
+			// Forward regulate.
+			PointR afterRegulate = resultPath.separatePoints.get(i);
+			regulate(regulateVector, beforeRegulate, afterRegulate);
+			beforeRegulate = afterRegulate;
+		}
+
+		beforeRegulate = pointEnd;
+		for(int i = resultPath.separatePoints.size() - 1; i >= 0; -- i) {
+			// Backward regulate.
+			PointR after = resultPath.separatePoints.get(i);
+			regulate(regulateVector, beforeRegulate, after);
+			beforeRegulate = after;
+		}*/
 		
 		return resultPath;
 	}
+	
+	/*private void regulate(PointR regulateVector, 
+			PointR before, PointR after) {
+		
+		minusModulus(regulateVector, before, after);
+		
+		// Horizontal aligned.
+		if(Math.abs(regulateVector.Y) < REGULATION_THRESHOLD) {
+			after.Y = before.Y;
+		}
+		
+		// Vertical aligned
+		if(Math.abs(regulateVector.X) < REGULATION_THRESHOLD) {
+			after.X = before.X;
+		}
+	}*/
 	
 	@Override
 	public void save(DataOutputStream output, 
