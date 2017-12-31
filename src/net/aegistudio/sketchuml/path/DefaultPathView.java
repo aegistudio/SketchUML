@@ -3,7 +3,6 @@ package net.aegistudio.sketchuml.path;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.geom.QuadCurve2D;
 import java.awt.geom.Rectangle2D;
 
 import de.dubs.dollarn.PointR;
@@ -13,6 +12,7 @@ public class DefaultPathView implements PathView<DefaultPath> {
 			/*DASH*/{10.f}, /*DOT*/{2.f}, /*DASHDOT*/{10.f, 4.0f, 4.f} };
 	public static final float ARROW_ZONAL = 20;
 	public static final float ARROW_HORIZONTAL = 7;
+	public static final int BEZIER_RENDER = 20;
 	
 	private void intersectBox(Rectangle2D rect, PointR outPoint,
 			PointR resultDirection, PointR resultIntersection) {
@@ -39,11 +39,11 @@ public class DefaultPathView implements PathView<DefaultPath> {
 				+ vectorLength * resultDirection.Y;
 	}
 	
-	private void intersectBezier(Rectangle2D rect, QuadCurve2D bezier,
+	private void intersectBezier(Rectangle2D rect, BezierEvaluator evaluator,
 			PointR resultDirection, PointR resultIntersection) {
 		
 		// The control point coordinates.
-		double p1X = bezier.getCtrlX();
+		/*double p1X = bezier.getCtrlX();
 		double p1Y = bezier.getCtrlY();
 		double p0X = bezier.getX1();
 		double p0Y = bezier.getY1();
@@ -51,7 +51,7 @@ public class DefaultPathView implements PathView<DefaultPath> {
 		double p2Y = bezier.getY2();
 		
 		BezierEvaluator evaluator = new BezierEvaluator(
-				p0X, p1X, p2X, p0Y, p1Y,  p2Y);
+				p0X, p1X, p2X, p0Y, p1Y,  p2Y);*/
 		
 		for(double t = 0.0; t <= 1.0; t += 0.01) {
 			evaluator.evaluate(t, resultIntersection);
@@ -95,7 +95,6 @@ public class DefaultPathView implements PathView<DefaultPath> {
 		PointR directionEnd = new PointR();
 		
 		// Perform drawings.
-		QuadCurve2D q2d = new QuadCurve2D.Double();
 		for(int i = 0; i < numPoints + 1; ++ i) {
 			int xBegin = (int)points[i].X;
 			int yBegin = (int)points[i].Y;
@@ -132,17 +131,29 @@ public class DefaultPathView implements PathView<DefaultPath> {
 			else {
 				// Retrieve control point and paint.
 				PointR control = pathObject.controlPoints.get(i);
-				int xCtrl = (int)control.X; int yCtrl = (int)control.Y;
-				q2d.setCurve(xBegin, yBegin, xCtrl, yCtrl, xEnd, yEnd);
-				g2d.draw(q2d);
+				
+				int xCtrl = (int)control.X; 
+				int yCtrl = (int)control.Y;
+				BezierEvaluator evaluator = new BezierEvaluator(
+						points[i], control, points[i + 1]);
+				PointR current = new PointR();
+				int[] bx = new int[BEZIER_RENDER + 1];
+				int[] by = new int[BEZIER_RENDER + 1];
+				for(int j = 0; j <= 20; ++ j) {
+					evaluator.evaluate(1.0 / 20 * j, current);
+					bx[j] = (int)current.X;
+					by[j] = (int)current.Y;
+				}
+				g2d.drawPolyline(bx, by, BEZIER_RENDER + 1);
 				
 				// Find intersection.
 				if(i == 0) intersectBezier(boundBegin, 
-						q2d, directionBegin, intersectBegin);
+						evaluator, directionBegin, intersectBegin);
 				if(i == numPoints) {
 					// Makes it easier for intersection.
-					q2d.setCurve(xEnd, yEnd, xCtrl, yCtrl, xBegin, yBegin);
-					intersectBezier(boundEnd, q2d, directionEnd, intersectEnd);
+					//q2d.setCurve(xEnd, yEnd, xCtrl, yCtrl, xBegin, yBegin);
+					evaluator = new BezierEvaluator(points[i + 1], control, points[i]);
+					intersectBezier(boundEnd, evaluator, directionEnd, intersectEnd);
 				}
 				
 				// Render control points when selected.
