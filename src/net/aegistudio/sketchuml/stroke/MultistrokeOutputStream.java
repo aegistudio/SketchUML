@@ -43,22 +43,16 @@ public class MultistrokeOutputStream extends OutputStream {
 			// Store resampled points.
 			for(int j = 0; j < currentStroke.Points.size(); ++ j) {
 				PointR point = currentStroke.Points.get(j);
-				writePoint(point);
+				point.write(outputStream);
 			}
 			
 			// Store start unit vector.
-			writePoint(currentStroke.StartUnitVector);
+			currentStroke.StartUnitVector.write(outputStream);
 			
 			// Store vector versions.
 			outputStream.writeInt(currentStroke.VectorVersion.size());
 			for(int j = 0; j < currentStroke.VectorVersion.size(); ++ j)
 				outputStream.writeDouble(currentStroke.VectorVersion.get(j));
 		}
-	}
-	
-	private void writePoint(PointR point) throws IOException {
-		outputStream.writeDouble(point.X);
-		outputStream.writeDouble(point.Y);
-		outputStream.writeInt(point.T);
 	}
 }

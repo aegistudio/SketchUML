@@ -20,11 +20,7 @@ public class DefaultPathView implements PathView<DefaultPath> {
 		// Difference and normalization.
 		resultDirection.X = outPoint.X - rect.getCenterX();
 		resultDirection.Y = outPoint.Y - rect.getCenterY();
-		double modulus = Math.sqrt(
-				resultDirection.X * resultDirection.X +
-				resultDirection.Y * resultDirection.Y);
-		resultDirection.X /= modulus; 
-		resultDirection.Y /= modulus;
+		resultDirection.normalize();
 		
 		// Calculate vector length.
 		double widthRatio = Math.abs(rect.getWidth() 
@@ -54,28 +50,16 @@ public class DefaultPathView implements PathView<DefaultPath> {
 		double p2X = bezier.getX2();
 		double p2Y = bezier.getY2();
 		
+		BezierEvaluator evaluator = new BezierEvaluator(
+				p0X, p1X, p2X, p0Y, p1Y,  p2Y);
+		
 		for(double t = 0.0; t <= 1.0; t += 0.01) {
-			double x = (1 - t) * (1 - t) * p0X + 
-					2 * (1 - t) * t * p1X + t * t * p2X;
-			double y = (1 - t) * (1 - t) * p0Y + 
-					2 * (1 - t) * t * p1Y + t * t * p2Y;
+			evaluator.evaluate(t, resultIntersection);
 			
-			if(!rect.contains(x, y)) {
-				// Calculate intersection.
-				resultIntersection.X = x;
-				resultIntersection.Y = y;
-				
-				// Calculate bezier curve's tangent.
-				resultDirection.X = 2 * (1 - t) * (p1X - p0X)
-						+ 2 * t * (p2X - p1X);
-				resultDirection.Y = 2 * (1 - t) * (p1Y - p0Y)
-						+ 2 * t * (p2Y - p1Y);
-				double modulus = Math.sqrt(
-						resultDirection.X * resultDirection.X +
-						resultDirection.Y * resultDirection.Y);
-				resultDirection.X /= modulus; 
-				resultDirection.Y /= modulus;
-				
+			// Check whether there's intersection.
+			if(!rect.contains(resultIntersection.X, 
+					resultIntersection.Y)) {
+				evaluator.tangent(t, resultDirection);
 				return;
 			}
 		}

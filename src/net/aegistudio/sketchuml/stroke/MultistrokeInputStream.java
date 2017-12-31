@@ -52,13 +52,13 @@ public class MultistrokeInputStream extends InputStream {
 			Vector<PointR> pointsCurrent = new Vector<>(numPointsCurrent);
 			for(int j = 0; j < numPointsCurrent; ++ j) {
 				PointR point = new PointR();
-				readPoint(point);
+				point.read(inputStream);
 				pointsCurrent.add(point);
 			}
 
 			// Retrieve start vector.
 			PointR startUnitVector = new PointR();
-			readPoint(startUnitVector);
+			startUnitVector.read(inputStream);
 			
 			// Read vector versions.
 			int numVectorVersion = inputStream.readInt();
@@ -78,11 +78,5 @@ public class MultistrokeInputStream extends InputStream {
 		}
 		
 		return result;
-	}
-	
-	private void readPoint(PointR point) throws IOException {
-		point.X = inputStream.readDouble();
-		point.Y = inputStream.readDouble();
-		point.T = inputStream.readInt();
 	}
 }

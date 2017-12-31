@@ -18,22 +18,11 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 	
 	private double minusModulus(PointR result, 
 			PointR pointBegin, PointR pointEnd) {
-		double modulus = 0.0;
 		
 		// Calculate difference and modulus.
 		result.X = pointEnd.X - pointBegin.X;
 		result.Y = pointEnd.Y - pointBegin.Y;
-		
-		modulus = Math.sqrt(result.X * result.X 
-				+ result.Y * result.Y);
-		if(modulus == 0) { 
-			result.X = result.Y = 0.0; 
-		}
-		else { 
-			result.X /= modulus; 
-			result.Y /= modulus;
-		}
-		return modulus;
+		return result.normalize();
 	}
 	
 	private double areaDiff(int begin, int end, 
@@ -156,16 +145,38 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 		
 		return resultPath;
 	}
-
+	
 	@Override
 	public void save(DataOutputStream output, 
 			DefaultPath pathObject) throws IOException {
+		output.writeInt(pathObject.controlPoints.size());
+		for(PointR point : pathObject.controlPoints)
+			point.write(output);
 		
+		output.writeInt(pathObject.separatePoints.size());
+		for(PointR point : pathObject.separatePoints)
+			point.write(output);
 	}
 
 	@Override
 	public DefaultPath read(DataInputStream input) throws IOException {
-		return null;
+		DefaultPath pathObject = new DefaultPath();
+		
+		int numControlPoints = input.readInt();
+		for(int i = 0; i < numControlPoints; ++ i) {
+			PointR point = new PointR();
+			point.read(input);
+			pathObject.controlPoints.add(point);
+		}
+		
+		int numSeparatePoints = input.readInt();
+		for(int i = 0; i < numSeparatePoints; ++ i) {
+			PointR point = new PointR();
+			point.read(input);
+			pathObject.separatePoints.add(point);
+		}
+		
+		return pathObject;
 	}
 	
 }

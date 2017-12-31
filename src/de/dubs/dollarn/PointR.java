@@ -63,6 +63,10 @@ package de.dubs.dollarn;
  * SUCH DAMAGE.
  */
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 public class PointR {
 	public double X, Y;
 	public int T;
@@ -104,4 +108,24 @@ public class PointR {
 		return false;
 	}
 
+	// This methods are trimmed to be used with sketch uml.
+	
+	public void read(DataInputStream inputStream) throws IOException {
+		X = inputStream.readDouble();
+		Y = inputStream.readDouble();
+		T = inputStream.readInt();
+	}
+	
+	public void write(DataOutputStream outputStream) throws IOException {
+		outputStream.writeDouble(X);
+		outputStream.writeDouble(Y);
+		outputStream.writeInt(T);
+	}
+	
+	public double normalize() {
+		double modulus = Math.sqrt(X * X + Y * Y);
+		if(modulus == 0.0) X = Y = 0;
+		else { X /= modulus; Y /= modulus; }
+		return modulus;
+	}
 }
