@@ -70,7 +70,7 @@ public class PathPreview extends JComponent {
 				(int)boundEnd.getHeight());
 		
 		if(path != null) view.render((Graphics2D)g, 
-				false, path, PathView.LineStyle.DASHDOT, 
+				true, path, PathView.LineStyle.DASHDOT, 
 				boundBegin, PathView.ArrowStyle.DIAMOND_FILLED, 
 				boundEnd, PathView.ArrowStyle.DIAMOND_EMPTY);
 	}

@@ -13,9 +13,9 @@ import java.util.Vector;
 import de.dubs.dollarn.PointR;
 
 public class DefaultPathManager implements PathManager<DefaultPath> {
-	public static float MERGE_RMSTHRESHOLD = 0.47f;
+	public static float MERGE_RMSTHRESHOLD = 0.57f;
 	public static float MERGE_MINIMAL = 5.f;
-	//public static float REGULATION_THRESHOLD = 0.5f;
+	public static float REGULATION_THRESHOLD = 0.15f;
 	
 	private double minusModulus(PointR result, 
 			PointR pointBegin, PointR pointEnd) {
@@ -155,6 +155,7 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 			int endIndex = representIndex.get(i + 1);
 			PointR before = points.get(startIndex);
 			PointR after = points.get(endIndex);
+			
 			PointR beforeTangent = representTangent.get(i);
 			PointR afterTangent = representTangent.get(i + 1);
 			
@@ -219,7 +220,7 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 		}
 		
 		// Perform point regulations.
-		/*PointR beforeRegulate, regulateVector = new PointR();
+		PointR beforeRegulate, regulateVector = new PointR();
 		
 		beforeRegulate = pointBegin;
 		for(int i = 0; i < resultPath.separatePoints.size(); ++ i) {
@@ -235,26 +236,52 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 			PointR after = resultPath.separatePoints.get(i);
 			regulate(regulateVector, beforeRegulate, after);
 			beforeRegulate = after;
-		}*/
+		}
+		
+		// Remove abnormal paths.
+		PointR controlVector0 = new PointR();
+		PointR controlVector1 = new PointR();
+		for(int i = 0; i < resultPath.controlPoints.size(); ++ i) {
+			PointR control = resultPath.controlPoints.get(i);
+			if(control == null) continue;
+			
+			minusModulus(controlVector0, control, 
+					i == 0? pointBegin : resultPath
+							.separatePoints.get(i - 1));
+			controlVector0.normalize();
+			minusModulus(controlVector1, control, 
+					i < resultPath.separatePoints.size()?
+							resultPath.separatePoints.get(i) : pointEnd);
+			controlVector1.normalize();
+			
+			if(Math.abs(controlVector0.X * controlVector1.X + controlVector0.Y 
+					* controlVector1.Y) >= 1.0)
+				resultPath.controlPoints.set(i, null);
+		}
 		
 		return resultPath;
 	}
 	
-	/*private void regulate(PointR regulateVector, 
+	private boolean regulate(PointR regulateVector, 
 			PointR before, PointR after) {
 		
+		boolean regulated = false;
 		minusModulus(regulateVector, before, after);
 		
 		// Horizontal aligned.
 		if(Math.abs(regulateVector.Y) < REGULATION_THRESHOLD) {
 			after.Y = before.Y;
+			regulated = true;
 		}
 		
 		// Vertical aligned
 		if(Math.abs(regulateVector.X) < REGULATION_THRESHOLD) {
 			after.X = before.X;
+			regulated = true;
 		}
-	}*/
+		
+		return regulated;
+	}
 	
 	@Override
 	public void save(DataOutputStream output, 
