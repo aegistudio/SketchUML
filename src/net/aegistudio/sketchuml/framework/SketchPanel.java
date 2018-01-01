@@ -44,7 +44,7 @@ public class SketchPanel<Path> extends JComponent implements
 		this.pathManager = pathManager;
 		this.pathView = pathView;
 		
-		model.connect(this, this::repaint);
+		model.registerEntityObserver(this, this::repaint);
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		addMouseWheelListener(this);
@@ -67,7 +67,7 @@ public class SketchPanel<Path> extends JComponent implements
 			
 			this.confirmAction = () -> {
 				model.create(null, component);
-				model.selectComponent(null, component);
+				model.selectEntity(null, component);
 			};
 		}
 	}
@@ -118,7 +118,7 @@ public class SketchPanel<Path> extends JComponent implements
 		if(leftMouseDown(arg0)) {
 			// Clear previous candidates.
 			candidatePanel.updateCandidates(null);
-			model.selectComponent(null, null);
+			model.selectEntity(null, null);
 			
 			Point point = arg0.getPoint();
 			points.add(new PointR(point.x, point.y));
@@ -126,11 +126,11 @@ public class SketchPanel<Path> extends JComponent implements
 		}
 		
 		// Right mouse button down.
-		if(rightMouseDown(arg0) && (selected = model.getSelected()) != null) {
-			SketchEntityComponent init = model.getSelectedOriginal();
+		if(rightMouseDown(arg0) && (selected = model.getSelectedEntity()) != null) {
+			SketchEntityComponent init = model.getOriginalEntity();
 			selected.x = init.x + (arg0.getX() - initMouseX);
 			selected.y = init.y + (arg0.getY() - initMouseY);
-			model.notifySelectedChanged(null);
+			model.notifyEntityChanged(null);
 		}
 	}
 	
@@ -160,11 +160,11 @@ public class SketchPanel<Path> extends JComponent implements
 		
 		// Initial editing parameters when right clicked.
 		if(arg0.getButton() == MouseEvent.BUTTON3) {
-			model.selectComponent(null, null);
+			model.selectEntity(null, null);
 			SketchEntityComponent toSelect = 
 					model.componentAt(arg0.getX(), arg0.getY());
 			
-			model.selectComponent(null, toSelect);
+			model.selectEntity(null, toSelect);
 			if(toSelect == null) return;
 			focusSelected();
 			initMouseX = arg0.getX(); initMouseY = arg0.getY();
@@ -221,12 +221,12 @@ public class SketchPanel<Path> extends JComponent implements
 			// The stroke should touch the components.
 			SketchEntityComponent componentBegin = model
 					.componentAt(strokeBegin.intX(), strokeBegin.intY());
-			if(componentBegin == model.getSelected()) 
-				componentBegin = model.getSelectedOriginal();
+			if(componentBegin == model.getSelectedEntity()) 
+				componentBegin = model.getOriginalEntity();
 			SketchEntityComponent componentEnd = model
 					.componentAt(strokeEnd.intX(), strokeEnd.intY());
-			if(componentEnd == model.getSelected())
-				componentEnd = model.getSelectedOriginal();
+			if(componentEnd == model.getSelectedEntity())
+				componentEnd = model.getOriginalEntity();
 			if(componentBegin != null && componentEnd != null) {
 				for(LinkEntry link : model.getTemplate().links()) 
 					if(link.filter.test(componentBegin.entity, componentEnd.entity)) {
@@ -247,12 +247,12 @@ public class SketchPanel<Path> extends JComponent implements
 	
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
-		SketchEntityComponent selected = model.getSelected();
+		SketchEntityComponent selected = model.getSelectedEntity();
 		// Left button for stroke drawing.
 		if(arg0.getButton() == MouseEvent.BUTTON1) {
 			// Clear previous candidates.
 			candidatePanel.updateCandidates(null);
-			model.selectComponent(null, null);
+			model.selectEntity(null, null);
 			
 			// Transport the points to the troke.
 			if (points.size() > 1) 
@@ -288,9 +288,9 @@ public class SketchPanel<Path> extends JComponent implements
 			// Right mouse for location confirmation.
 			else if(selected != null) {
 				// Partial confirmation.
-				selected = model.getSelectedOriginal();
-				model.selectComponent(null, null);
-				model.selectComponent(null, selected);
+				selected = model.getOriginalEntity();
+				model.selectEntity(null, null);
+				model.selectEntity(null, selected);
 				focusSelected();
 				repaint();
 			}
@@ -342,10 +342,10 @@ public class SketchPanel<Path> extends JComponent implements
 		Rectangle2D boundDestination = current.destination.getBoundRectangle();
 		
 		// Judge whether the current object is selected, and replace with dynamic.
-		if(current.source == model.getSelectedOriginal())
-			boundSource = model.getSelected().getBoundRectangle();
-		if(current.destination == model.getSelectedOriginal())
-			boundDestination = model.getSelected().getBoundRectangle();
+		if(current.source == model.getOriginalEntity())
+			boundSource = model.getSelectedEntity().getBoundRectangle();
+		if(current.destination == model.getOriginalEntity())
+			boundDestination = model.getSelectedEntity().getBoundRectangle();
 		
 		// The concrete part of the rendering object.
 		current.entry.linkView.render(current.source.entity, 
@@ -356,7 +356,7 @@ public class SketchPanel<Path> extends JComponent implements
 	
 	@Override
 	public void paint(Graphics g) {
-		SketchEntityComponent selected = model.getSelected();
+		SketchEntityComponent selected = model.getSelectedEntity();
 		
 		g.setFont(Configuration.getInstance().HANDWRITING_FONT);
 		g.setColor(Color.WHITE);
@@ -419,15 +419,15 @@ public class SketchPanel<Path> extends JComponent implements
 
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent arg0) {
-		SketchEntityComponent selected = model.getSelected();
+		SketchEntityComponent selected = model.getSelectedEntity();
 		if(candidatePanel.numCandidates() > 0) {
-			model.selectComponent(null, null);
+			model.selectEntity(null, null);
 			candidatePanel.scroll((arg0
 					.getWheelRotation() > 0? 1 : -1));
 			repaint();
 		}
 		else if(selected != null){
-			SketchEntityComponent init = model.getSelectedOriginal();
+			SketchEntityComponent init = model.getOriginalEntity();
 			zoomMultiplier += arg0.getWheelRotation() > 0? -0.1 : +0.1;
 			if(zoomMultiplier < 0) zoomMultiplier = 
 					(float)Math.max(1.0 / init.w, 1.0 / init.h);
@@ -436,7 +436,7 @@ public class SketchPanel<Path> extends JComponent implements
 			selected.h = (int)(zoomMultiplier * init.h);
 			selected.x = (int)(init.x + init.w / 2 - zoomMultiplier / 2 * init.w);
 			selected.y = (int)(init.y + init.h / 2 - zoomMultiplier / 2 * init.h);
-			model.notifySelectedChanged(null);
+			model.notifyEntityChanged(null);
 		}
 	}
 
@@ -453,13 +453,13 @@ public class SketchPanel<Path> extends JComponent implements
 			}
 		}
 		
-		SketchEntityComponent selected = model.getSelected();
+		SketchEntityComponent selected = model.getSelectedEntity();
 		if(selected != null) {
 			if(e.getKeyCode() == KeyEvent.VK_DELETE)
 				// Remove the selected object if any.
 				model.destroy(null, selected);
 			else if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
-				model.selectComponent(null, null);
+				model.selectEntity(null, null);
 			else {
 				// Perform object moving if direction is pressed.
 				boolean moved = true;
@@ -486,7 +486,7 @@ public class SketchPanel<Path> extends JComponent implements
 						moved = false;
 						break;
 				}
-				if(moved) model.notifySelectedChanged(null);
+				if(moved) model.notifyEntityChanged(null);
 			}
 		}
 		

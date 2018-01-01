@@ -30,7 +30,7 @@ public class EntityComponentPanel extends JPanel {
 		result.setFont(Configuration.getInstance().EDITING_FONT);
 		result.setText(tag);
 		result.addActionListener(a -> {
-			SketchEntityComponent selected = model.getSelected();
+			SketchEntityComponent selected = model.getSelectedEntity();
 			if(selected != null) action.accept(null, selected);
 		});
 		operationPanel.add(result);
@@ -53,12 +53,12 @@ public class EntityComponentPanel extends JPanel {
 				if(currentText.length() == 0) return;
 				
 				int newValue = Integer.parseInt(currentText);
-				SketchEntityComponent selected = model.getSelected();
+				SketchEntityComponent selected = model.getSelectedEntity();
 				if(selected == null) return;
 				processing.accept(selected, newValue);
 				
 				// Notify change but retain the input location.
-				model.notifySelectedChanged(this);
+				model.notifyEntityChanged(this);
 			}
 			catch(Exception e) {	}
 		};
@@ -114,7 +114,7 @@ public class EntityComponentPanel extends JPanel {
 		this.h = this.createLocationField("H:", 
 				locationPanel, (c, v) -> c.h = v);
 		
-		model.connect(this, () -> updateComponent(model.getSelected()));
+		model.registerEntityObserver(this, () -> updateComponent(model.getSelectedEntity()));
 		updateComponent(null);
 	}
 	
@@ -153,7 +153,7 @@ public class EntityComponentPanel extends JPanel {
 		
 		// Set the property editing panel.
 		property = component.entry.propertyView.getViewObject(
-				e -> model.notifySelectedChanged(this));
+				e -> model.notifyEntityChanged(this));
 		if(property != null) {
 			component.entry.propertyView.updateEntity(component.entity);
 			super.add(property);

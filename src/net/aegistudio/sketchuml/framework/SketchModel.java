@@ -19,7 +19,7 @@ public interface SketchModel<Path> {
 	 * @param key the notifier's key.
 	 * @param component the component to set selected.
 	 */
-	public void selectComponent(Object key, SketchEntityComponent component);
+	public void selectEntity(Object key, SketchEntityComponent component);
 	
 	/**
 	 * @param key the notifier's key.
@@ -61,27 +61,27 @@ public interface SketchModel<Path> {
 	public SketchEntityComponent getEntity(int i);
 	
 	/**
-	 * Used to notify UI update if the underlying model is changed.
+	 * Used to notify when the underlying entity selection is changed.
 	 * 
 	 * @param sourceKey the object representing the caller object.
-	 * @param changeListener the closure the connect to model.
+	 * @param observer the closure the connect to model.
 	 */
-	public void connect(Object sourceKey, Runnable changeListener);
+	public void registerEntityObserver(Object sourceKey, Runnable observer);
 
 	/**
 	 * @return the current selected entity (not link).
 	 */
-	SketchEntityComponent getSelected();
+	SketchEntityComponent getSelectedEntity();
 
 	/**
 	 * @return the current selected entity's original object (not link).
 	 */
-	SketchEntityComponent getSelectedOriginal();
+	SketchEntityComponent getOriginalEntity();
 
 	/**
 	 * @param source the source's caller object.
 	 */
-	void notifySelectedChanged(Object source);
+	void notifyEntityChanged(Object source);
 	
 	/**
 	 * @return the number of links.

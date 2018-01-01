@@ -153,7 +153,7 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 
 	Map<Object, Runnable> connections = new HashMap<>();
 	@Override
-	public void connect(Object key, Runnable changeListener) {
+	public void registerEntityObserver(Object key, Runnable changeListener) {
 		connections.put(key, changeListener);
 	}
 	
@@ -162,7 +162,7 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 	}
 
 	@Override
-	public void selectComponent(Object key, SketchEntityComponent component) {
+	public void selectEntity(Object key, SketchEntityComponent component) {
 		int newSelectedIndex = -1;
 		if(component != null) 
 			newSelectedIndex = components.indexOf(component);
@@ -201,19 +201,19 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 	}
 	
 	@Override
-	public SketchEntityComponent getSelected() {
+	public SketchEntityComponent getSelectedEntity() {
 		if(selectedIndex < 0) return null;
 		return selectedComponent;
 	}
 	
 	@Override
-	public SketchEntityComponent getSelectedOriginal() {
+	public SketchEntityComponent getOriginalEntity() {
 		if(selectedIndex < 0) return null;
 		return components.get(selectedIndex);
 	}
 	
 	@Override
-	public void notifySelectedChanged(Object sourceObject) {
+	public void notifyEntityChanged(Object sourceObject) {
 		if(selectedIndex < 0) return;
 		notifyUpdate(sourceObject);
 	}
