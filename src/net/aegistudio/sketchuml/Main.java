@@ -20,6 +20,8 @@ import net.aegistudio.sketchuml.framework.DefaultSketchModel;
 import net.aegistudio.sketchuml.framework.EntityComponentPanel;
 import net.aegistudio.sketchuml.framework.SketchPanel;
 import net.aegistudio.sketchuml.path.DefaultPath;
+import net.aegistudio.sketchuml.path.DefaultPathManager;
+import net.aegistudio.sketchuml.path.DefaultPathView;
 import net.aegistudio.sketchuml.statechart.TemplateStateChart;
 import net.aegistudio.sketchuml.stroke.SketchRecognizer;
 
@@ -52,8 +54,10 @@ public class Main {
 		
 		// Initialize the recognizers.
 		SketchRecognizer recognizer = new SketchRecognizer(
-				new File("data"), templates[0].entities());
-		DefaultSketchModel<DefaultPath> model = new DefaultSketchModel<>(recognizer);
+				new File(Configuration.getInstance().GESTURE_PATH), 
+				templates[0].entities());
+		DefaultSketchModel<DefaultPath> model = 
+				new DefaultSketchModel<>(templates[0], recognizer);
 		recognizer.initializeNDollar();
 		
 		// Create the main frame.
@@ -67,9 +71,13 @@ public class Main {
 		CandidatePanel candidatePanel = new CandidatePanel();
 		frame.add(candidatePanel, BorderLayout.SOUTH);
 		
+		// Create the path manager and view.
+		DefaultPathManager pathManager = new DefaultPathManager();
+		DefaultPathView pathView = new DefaultPathView();
+		
 		// Create the sketch painting panel.
-		SketchPanel<DefaultPath> sketchPanel = 
-				new SketchPanel<>(candidatePanel, model);
+		SketchPanel<DefaultPath> sketchPanel = new SketchPanel<>(
+				candidatePanel, model, pathManager, pathView);
 		frame.add(sketchPanel, BorderLayout.CENTER);
 		
 		// Create the property panel.

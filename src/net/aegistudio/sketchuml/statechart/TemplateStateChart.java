@@ -1,9 +1,17 @@
 package net.aegistudio.sketchuml.statechart;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+import net.aegistudio.sketchuml.Entity;
 import net.aegistudio.sketchuml.EntityEntry;
+import net.aegistudio.sketchuml.LinkEntry;
+import net.aegistudio.sketchuml.LinkView;
 import net.aegistudio.sketchuml.Template;
 import net.aegistudio.sketchuml.general.EntityDecision;
 import net.aegistudio.sketchuml.general.EntityMetaDecision;
+import net.aegistudio.sketchuml.path.PathView;
 
 public class TemplateStateChart implements Template {
 	private final EntityStateStart entityStart = new EntityStateStart();
@@ -51,6 +59,29 @@ public class TemplateStateChart implements Template {
 		
 		return new EntityEntry[]{ stateStart, stateEnd, stateExit, 
 				stateBrief, stateComplete, decision };
+	}
+
+	@Override
+	public LinkEntry[] links() {
+		LinkEntry transition = new LinkEntry("Transition", 
+				"Transformation from a state to another.", 
+				() -> new Entity() {
+					@Override
+					public void load(DataInputStream inputStream) throws IOException {
+
+					}
+
+					@Override
+					public void save(DataOutputStream outputStream) throws IOException {
+						
+					}
+					
+				}, (e1, e2) -> true, null, (s, d, l) -> new LinkView.LinkRender() { {
+					beginStyle = PathView.ArrowStyle.NONE;
+					endStyle = PathView.ArrowStyle.FISHBONE;
+					lineStyle = PathView.LineStyle.COHERENT;
+				} });
+		return new LinkEntry[] { transition };
 	}
 
 }

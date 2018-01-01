@@ -1,5 +1,7 @@
 package net.aegistudio.sketchuml.framework;
 
+import java.awt.geom.Rectangle2D;
+
 import net.aegistudio.sketchuml.Entity;
 import net.aegistudio.sketchuml.EntityEntry;
 
@@ -13,5 +15,9 @@ public class SketchEntityComponent {
 	public SketchEntityComponent(EntityEntry entry, Entity entity) {
 		this.entity = entity;
 		this.entry = entry;
+	}
+	
+	public Rectangle2D getBoundRectangle() {
+		return new Rectangle2D.Double(x, y, w, h);
 	}
 }

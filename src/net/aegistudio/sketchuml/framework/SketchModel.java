@@ -1,5 +1,6 @@
 package net.aegistudio.sketchuml.framework;
 
+import net.aegistudio.sketchuml.Template;
 import net.aegistudio.sketchuml.stroke.SketchRecognizer;
 
 public interface SketchModel<Path> {
@@ -44,15 +45,20 @@ public interface SketchModel<Path> {
 	public SketchRecognizer getRecognizer();
 	
 	/**
-	 * @return the number of components.
+	 * @return the underlying template object.
 	 */
-	public int numComponents();
+	public Template getTemplate();
 	
 	/**
-	 * @param i the index of the component.
-	 * @return the i-th component.
+	 * @return the number of entities.
 	 */
-	public SketchEntityComponent get(int i);
+	public int numEntities();
+	
+	/**
+	 * @param i the index of the entity.
+	 * @return the i-th entity.
+	 */
+	public SketchEntityComponent getEntity(int i);
 	
 	/**
 	 * Used to notify UI update if the underlying model is changed.

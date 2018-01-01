@@ -4,8 +4,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 
 public class LinkEntry {
-	public final String entry;
-	
 	public final String name;
 	
 	public final String description;
@@ -18,11 +16,10 @@ public class LinkEntry {
 	
 	public final LinkView linkView;
 	
-	public LinkEntry(String entry, String name,
-			String description, Supplier<Entity> factory,
+	public LinkEntry(String name, String description, 
+			Supplier<Entity> factory,
 			BiPredicate<Entity, Entity> filter,
 			PropertyView propertyView, LinkView linkView) {
-		this.entry = entry;
 		this.name = name;
 		this.description = description;
 		this.factory = factory;

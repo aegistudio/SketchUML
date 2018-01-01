@@ -9,6 +9,8 @@ public class Configuration {
 	/** Will the program recognize strokes soon after painting */
 	public boolean INSTANT_RECOGNIZE = true;
 
+	/** The path to find the gesture notations. */
+	public String GESTURE_PATH = "data";
 	
 	// Begin handwriting font's configuration.
 	/** The hand writing font's name */

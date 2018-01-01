@@ -5,9 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.aegistudio.sketchuml.Template;
 import net.aegistudio.sketchuml.stroke.SketchRecognizer;
 
 public class DefaultSketchModel<Path> implements SketchModel<Path> {
+	private final Template template;
 	private final SketchRecognizer recognizer;
 	private final List<SketchEntityComponent> components;
 	private final List<SketchLinkComponent<Path>> links;
@@ -15,7 +17,8 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 	private int selectedIndex = -1;
 	private SketchEntityComponent selectedComponent;
 	
-	public DefaultSketchModel(SketchRecognizer recognizer) {
+	public DefaultSketchModel(Template template, SketchRecognizer recognizer) {
+		this.template = template;
 		this.recognizer = recognizer;
 		this.components = new ArrayList<>();
 		this.links = new ArrayList<>();
@@ -63,8 +66,8 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 	public void destroy(Object key, SketchEntityComponent component) {
 		// Judge whether the component to remove is selected.
 		if(isSelected(component)) {
-			if(components.remove(selectedIndex) != null) 
-				links.removeIf(l -> l.relatedTo(component));
+			SketchEntityComponent original = components.remove(selectedIndex);
+			if(original != null) links.removeIf(l -> l.relatedTo(original));
 			selectedIndex = -1;
 			selectedComponent = null;
 			notifyUpdate(key);
@@ -132,12 +135,17 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 	}
 
 	@Override
-	public int numComponents() {
+	public Template getTemplate() {
+		return template;
+	}
+	
+	@Override
+	public int numEntities() {
 		return components.size();
 	}
 	
 	@Override
-	public SketchEntityComponent get(int i) {
+	public SketchEntityComponent getEntity(int i) {
 		if(i == selectedIndex)
 			return selectedComponent;
 		return components.get(i);
@@ -163,7 +171,12 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 		if(selectedIndex != newSelectedIndex) {
 			if(selectedIndex >= 0) {
 				// Replace the selection.
-				components.set(selectedIndex, selectedComponent);
+				SketchEntityComponent original 
+					= components.get(selectedIndex);
+				original.x = selectedComponent.x;
+				original.y = selectedComponent.y;
+				original.w = selectedComponent.w;
+				original.h = selectedComponent.h;
 				selectedComponent = null;
 				selectedIndex = -1;
 				isUpdated = true;
