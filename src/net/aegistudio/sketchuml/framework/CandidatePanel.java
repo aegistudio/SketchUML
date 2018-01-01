@@ -71,14 +71,14 @@ public class CandidatePanel extends JPanel {
 		repaint();
 	}
 	
-	public void updateCandidate(CandidateObject[] candidates) {
+	public void updateCandidates(CandidateObject[] candidates) {
 		this.candidates = candidates;
 		this.candidateIndex = 0;
 		
 		updateContent();
 	}
 	
-	public void updateCandidateIndex(int index) {
+	public void select(int index) {
 		this.candidateIndex = index;
 		updateContent();
 	}
@@ -90,7 +90,7 @@ public class CandidatePanel extends JPanel {
 		candidates[candidateIndex].scrollAction.run();
 	}
 	
-	public int getCandidateIndex() {
+	public int index() {
 		return this.candidateIndex;
 	}
 	
@@ -107,14 +107,14 @@ public class CandidatePanel extends JPanel {
 				Configuration.getInstance().MAX_CANDIDATE) : 0;
 	}
 	
-	public void confirmCurrent() {
+	public void confirm() {
 		if(		candidates == null || 
 				candidateIndex < 0 || 
 				candidateIndex > candidates.length) return;
 		candidates[candidateIndex].confirmAction.run();
 	}
 	
-	public CandidateObject getCurrent() {
+	public CandidateObject current() {
 		if(numCandidates() == 0) return null;
 		return candidates[candidateIndex];
 	}

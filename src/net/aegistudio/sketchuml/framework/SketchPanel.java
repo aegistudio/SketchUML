@@ -87,7 +87,7 @@ public class SketchPanel<Path> extends JComponent implements
 		// Left mouse button down, then regard it as stroke input.
 		if(leftMouseDown(arg0)) {
 			// Clear previous candidates.
-			candidatePanel.updateCandidate(null);
+			candidatePanel.updateCandidates(null);
 			model.selectComponent(null, null);
 			
 			Point point = arg0.getPoint();
@@ -146,7 +146,7 @@ public class SketchPanel<Path> extends JComponent implements
 	private void resetInputState() {
 		points.clear();
 		strokes.clear();
-		candidatePanel.updateCandidate(null); 
+		candidatePanel.updateCandidates(null); 
 	}
 	
 	private void performRecognition() {
@@ -179,7 +179,7 @@ public class SketchPanel<Path> extends JComponent implements
 		boxW = maxX - minX;	boxH = maxY - minY;
 		
 		// Render the first candidate.
-		candidatePanel.updateCandidate(Arrays.stream(entityCandidates)
+		candidatePanel.updateCandidates(Arrays.stream(entityCandidates)
 				.map(ComponentCandidate::new)
 				.toArray(CandidatePanel.CandidateObject[]::new));
 	}
@@ -190,7 +190,7 @@ public class SketchPanel<Path> extends JComponent implements
 		// Left button for stroke drawing.
 		if(arg0.getButton() == MouseEvent.BUTTON1) {
 			// Clear previous candidates.
-			candidatePanel.updateCandidate(null);
+			candidatePanel.updateCandidates(null);
 			model.selectComponent(null, null);
 			
 			// Transport the points to the troke.
@@ -218,7 +218,7 @@ public class SketchPanel<Path> extends JComponent implements
 			
 			// Right mouse for result confirmation.
 			else if(candidatePanel.numCandidates() > 0) {
-				candidatePanel.confirmCurrent();
+				candidatePanel.confirm();
 				focusSelected();
 				resetInputState();
 				repaint();
@@ -297,7 +297,7 @@ public class SketchPanel<Path> extends JComponent implements
 		}
 		
 		// Render the candidate object.
-		CandidatePanel.CandidateObject candidate = candidatePanel.getCurrent();
+		CandidatePanel.CandidateObject candidate = candidatePanel.current();
 		if(candidate instanceof SketchPanel.ComponentCandidate) {
 			// The current candidate object is a component.
 			@SuppressWarnings("unchecked")
@@ -351,8 +351,9 @@ public class SketchPanel<Path> extends JComponent implements
 		int numCandidates = candidatePanel.numCandidates();
 		if(numCandidates > 0) {
 			int keyIndex = e.getKeyCode() - KeyEvent.VK_1;
-			if(keyIndex >= 0 && keyIndex < numCandidates) {
-				candidatePanel.updateCandidateIndex(keyIndex);
+			if(keyIndex >= 0 && keyIndex <= 9 && 
+					keyIndex < numCandidates) {
+				candidatePanel.select(keyIndex);
 				return;
 			}
 		}
@@ -362,6 +363,8 @@ public class SketchPanel<Path> extends JComponent implements
 			if(e.getKeyCode() == KeyEvent.VK_DELETE)
 				// Remove the selected object if any.
 				model.destroy(null, selected);
+			else if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
+				model.selectComponent(null, null);
 			else {
 				// Perform object moving if direction is pressed.
 				boolean moved = true;
@@ -390,6 +393,12 @@ public class SketchPanel<Path> extends JComponent implements
 				}
 				if(moved) model.notifySelectedChanged(null);
 			}
+		}
+		
+		// For other cases, just clear all strokes and state and paint.
+		if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+			resetInputState();
+			repaint();
 		}
 	}
 
