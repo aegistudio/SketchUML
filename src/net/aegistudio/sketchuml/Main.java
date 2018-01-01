@@ -1,24 +1,21 @@
 package net.aegistudio.sketchuml;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
+import net.aegistudio.sketchuml.framework.CandidatePanel;
 import net.aegistudio.sketchuml.framework.DefaultSketchModel;
 import net.aegistudio.sketchuml.framework.EntityComponentPanel;
 import net.aegistudio.sketchuml.framework.SketchPanel;
@@ -66,8 +63,13 @@ public class Main {
 		frame.setLocation(0, 0);
 		frame.setSize(1400, 768);
 		
+		// Add the result selection panel.
+		CandidatePanel candidatePanel = new CandidatePanel();
+		frame.add(candidatePanel, BorderLayout.SOUTH);
+		
 		// Create the sketch painting panel.
-		SketchPanel<DefaultPath> sketchPanel = new SketchPanel<>(model);
+		SketchPanel<DefaultPath> sketchPanel = 
+				new SketchPanel<>(candidatePanel, model);
 		frame.add(sketchPanel, BorderLayout.CENTER);
 		
 		// Create the property panel.
@@ -76,44 +78,6 @@ public class Main {
 			= new EntityComponentPanel(model);
 		propertyTempPanel.add(propertyPanel);
 		frame.add(propertyTempPanel, BorderLayout.EAST);
-		
-		// Add the result selection panel.
-		JPanel selectionPanel = new JPanel();
-		JLabel[] selectionLabels = new JLabel[
-			Configuration.getInstance().MAX_CANDIDATE];
-		frame.add(selectionPanel, BorderLayout.SOUTH);
-		for(int i = 0; i < selectionLabels.length; ++ i) {
-			final int current = i;
-			selectionLabels[i] = new JLabel();
-			selectionLabels[i].setPreferredSize(new Dimension(180, 30));
-			selectionLabels[i].setHorizontalAlignment(JLabel.CENTER);
-			selectionPanel.add(selectionLabels[i]);
-			selectionLabels[i].setFont(Configuration
-					.getInstance().HANDWRITING_FONT);
-			selectionLabels[i].addMouseListener(new MouseAdapter() {
-				public void mouseClicked(MouseEvent me) {
-					sketchPanel.selectCandidate(current);
-				}
-			});
-		}
-		
-		// Update selection panel while sketch scrolling.
-		sketchPanel.candidateNotifier = () -> {
-			for(JLabel label : selectionLabels)
-				label.setText("");
-			if(sketchPanel.candidates != null) {
-				for(int i = 0; i < sketchPanel.candidates.length && 
-						i < Configuration.getInstance().MAX_CANDIDATE; ++ i) {
-					String nameText = "" + (i + 1) + ": " 
-						+ sketchPanel.candidates[i].name;
-					selectionLabels[i].setText(
-						(sketchPanel.candidateIndex != i)? nameText :
-							"<html><b style=\"background:yellow\">" 
-							+ nameText + "</b></html>");
-				}
-			}
-			selectionPanel.repaint();
-		};
 		
 		// Create the keyboard capture's listener.
 		frame.addKeyListener(new KeyAdapter() {

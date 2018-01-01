@@ -13,6 +13,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Rectangle2D;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Vector;import javax.swing.JComponent;
 
@@ -26,14 +27,39 @@ public class SketchPanel<Path> extends JComponent implements
 	
 	private static final long serialVersionUID = 1L;
 	private final SketchModel<Path> model;
+	private final CandidatePanel candidatePanel;
 	
-	public SketchPanel(SketchModel<Path> model) {
+	public SketchPanel(CandidatePanel candidatePanel, 
+			SketchModel<Path> model) {
+		
 		this.model = model;
+		this.candidatePanel = candidatePanel;
 		model.connect(this, this::repaint);
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		addMouseWheelListener(this);
 		addKeyListener(this);
+	}
+	
+	private class ComponentCandidate extends CandidatePanel.CandidateObject {
+		private final SketchEntityComponent component;
+		public ComponentCandidate(EntityEntry entry) {
+			this.component = new SketchEntityComponent(
+					entry, entry.factory.get());
+			this.color = "yellow";
+			this.text = entry.name;
+			
+			this.scrollAction = () -> {
+				component.x = boxX;	component.y = boxY;
+				component.w = boxW;	component.h = boxH;
+				repaint();
+			};
+			
+			this.confirmAction = () -> {
+				model.create(null, component);
+				model.selectComponent(null, component);
+			};
+		}
 	}
 	
 	// Current stroke painting points.
@@ -61,8 +87,7 @@ public class SketchPanel<Path> extends JComponent implements
 		// Left mouse button down, then regard it as stroke input.
 		if(leftMouseDown(arg0)) {
 			// Clear previous candidates.
-			candidate = null; candidates = null;
-			updateCandidateObject();
+			candidatePanel.updateCandidate(null);
 			model.selectComponent(null, null);
 			
 			Point point = arg0.getPoint();
@@ -101,6 +126,7 @@ public class SketchPanel<Path> extends JComponent implements
 	@Override
 	public void mousePressed(MouseEvent arg0) {
 		this.requestFocusInWindow();
+		if(candidatePanel.numCandidates() > 0) return;
 		
 		// Initial editing parameters when right clicked.
 		if(arg0.getButton() == MouseEvent.BUTTON3) {
@@ -115,39 +141,12 @@ public class SketchPanel<Path> extends JComponent implements
 		}
 	}
 
-	public EntityEntry[] candidates = null;
-	public int candidateIndex = 0;
-	public Runnable candidateNotifier = null;
 	private int boxX, boxY, boxW, boxH;
-	private SketchEntityComponent candidate = null;
-	
-	public void selectCandidate(int index) {
-		candidateIndex = index;
-		updateCandidateObject();
-		repaint();
-	}
 
 	private void resetInputState() {
-		candidate = null;
-		candidates = null;
 		points.clear();
 		strokes.clear();
-		
-		if(candidateNotifier != null)
-			candidateNotifier.run(); 
-	}
-	
-	private void updateCandidateObject() {
-		if(candidates != null) {
-			candidate = new SketchEntityComponent(
-					candidates[candidateIndex], 
-					candidates[candidateIndex].factory.get());
-			candidate.x = boxX;	candidate.y = boxY;
-			candidate.w = boxW;	candidate.h = boxH;
-		}
-		
-		if(candidateNotifier != null)
-			candidateNotifier.run(); 
+		candidatePanel.updateCandidate(null); 
 	}
 	
 	private void performRecognition() {
@@ -159,9 +158,10 @@ public class SketchPanel<Path> extends JComponent implements
 		}
 		
 		// Recognize input stroke.
-		candidates = model.getRecognizer().recognize(allPoints, strokes.size());
-		if(candidates == null) return;
-		if(candidates.length == 0) { candidates = null; return; }
+		EntityEntry[] entityCandidates = model
+				.getRecognizer().recognize(allPoints, strokes.size());
+		if(entityCandidates == null) return;
+		if(entityCandidates.length == 0) return;
 		
 		// Find the boundary of points.
 		int minX = allPoints.get(0).intX(); 
@@ -179,8 +179,9 @@ public class SketchPanel<Path> extends JComponent implements
 		boxW = maxX - minX;	boxH = maxY - minY;
 		
 		// Render the first candidate.
-		candidateIndex = 0;
-		updateCandidateObject();
+		candidatePanel.updateCandidate(Arrays.stream(entityCandidates)
+				.map(ComponentCandidate::new)
+				.toArray(CandidatePanel.CandidateObject[]::new));
 	}
 	
 	@Override
@@ -189,8 +190,8 @@ public class SketchPanel<Path> extends JComponent implements
 		// Left button for stroke drawing.
 		if(arg0.getButton() == MouseEvent.BUTTON1) {
 			// Clear previous candidates.
+			candidatePanel.updateCandidate(null);
 			model.selectComponent(null, null);
-			candidate = null; candidates = null;
 			
 			// Transport the points to the troke.
 			if (points.size() > 1) 
@@ -209,16 +210,15 @@ public class SketchPanel<Path> extends JComponent implements
 		else if(arg0.getButton() == MouseEvent.BUTTON3) {
 			
 			// Right mouse for stroke recognizing.
-			if(candidates == null && strokes.size() > 0) {
+			if(candidatePanel.numCandidates() == 0 && strokes.size() > 0) {
 				if(!Configuration.getInstance().INSTANT_RECOGNIZE)
 					performRecognition();
 				repaint();
 			}
 			
 			// Right mouse for result confirmation.
-			else if(candidate != null) {
-				model.create(null, candidate);
-				model.selectComponent(null, candidate);
+			else if(candidatePanel.numCandidates() > 0) {
+				candidatePanel.confirmCurrent();
 				focusSelected();
 				resetInputState();
 				repaint();
@@ -297,7 +297,14 @@ public class SketchPanel<Path> extends JComponent implements
 		}
 		
 		// Render the candidate object.
-		if(candidate != null) paintSketchComponent(g, candidate, true);
+		CandidatePanel.CandidateObject candidate = candidatePanel.getCurrent();
+		if(candidate instanceof SketchPanel.ComponentCandidate) {
+			// The current candidate object is a component.
+			@SuppressWarnings("unchecked")
+			SketchPanel<Path>.ComponentCandidate componentCandidate 
+				= (SketchPanel<Path>.ComponentCandidate) candidate;
+			paintSketchComponent(g, componentCandidate.component, true);
+		}
 		
 		// Render the newly painting stroke.
 		g2d.setStroke(new BasicStroke(2));
@@ -318,17 +325,10 @@ public class SketchPanel<Path> extends JComponent implements
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent arg0) {
 		SketchEntityComponent selected = model.getSelected();
-		if(candidates != null && candidates.length > 0) {
+		if(candidatePanel.numCandidates() > 0) {
 			model.selectComponent(null, null);
-			int base =  Math.min(Configuration.getInstance()
-					.MAX_CANDIDATE, candidates.length);
-			// Modulus rotation of mouse wheel.
-			candidateIndex = (candidateIndex + 
-					(arg0.getWheelRotation() > 0? 1 : -1)) % base;
-			if(candidateIndex < 0) candidateIndex += base;
-			
-			// Generate new preview object.
-			updateCandidateObject();
+			candidatePanel.scroll((arg0
+					.getWheelRotation() > 0? 1 : -1));
 			repaint();
 		}
 		else if(selected != null){
@@ -348,12 +348,11 @@ public class SketchPanel<Path> extends JComponent implements
 	@Override
 	public void keyPressed(KeyEvent e) {
 		// Select the candidate via keyboard input.
-		if(candidates != null && candidates.length > 0) {
+		int numCandidates = candidatePanel.numCandidates();
+		if(numCandidates > 0) {
 			int keyIndex = e.getKeyCode() - KeyEvent.VK_1;
-			if(keyIndex >= 0 && keyIndex < candidates.length) {
-				candidateIndex = keyIndex;
-				updateCandidateObject();
-				repaint();
+			if(keyIndex >= 0 && keyIndex < numCandidates) {
+				candidatePanel.updateCandidateIndex(keyIndex);
 				return;
 			}
 		}
