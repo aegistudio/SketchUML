@@ -141,7 +141,7 @@ public class SketchPanel extends JComponent implements
 		if(candidates != null) {
 			candidate = new SketchEntityComponent(
 					candidates[candidateIndex], 
-					candidates[candidateIndex].factory.create());
+					candidates[candidateIndex].factory.get());
 			candidate.x = boxX;	candidate.y = boxY;
 			candidate.w = boxW;	candidate.h = boxH;
 		}

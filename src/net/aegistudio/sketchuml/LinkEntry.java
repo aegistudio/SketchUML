@@ -1,14 +1,9 @@
 package net.aegistudio.sketchuml;
 
+import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 
-/**
- * A low level entry that serves as candidate of
- * editing and recognizing stroke.
- * 
- * @author Haoran
- */
-public class EntityEntry {
+public class LinkEntry {
 	public final String entry;
 	
 	public final String name;
@@ -17,18 +12,22 @@ public class EntityEntry {
 	
 	public final Supplier<Entity> factory;
 	
+	public final BiPredicate<Entity, Entity> filter;
+	
 	public final PropertyView propertyView;
 	
-	public final SketchView sketchView;
+	public final LinkView linkView;
 	
-	public EntityEntry(String entry, String name,
+	public LinkEntry(String entry, String name,
 			String description, Supplier<Entity> factory,
-			PropertyView propertyView, SketchView sketchView) {
+			BiPredicate<Entity, Entity> filter,
+			PropertyView propertyView, LinkView linkView) {
 		this.entry = entry;
 		this.name = name;
 		this.description = description;
 		this.factory = factory;
+		this.filter = filter;
 		this.propertyView = propertyView;
-		this.sketchView = sketchView;
+		this.linkView = linkView;
 	}
 }

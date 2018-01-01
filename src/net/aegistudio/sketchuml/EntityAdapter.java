@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * The simplest entity that stores no data or state, and will be 
@@ -13,8 +14,10 @@ import java.util.function.Consumer;
  * 
  * @author Haoran Luo
  */
-public abstract class EntityAdapter implements Entity, PropertyView, SketchView, EntityFactory {
-	public Entity create() { return this; }
+public abstract class EntityAdapter implements Entity, 
+	PropertyView, SketchView, Supplier<Entity> {
+	
+	public Entity get() { return this; }
 	
 	@Override
 	public void load(DataInputStream inputStream) throws IOException {
