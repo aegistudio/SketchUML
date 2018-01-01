@@ -18,7 +18,7 @@ import net.aegistudio.sketchuml.Configuration;
 
 public class EntityComponentPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
-	private final SketchModel model;
+	private final SketchModel<?> model;
 	private Component property;
 	
 	// The editing operations.
@@ -83,7 +83,7 @@ public class EntityComponentPanel extends JPanel {
 		return field;
 	}
 	
-	public EntityComponentPanel(SketchModel model) {
+	public EntityComponentPanel(SketchModel<?> model) {
 		this.model = model;
 		super.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		

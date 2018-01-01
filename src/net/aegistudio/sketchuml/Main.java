@@ -22,6 +22,7 @@ import javax.swing.UIManager;
 import net.aegistudio.sketchuml.framework.DefaultSketchModel;
 import net.aegistudio.sketchuml.framework.EntityComponentPanel;
 import net.aegistudio.sketchuml.framework.SketchPanel;
+import net.aegistudio.sketchuml.path.DefaultPath;
 import net.aegistudio.sketchuml.statechart.TemplateStateChart;
 import net.aegistudio.sketchuml.stroke.SketchRecognizer;
 
@@ -55,7 +56,7 @@ public class Main {
 		// Initialize the recognizers.
 		SketchRecognizer recognizer = new SketchRecognizer(
 				new File("data"), templates[0].entities());
-		DefaultSketchModel model = new DefaultSketchModel(recognizer);
+		DefaultSketchModel<DefaultPath> model = new DefaultSketchModel<>(recognizer);
 		recognizer.initializeNDollar();
 		
 		// Create the main frame.
@@ -66,7 +67,7 @@ public class Main {
 		frame.setSize(1400, 768);
 		
 		// Create the sketch painting panel.
-		SketchPanel sketchPanel = new SketchPanel(model);
+		SketchPanel<DefaultPath> sketchPanel = new SketchPanel<>(model);
 		frame.add(sketchPanel, BorderLayout.CENTER);
 		
 		// Create the property panel.

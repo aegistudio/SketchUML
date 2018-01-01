@@ -7,15 +7,18 @@ import java.util.Map;
 
 import net.aegistudio.sketchuml.stroke.SketchRecognizer;
 
-public class DefaultSketchModel implements SketchModel {
+public class DefaultSketchModel<Path> implements SketchModel<Path> {
 	private final SketchRecognizer recognizer;
 	private final List<SketchEntityComponent> components;
+	private final List<SketchLinkComponent<Path>> links;
+	
 	private int selectedIndex = -1;
 	private SketchEntityComponent selectedComponent;
 	
 	public DefaultSketchModel(SketchRecognizer recognizer) {
 		this.recognizer = recognizer;
 		this.components = new ArrayList<>();
+		this.links = new ArrayList<>();
 	}
 	
 	/**
@@ -60,7 +63,8 @@ public class DefaultSketchModel implements SketchModel {
 	public void destroy(Object key, SketchEntityComponent component) {
 		// Judge whether the component to remove is selected.
 		if(isSelected(component)) {
-			components.remove(selectedIndex);
+			if(components.remove(selectedIndex) != null) 
+				links.removeIf(l -> l.relatedTo(component));
 			selectedIndex = -1;
 			selectedComponent = null;
 			notifyUpdate(key);
@@ -72,6 +76,7 @@ public class DefaultSketchModel implements SketchModel {
 			
 			// Remove the component by status.
 			if((components.remove(index)) == null) return;
+			links.removeIf(l -> l.relatedTo(component));
 			if(index < selectedIndex) selectedIndex --;
 			notifyUpdate(key);
 		}
@@ -198,5 +203,27 @@ public class DefaultSketchModel implements SketchModel {
 	public void notifySelectedChanged(Object sourceObject) {
 		if(selectedIndex < 0) return;
 		notifyUpdate(sourceObject);
+	}
+	
+	// Link related operations.
+
+	@Override
+	public int numLinks() {
+		return links.size();
+	}
+
+	@Override
+	public void link(SketchLinkComponent<Path> link) {
+		links.add(link);
+	}
+
+	@Override
+	public void unlink(SketchLinkComponent<Path> link) {
+		links.remove(link);
+	}
+
+	@Override
+	public SketchLinkComponent<Path> getLink(int i) {
+		return links.get(i);
 	}
 }

@@ -57,8 +57,7 @@ public class DefaultPathView implements PathView<DefaultPath> {
 			evaluator.evaluate(t, resultIntersection);
 			
 			// Check whether there's intersection.
-			if(!rect.contains(resultIntersection.X, 
-					resultIntersection.Y)) {
+			if(!resultIntersection.inside(rect)) {
 				evaluator.tangent(t, resultDirection);
 				return;
 			}
@@ -139,8 +138,8 @@ public class DefaultPathView implements PathView<DefaultPath> {
 				PointR current = new PointR();
 				int[] bx = new int[BEZIER_RENDER + 1];
 				int[] by = new int[BEZIER_RENDER + 1];
-				for(int j = 0; j <= 20; ++ j) {
-					evaluator.evaluate(1.0 / 20 * j, current);
+				for(int j = 0; j <= BEZIER_RENDER; ++ j) {
+					evaluator.evaluate(1.0 / BEZIER_RENDER * j, current);
 					bx[j] = (int)current.X;
 					by[j] = (int)current.Y;
 				}
@@ -259,4 +258,100 @@ public class DefaultPathView implements PathView<DefaultPath> {
 		}
 	}
 
+	private double lineDistance(PointR pBegin, PointR pEnd, PointR position) {
+		PointR connect = new PointR();
+		PointR evaluate0 = new PointR();
+		PointR evaluate1 = new PointR();
+		
+		// Convert into point difference.
+		connect.combine(1, pEnd, -1, pBegin);
+		evaluate0.combine(1, position, -1, pBegin);
+		evaluate1.combine(1, position, -1, pEnd);
+		
+		// Notice, the connect is normalized.
+		double modulus = connect.normalize();
+		
+		if(modulus == 0) 
+			return evaluate0.normalize();
+		else {
+			double d1 = connect.dot(evaluate0);
+			double d2 = connect.dot(evaluate1);
+			
+			if(d1 * d2 >= 0) return Math.min(
+				evaluate0.modulus(), evaluate1.modulus());
+			else {
+				double dot = connect.dot(evaluate0);
+				double p01 = evaluate0.modulus();
+				return Math.sqrt(p01 * p01 - dot * dot);
+			}
+		}
+	}
+	
+	@Override
+	public double distance(DefaultPath pathObject, PointR position, 
+			Rectangle2D boundBegin, Rectangle2D boundEnd) {
+		double distance = Double.POSITIVE_INFINITY;
+		
+		// Can never select the internal part of a bounding box.
+		if(position.inside(boundBegin)) return distance;
+		if(position.inside(boundEnd)) return distance;
+		
+		// Collect path object information.
+		int numPoints = pathObject.separatePoints.size();
+		PointR pointBegin = new PointR(
+				boundBegin.getCenterX(), 
+				boundBegin.getCenterY());
+		PointR pointEnd = new PointR(
+				boundEnd.getCenterX(), 
+				boundEnd.getCenterY());
+		PointR[] points = new PointR[numPoints + 2];
+		points[0] = pointBegin;
+		points[points.length - 1] = pointEnd;
+		for(int i = 0; i < numPoints; ++ i) 
+			points[i + 1] = pathObject.separatePoints.get(i);
+
+		// Perform calculation.
+		for(int i = 0; i < numPoints + 1; ++ i) {
+			PointR pBegin = points[i];
+			PointR pEnd = points[i + 1];
+			
+			if(pathObject.controlPoints.size() <= i || 
+					pathObject.controlPoints.get(i) == null) {
+				// Treat current piece of stroke as line.
+				double lineDistance = Double.POSITIVE_INFINITY;
+				lineDistance = lineDistance(pBegin, pEnd, position);
+				
+				// Update distance.
+				if(lineDistance < distance)
+					distance = lineDistance;
+			}
+			else {
+				// Retrieve control point and calculate.
+				PointR control = pathObject.controlPoints.get(i);
+				BezierEvaluator evaluator = new BezierEvaluator(
+						points[i], control, points[i + 1]);
+				
+				PointR current = new PointR();
+				PointR previous = new PointR();
+				evaluator.evaluate(0, previous);
+				for(int j = 1; j <= BEZIER_RENDER; ++ j) {
+					evaluator.evaluate(1.0 / BEZIER_RENDER * j, current);
+					
+					// Calculate distance.
+					double bezierDistance = lineDistance(
+							current, previous, position);
+					if(bezierDistance < distance)
+						distance = bezierDistance;
+					
+					// Swap reference between current and previous.
+					PointR temp = current;
+					current = previous;
+					previous = temp;
+				}
+				
+			}
+		}
+		return distance;
+	}
+	
 }

@@ -3,6 +3,8 @@ package net.aegistudio.sketchuml.path;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 
+import de.dubs.dollarn.PointR;
+
 public interface PathView<Path> {
 	public enum ArrowStyle {
 		NONE,				// --
@@ -34,4 +36,16 @@ public interface PathView<Path> {
 			Path pathObject, LineStyle line,
 			Rectangle2D boundBegin, ArrowStyle arrowBegin, 
 			Rectangle2D boundEnd, ArrowStyle arrowEnd);
+	
+	/**
+	 * Retrieve the minimal distance between a point and the path.
+	 * 
+	 * @param pathObject the path object
+	 * @param position the point to check
+	 * @param boundBegin the begin object's bound
+	 * @param boundEnd the end object's bound
+	 * @return the minimal distance.
+	 */
+	public double distance(Path pathObject, PointR position, 
+			Rectangle2D boundBegin, Rectangle2D boundEnd);
 }

@@ -21,13 +21,13 @@ import net.aegistudio.sketchuml.Configuration;
 import net.aegistudio.sketchuml.EntityEntry;
 import net.aegistudio.sketchuml.SketchView;
 
-public class SketchPanel extends JComponent implements 
+public class SketchPanel<Path> extends JComponent implements 
 	MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
 	
 	private static final long serialVersionUID = 1L;
-	private final SketchModel model;
+	private final SketchModel<Path> model;
 	
-	public SketchPanel(SketchModel model) {
+	public SketchPanel(SketchModel<Path> model) {
 		this.model = model;
 		model.connect(this, this::repaint);
 		addMouseListener(this);

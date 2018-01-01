@@ -21,8 +21,7 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 			PointR pointBegin, PointR pointEnd) {
 		
 		// Calculate difference and modulus.
-		result.X = pointEnd.X - pointBegin.X;
-		result.Y = pointEnd.Y - pointBegin.Y;
+		result.combine(-1, pointBegin, 1, pointEnd);
 		return result.normalize();
 	}
 	
@@ -32,8 +31,7 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 		double area = 0.0;
 		for(int j = begin; j <= end; ++ j) {
 			PointR tangentPoint = tangent[j];
-			double cosine = tangentPoint.X * axis.X 
-					+ tangentPoint.Y * axis.Y;
+			double cosine = tangentPoint.dot(axis);
 			area += Math.sqrt(1 - cosine * cosine) * modulus[j];
 		}
 		return area;
@@ -61,8 +59,8 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 	public DefaultPath quantize(Vector<PointR> stroke, 
 			Rectangle2D boundBegin, Rectangle2D boundEnd) {
 		DefaultPath resultPath = new DefaultPath();
-		stroke.removeIf(point -> boundBegin.contains(point.X, point.Y));
-		stroke.removeIf(point -> boundEnd.contains(point.X, point.Y));
+		stroke.removeIf(point -> point.inside(boundBegin));
+		stroke.removeIf(point -> point.inside(boundEnd));
 		
 		// Calculate tangent line for every two points, 
 		// including the end and begin.
@@ -139,8 +137,7 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 			PointR current = points.get(j);
 			minusModulus(lastTangent, 
 					pointEnd, current);
-			if(!boundEnd.contains(
-					current.X, current.Y)) break;
+			if(!current.inside(boundEnd)) break;
 		}
 		representIndex.add(points.size() - 1);
 		representTangent.add(lastTangent);*/
@@ -169,9 +166,8 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 			double dy = after.Y - before.Y;
 			double t = - (afterTangent.Y * dx 
 					- afterTangent.X * dy) / delta;
-			double xi = before.X + beforeTangent.X * t;
-			double yi = before.Y + beforeTangent.Y * t;
-			PointR intersect = new PointR(xi, yi);
+			PointR intersect = new PointR();
+			intersect.combine(1, before, t, beforeTangent);
 			
 			// Calculate midpoint index for current strip.
 			double midPointIndex = midpoint(startIndex, endIndex, modulus);
@@ -254,8 +250,7 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 							resultPath.separatePoints.get(i) : pointEnd);
 			controlVector1.normalize();
 			
-			if(Math.abs(controlVector0.X * controlVector1.X + controlVector0.Y 
-					* controlVector1.Y) >= 1.0)
+			if(Math.abs(controlVector0.dot(controlVector1)) >= 1.0)
 				resultPath.controlPoints.set(i, null);
 		}
 		

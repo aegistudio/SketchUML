@@ -21,4 +21,8 @@ public class SketchLinkComponent<Path> {
 		this.destination = destination;
 		this.pathObject = pathObject;
 	}
+	
+	public boolean relatedTo(SketchEntityComponent c) {
+		return source == c || destination == c;
+	}
 }

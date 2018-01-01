@@ -1,5 +1,6 @@
 package net.aegistudio.sketchuml.path;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -10,6 +11,7 @@ import java.util.Vector;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 import de.dubs.dollarn.PointR;
 
@@ -24,6 +26,8 @@ public class PathPreview extends JComponent {
 	
 	private Rectangle2D boundBegin = new Rectangle2D.Double(165, 100, 50, 70);
 	private Rectangle2D boundEnd = new Rectangle2D.Double(365, 100, 50, 70);
+	
+	private final JLabel statusBar = new JLabel();
 	
 	private final MouseAdapter adapter = new MouseAdapter() {
 		@Override
@@ -43,36 +47,55 @@ public class PathPreview extends JComponent {
 			path = manager.quantize(points, boundBegin, boundEnd);
 			PathPreview.this.repaint();
 		}
+		
+		@Override
+		public void mouseMoved(MouseEvent me) {
+			if(path != null) {
+				PointR position = new PointR(me.getX(), me.getY());
+				double distance = view.distance(path,
+						position, boundBegin, boundEnd);
+				statusBar.setText(Double.toString(distance));
+			}
+		}
+	};
+	
+	public JComponent component = new JComponent() {
+		private static final long serialVersionUID = 1L;
+
+		public void paint(Graphics g) {
+			g.setColor(Color.BLACK);
+			for(int i = 0; i < points.size() - 1; ++ i) {
+				PointR start = points.get(i);
+				PointR end = points.get(i + 1);
+				g.drawLine((int)start.X, (int)start.Y, 
+						(int)end.X, (int)end.Y);
+			}
+			
+			g.fillRect((int)boundBegin.getX(), 
+					(int)boundBegin.getY(),
+					(int)boundBegin.getWidth(), 
+					(int)boundBegin.getHeight());
+			
+			g.fillRect((int)boundEnd.getX(), 
+					(int)boundEnd.getY(),
+					(int)boundEnd.getWidth(), 
+					(int)boundEnd.getHeight());
+			
+			if(path != null) view.render((Graphics2D)g, 
+					true, path, PathView.LineStyle.DASHDOT, 
+					boundBegin, PathView.ArrowStyle.DIAMOND_FILLED, 
+					boundEnd, PathView.ArrowStyle.DIAMOND_EMPTY);
+		}
 	};
 	
 	public PathPreview() {
-		addMouseListener(adapter);
-		addMouseMotionListener(adapter);
-	}
-	
-	public void paint(Graphics g) {
-		g.setColor(Color.BLACK);
-		for(int i = 0; i < points.size() - 1; ++ i) {
-			PointR start = points.get(i);
-			PointR end = points.get(i + 1);
-			g.drawLine((int)start.X, (int)start.Y, 
-					(int)end.X, (int)end.Y);
-		}
+		setLayout(new BorderLayout());
 		
-		g.fillRect((int)boundBegin.getX(), 
-				(int)boundBegin.getY(),
-				(int)boundBegin.getWidth(), 
-				(int)boundBegin.getHeight());
+		add(component, BorderLayout.CENTER);
+		component.addMouseListener(adapter);
+		component.addMouseMotionListener(adapter);
 		
-		g.fillRect((int)boundEnd.getX(), 
-				(int)boundEnd.getY(),
-				(int)boundEnd.getWidth(), 
-				(int)boundEnd.getHeight());
-		
-		if(path != null) view.render((Graphics2D)g, 
-				true, path, PathView.LineStyle.DASHDOT, 
-				boundBegin, PathView.ArrowStyle.DIAMOND_FILLED, 
-				boundEnd, PathView.ArrowStyle.DIAMOND_EMPTY);
+		add(statusBar, BorderLayout.SOUTH);
 	}
 	
 	public static void main(String[] arguments) {

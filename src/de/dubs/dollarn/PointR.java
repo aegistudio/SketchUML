@@ -63,6 +63,7 @@ package de.dubs.dollarn;
  * SUCH DAMAGE.
  */
 
+import java.awt.geom.Rectangle2D;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -123,15 +124,30 @@ public class PointR {
 	}
 	
 	public double normalize() {
-		double modulus = Math.sqrt(X * X + Y * Y);
+		double modulus = modulus();
 		if(modulus == 0.0) X = Y = 0;
 		else { X /= modulus; Y /= modulus; }
 		return modulus;
 	}
 	
+	public double modulus() {
+		return Math.sqrt(X * X + Y * Y);
+	}
+	
+	public double dot(PointR a) {
+		return X * a.X + Y * a.Y;
+	}
+	
 	public void interpolate(double ratio, PointR begin, PointR end) {
-		double ratioP = 1.0 - ratio;
-		X = ratioP * begin.X + ratio * end.X;
-		Y = ratioP * begin.Y + ratio * end.Y;
+		combine(1.0 - ratio, begin, ratio, end);
+	}
+	
+	public void combine(double a, PointR x, double b, PointR y) {
+		X = a * x.X + b * y.X;
+		Y = a * x.Y + b * y.Y; 
+	}
+	
+	public boolean inside(Rectangle2D r2d) {
+		return r2d.contains(X, Y);
 	}
 }
