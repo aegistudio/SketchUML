@@ -93,6 +93,8 @@ import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.Vector;
 
+import net.aegistudio.sketchuml.framework.RenderUtils;
+
 public class GraphicLauncher extends Frame implements MouseMotionListener,
 		MouseListener, ActionListener {
 	private static final long serialVersionUID = 1L;
@@ -177,23 +179,14 @@ public class GraphicLauncher extends Frame implements MouseMotionListener,
 		Enumeration<Vector<PointR>> en = strokes.elements();
 		while (en.hasMoreElements()) {
 			Vector<PointR> pts = en.nextElement();
-			for (int i = 0; i < (pts.size() - 1); ++i) {
-				g2d.setColor(Color.RED);
-				g2d.drawLine((int) pts.elementAt(i).X,
-						(int) pts.elementAt(i).Y, (int) pts.elementAt(i + 1).X,
-						(int) pts.elementAt(i + 1).Y);
-			}
+			g2d.setColor(Color.RED);
+			RenderUtils.drawStroke(g2d, pts);
 		}
+		
 		if (points.size() < 2)
 			return;
-		for (int i = 0; i < (points.size() - 1); ++i) {
-			g2d.setColor(Color.RED);
-			g2d.drawLine((int) points.elementAt(i).X,
-					(int) points.elementAt(i).Y,
-					(int) points.elementAt(i + 1).X,
-					(int) points.elementAt(i + 1).Y);
-		}
-
+		g2d.setColor(Color.RED);
+		RenderUtils.drawStroke(g2d, points);
 	}
 
 	public void update(Graphics g) {

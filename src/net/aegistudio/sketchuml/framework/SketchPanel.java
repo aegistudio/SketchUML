@@ -164,14 +164,15 @@ public class SketchPanel<Path> extends JComponent implements
 		if(candidates.length == 0) { candidates = null; return; }
 		
 		// Find the boundary of points.
-		int minX = (int)allPoints.get(0).X; 
-		int minY = (int)allPoints.get(0).Y;
+		int minX = allPoints.get(0).intX(); 
+		int minY = allPoints.get(0).intY();
 		int maxX = minX, maxY = minY;
 		for(int i = 1; i < allPoints.size(); ++ i) {
 			PointR current = allPoints.get(i);
-			int x = (int)current.X; int y = (int)current.Y;
-			minX = Math.min(x, minX); maxX = Math.max(x, maxX);
-			minY = Math.min(y, minY); maxY = Math.max(y, maxY);
+			minX = Math.min(current.intX(), minX);
+			maxX = Math.max(current.intX(), maxX);
+			minY = Math.min(current.intY(), minY);
+			maxY = Math.max(current.intY(), maxY);
 		}
 		
 		boxX = minX;		boxY = minY;
@@ -240,16 +241,6 @@ public class SketchPanel<Path> extends JComponent implements
 		}
 	}
 	
-	private void drawStroke(Graphics2D g2d, Vector<PointR> pts) {
-		for (int i = 0; i < (pts.size() - 1); ++i) {
-			g2d.setColor(Color.BLACK);
-			g2d.drawLine((int) pts.elementAt(i).X,
-					(int) pts.elementAt(i).Y, 
-					(int) pts.elementAt(i + 1).X,
-					(int) pts.elementAt(i + 1).Y);
-		}
-	}
-	
 	private void paintSketchComponent(Graphics g, 
 			SketchEntityComponent current, boolean preview) {
 		
@@ -314,9 +305,9 @@ public class SketchPanel<Path> extends JComponent implements
 		Enumeration<Vector<PointR>> en = strokes.elements();
 		while (en.hasMoreElements()) {
 			Vector<PointR> pts = en.nextElement();
-			drawStroke(g2d, pts);
+			RenderUtils.drawStroke(g2d, pts);
 		}
-		if(!(points.size() < 2)) drawStroke(g2d, points);
+		if(!(points.size() < 2)) RenderUtils.drawStroke(g2d, points);
 	}
 
 	@Override

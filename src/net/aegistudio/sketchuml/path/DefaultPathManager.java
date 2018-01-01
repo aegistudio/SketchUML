@@ -67,10 +67,8 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 		PointR[] tangent = new PointR[stroke.size() + 1];
 		double[] modulus = new double[stroke.size() + 1];
 		
-		PointR pointBegin = new PointR(boundBegin.getCenterX(), 
-				boundBegin.getCenterY());
-		PointR pointEnd = new PointR(boundEnd.getCenterX(), 
-				boundEnd.getCenterY());
+		PointR pointBegin = PointR.center(boundBegin);
+		PointR pointEnd = PointR.center(boundEnd);
 		
 		// Add points for calculating tangents.
 		Vector<PointR> points = new Vector<>(stroke.size() + 2);

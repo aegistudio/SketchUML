@@ -150,4 +150,13 @@ public class PointR {
 	public boolean inside(Rectangle2D r2d) {
 		return r2d.contains(X, Y);
 	}
+	
+	public static PointR center(Rectangle2D rect) {
+		return new PointR(
+				rect.getCenterX(), 
+				rect.getCenterY());
+	}
+	
+	public int intX() { return (int)X; }
+	public int intY() { return (int)Y; }
 }

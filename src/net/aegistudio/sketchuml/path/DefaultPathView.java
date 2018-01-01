@@ -17,9 +17,10 @@ public class DefaultPathView implements PathView<DefaultPath> {
 	private void intersectBox(Rectangle2D rect, PointR outPoint,
 			PointR resultDirection, PointR resultIntersection) {
 		
+		PointR rectCenter = PointR.center(rect);
+		
 		// Difference and normalization.
-		resultDirection.X = outPoint.X - rect.getCenterX();
-		resultDirection.Y = outPoint.Y - rect.getCenterY();
+		resultDirection.combine(1.0, outPoint, -1.0, rectCenter);
 		resultDirection.normalize();
 		
 		// Calculate vector length.
@@ -33,26 +34,14 @@ public class DefaultPathView implements PathView<DefaultPath> {
 				Math.min(widthRatio, heightRatio);
 		
 		// Output result intersection.
-		resultIntersection.X = rect.getCenterX() 
-				+ vectorLength * resultDirection.X;
-		resultIntersection.Y = rect.getCenterY() 
-				+ vectorLength * resultDirection.Y;
+		resultIntersection.combine(1, rectCenter, 
+				vectorLength, resultDirection);
 	}
 	
 	private void intersectBezier(Rectangle2D rect, BezierEvaluator evaluator,
 			PointR resultDirection, PointR resultIntersection) {
 		
 		// The control point coordinates.
-		/*double p1X = bezier.getCtrlX();
-		double p1Y = bezier.getCtrlY();
-		double p0X = bezier.getX1();
-		double p0Y = bezier.getY1();
-		double p2X = bezier.getX2();
-		double p2Y = bezier.getY2();
-		
-		BezierEvaluator evaluator = new BezierEvaluator(
-				p0X, p1X, p2X, p0Y, p1Y,  p2Y);*/
-		
 		for(double t = 0.0; t <= 1.0; t += 0.01) {
 			evaluator.evaluate(t, resultIntersection);
 			
@@ -75,12 +64,8 @@ public class DefaultPathView implements PathView<DefaultPath> {
 		
 		// Collect path object information.
 		int numPoints = pathObject.separatePoints.size();
-		PointR pointBegin = new PointR(
-				boundBegin.getCenterX(), 
-				boundBegin.getCenterY());
-		PointR pointEnd = new PointR(
-				boundEnd.getCenterX(), 
-				boundEnd.getCenterY());
+		PointR pointBegin = PointR.center(boundBegin);
+		PointR pointEnd = PointR.center(boundEnd);
 		PointR[] points = new PointR[numPoints + 2];
 		points[0] = pointBegin;
 		points[points.length - 1] = pointEnd;
@@ -298,12 +283,8 @@ public class DefaultPathView implements PathView<DefaultPath> {
 		
 		// Collect path object information.
 		int numPoints = pathObject.separatePoints.size();
-		PointR pointBegin = new PointR(
-				boundBegin.getCenterX(), 
-				boundBegin.getCenterY());
-		PointR pointEnd = new PointR(
-				boundEnd.getCenterX(), 
-				boundEnd.getCenterY());
+		PointR pointBegin = PointR.center(boundBegin);
+		PointR pointEnd = PointR.center(boundEnd);
 		PointR[] points = new PointR[numPoints + 2];
 		points[0] = pointBegin;
 		points[points.length - 1] = pointEnd;

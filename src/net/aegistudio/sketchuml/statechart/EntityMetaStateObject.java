@@ -12,15 +12,14 @@ import java.util.function.Consumer;
 import net.aegistudio.sketchuml.Entity;
 import net.aegistudio.sketchuml.PropertyView;
 import net.aegistudio.sketchuml.SketchView;
-import net.aegistudio.sketchuml.framework.MultilineRenderer;
 import net.aegistudio.sketchuml.framework.PropertyPanel;
+import net.aegistudio.sketchuml.framework.RenderUtils;
 
 public class EntityMetaStateObject implements SketchView, PropertyView {
 	public static int STATE_ROUNDSIZE = 50;
 	public static int STATE_ROUNDOFFSET = 10;
 	public static int STATE_NAMEHEIGHT = 24;
 	private PropertyPanel<EntityStateObject> viewObject;
-	private final MultilineRenderer renderer = new MultilineRenderer();
 	
 	@Override
 	public Component getViewObject(Consumer<Entity> notifier) {
@@ -79,7 +78,7 @@ public class EntityMetaStateObject implements SketchView, PropertyView {
 			Graphics actionGraphics = g.create(STATE_ROUNDOFFSET, 
 					STATE_NAMEHEIGHT + 2, bound.width - STATE_ROUNDOFFSET * 2, 
 					bound.height - STATE_NAMEHEIGHT - 2);
-			renderer.drawLines(actionGraphics, entityState.actions.split("\n"));
+			RenderUtils.drawLines(actionGraphics, entityState.actions.split("\n"));
 		}
 		else {
 			// Draw string only.
