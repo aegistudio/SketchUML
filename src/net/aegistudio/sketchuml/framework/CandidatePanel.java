@@ -37,9 +37,8 @@ public class CandidatePanel extends JPanel {
 			selectionLabels[i].setFont(Configuration
 					.getInstance().HANDWRITING_FONT);
 			selectionLabels[i].addMouseListener(new MouseAdapter() {
-				public void mouseClicked(MouseEvent me) {
-					candidateIndex = current;
-					selectCandidate();
+				public void mousePressed(MouseEvent me) {
+					select(current);
 				}
 			});
 		}
@@ -66,7 +65,10 @@ public class CandidatePanel extends JPanel {
 		}
 
 		// Select current candidate.
-		selectCandidate();
+		if(		candidates == null || 
+				candidateIndex < 0 || 
+				candidateIndex > candidates.length) return;
+		candidates[candidateIndex].scrollAction.run();
 		
 		repaint();
 	}
@@ -81,13 +83,6 @@ public class CandidatePanel extends JPanel {
 	public void select(int index) {
 		this.candidateIndex = index;
 		updateContent();
-	}
-	
-	public void selectCandidate() {
-		if(		candidates == null || 
-				candidateIndex < 0 || 
-				candidateIndex > candidates.length) return;
-		candidates[candidateIndex].scrollAction.run();
 	}
 	
 	public int index() {
