@@ -45,6 +45,8 @@ public class SketchPanel<Path> extends JComponent implements
 		this.pathView = pathView;
 		
 		model.registerEntityObserver(this, this::repaint);
+		model.registerLinkObserver(this, this::repaint);
+		
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		addMouseWheelListener(this);
@@ -87,7 +89,7 @@ public class SketchPanel<Path> extends JComponent implements
 			this.component.link = entry.factory.get();
 			
 			this.scrollAction = () -> { repaint(); };
-			this.confirmAction = () -> { model.link(component); };
+			this.confirmAction = () -> { model.link(null, component); };
 		}
 		
 	}
@@ -161,13 +163,27 @@ public class SketchPanel<Path> extends JComponent implements
 		// Initial editing parameters when right clicked.
 		if(arg0.getButton() == MouseEvent.BUTTON3) {
 			model.selectEntity(null, null);
-			SketchEntityComponent toSelect = 
-					model.componentAt(arg0.getX(), arg0.getY());
+			SketchEntityComponent entityToSelect = 
+					model.entityAt(arg0.getX(), arg0.getY());
 			
-			model.selectEntity(null, toSelect);
-			if(toSelect == null) return;
-			focusSelected();
-			initMouseX = arg0.getX(); initMouseY = arg0.getY();
+			// Judge whether an entity is already selected.
+			if(entityToSelect != null) {
+				model.selectEntity(null, entityToSelect);
+				focusSelected();
+				initMouseX = arg0.getX(); initMouseY = arg0.getY();
+				return;
+			}
+			
+			SketchLinkComponent<Path> linkToSelect =
+					model.linkAt(arg0.getX(), arg0.getY());
+			
+			// Judge whether a link is already selected.
+			if(linkToSelect != null) {
+				model.selectLink(null, linkToSelect);
+				return;
+			}
+			
+			// Nothing is selected, the initial selection is enough.
 		}
 	}
 
@@ -220,11 +236,11 @@ public class SketchPanel<Path> extends JComponent implements
 			
 			// The stroke should touch the components.
 			SketchEntityComponent componentBegin = model
-					.componentAt(strokeBegin.intX(), strokeBegin.intY());
+					.entityAt(strokeBegin.intX(), strokeBegin.intY());
 			if(componentBegin == model.getSelectedEntity()) 
 				componentBegin = model.getOriginalEntity();
 			SketchEntityComponent componentEnd = model
-					.componentAt(strokeEnd.intX(), strokeEnd.intY());
+					.entityAt(strokeEnd.intX(), strokeEnd.intY());
 			if(componentEnd == model.getSelectedEntity())
 				componentEnd = model.getOriginalEntity();
 			if(componentBegin != null && componentEnd != null) {
@@ -247,7 +263,7 @@ public class SketchPanel<Path> extends JComponent implements
 	
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
-		SketchEntityComponent selected = model.getSelectedEntity();
+		SketchEntityComponent selectedEntity = model.getSelectedEntity();
 		// Left button for stroke drawing.
 		if(arg0.getButton() == MouseEvent.BUTTON1) {
 			// Clear previous candidates.
@@ -286,11 +302,11 @@ public class SketchPanel<Path> extends JComponent implements
 			}
 			
 			// Right mouse for location confirmation.
-			else if(selected != null) {
+			else if(selectedEntity != null) {
 				// Partial confirmation.
-				selected = model.getOriginalEntity();
+				selectedEntity = model.getOriginalEntity();
 				model.selectEntity(null, null);
-				model.selectEntity(null, selected);
+				model.selectEntity(null, selectedEntity);
 				focusSelected();
 				repaint();
 			}
@@ -356,7 +372,8 @@ public class SketchPanel<Path> extends JComponent implements
 	
 	@Override
 	public void paint(Graphics g) {
-		SketchEntityComponent selected = model.getSelectedEntity();
+		SketchEntityComponent selectedEntity = model.getSelectedEntity();
+		SketchLinkComponent<Path> selectedLink = model.getSelectedLink();
 		
 		g.setFont(Configuration.getInstance().HANDWRITING_FONT);
 		g.setColor(Color.WHITE);
@@ -366,7 +383,8 @@ public class SketchPanel<Path> extends JComponent implements
 		// Render the links in order.
 		for(int i = 0; i < model.numLinks(); ++ i) {
 			SketchLinkComponent<Path> current = model.getLink(i);
-			paintSketchLink(g, current, false);
+			if(current != selectedLink)
+				paintSketchLink(g, current, false);
 		}
 		
 		// Render the entities in order.
@@ -374,10 +392,10 @@ public class SketchPanel<Path> extends JComponent implements
 			SketchEntityComponent current = model.getEntity(i);
 			
 			// Selection box if the object is selected.
-			if(current == selected) {
+			if(current == selectedEntity) {
 				g.setColor(Color.LIGHT_GRAY);
-				g.fillRect(selected.x, selected.y, 
-						selected.w, selected.h);
+				g.fillRect(selectedEntity.x, selectedEntity.y, 
+						selectedEntity.w, selectedEntity.h);
 			}
 			
 			// Default object component.
@@ -400,6 +418,10 @@ public class SketchPanel<Path> extends JComponent implements
 				= (SketchPanel<Path>.LinkCandidate) candidate;
 			paintSketchLink(g, linkCandidate.component, true);
 		}
+		
+		// Render the current selected link object.
+		if(selectedLink != null)
+			paintSketchLink(g, selectedLink, true);
 		
 		// Render the newly painting stroke.
 		g2d.setStroke(new BasicStroke(2));
@@ -453,11 +475,12 @@ public class SketchPanel<Path> extends JComponent implements
 			}
 		}
 		
-		SketchEntityComponent selected = model.getSelectedEntity();
-		if(selected != null) {
+		// Operate on the current selected entity (if any).
+		SketchEntityComponent selectedEntity = model.getSelectedEntity();
+		if(selectedEntity != null) {
 			if(e.getKeyCode() == KeyEvent.VK_DELETE)
 				// Remove the selected object if any.
-				model.destroy(null, selected);
+				model.destroy(null, selectedEntity);
 			else if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
 				model.selectEntity(null, null);
 			else {
@@ -467,20 +490,20 @@ public class SketchPanel<Path> extends JComponent implements
 						& KeyEvent.SHIFT_DOWN_MASK) != 0;
 				switch(e.getKeyCode()) {
 					case KeyEvent.VK_UP:
-						if(shiftPressed) selected.h --;
-						else selected.y --;
+						if(shiftPressed) selectedEntity.h --;
+						else selectedEntity.y --;
 						break;
 					case KeyEvent.VK_DOWN:
-						if(shiftPressed) selected.h ++;
-						else selected.y ++;
+						if(shiftPressed) selectedEntity.h ++;
+						else selectedEntity.y ++;
 						break;
 					case KeyEvent.VK_LEFT:
-						if(shiftPressed) selected.w --;
-						else selected.x --;
+						if(shiftPressed) selectedEntity.w --;
+						else selectedEntity.x --;
 						break;
 					case KeyEvent.VK_RIGHT:
-						if(shiftPressed) selected.w ++;
-						else selected.x ++;
+						if(shiftPressed) selectedEntity.w ++;
+						else selectedEntity.x ++;
 						break;
 					default:
 						moved = false;
@@ -488,6 +511,14 @@ public class SketchPanel<Path> extends JComponent implements
 				}
 				if(moved) model.notifyEntityChanged(null);
 			}
+		}
+		
+		// Operate on the current selected link (if any).
+		SketchLinkComponent<Path> selectedLink = model.getSelectedLink();
+		if(selectedLink != null) {
+			if(e.getKeyCode() == KeyEvent.VK_DELETE)
+				// Remove the selected link if any.
+				model.unlink(null, selectedLink);
 		}
 		
 		// For other cases, just clear all strokes and state and paint.

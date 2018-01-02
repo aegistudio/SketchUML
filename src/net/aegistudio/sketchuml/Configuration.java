@@ -12,6 +12,9 @@ public class Configuration {
 	/** The path to find the gesture notations. */
 	public String GESTURE_PATH = "data";
 	
+	/** The maximum distance to select a link line. */ 
+	public double MAX_LINKTHRESHOLD = 10.0;
+	
 	// Begin handwriting font's configuration.
 	/** The hand writing font's name */
 	public String HANDWRITING_FONTNAME = "Comic Sans MS";

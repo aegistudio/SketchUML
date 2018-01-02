@@ -52,12 +52,17 @@ public class Main {
 					Configuration.getInstance().PROPERTY_FONTSTYLE,
 					Configuration.getInstance().PROPERTY_FONTSIZE);
 		
+		// Create the path manager and view.
+		DefaultPathManager pathManager = new DefaultPathManager();
+		DefaultPathView pathView = new DefaultPathView();
+		
 		// Initialize the recognizers.
 		SketchRecognizer recognizer = new SketchRecognizer(
 				new File(Configuration.getInstance().GESTURE_PATH), 
 				templates[0].entities());
 		DefaultSketchModel<DefaultPath> model = 
-				new DefaultSketchModel<>(templates[0], recognizer);
+				new DefaultSketchModel<>(templates[0], 
+						recognizer, pathView, pathManager);
 		recognizer.initializeNDollar();
 		
 		// Create the main frame.
@@ -70,10 +75,6 @@ public class Main {
 		// Add the result selection panel.
 		CandidatePanel candidatePanel = new CandidatePanel();
 		frame.add(candidatePanel, BorderLayout.SOUTH);
-		
-		// Create the path manager and view.
-		DefaultPathManager pathManager = new DefaultPathManager();
-		DefaultPathView pathView = new DefaultPathView();
 		
 		// Create the sketch painting panel.
 		SketchPanel<DefaultPath> sketchPanel = new SketchPanel<>(
