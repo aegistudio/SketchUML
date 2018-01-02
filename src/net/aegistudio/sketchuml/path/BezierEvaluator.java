@@ -5,18 +5,47 @@ import de.dubs.dollarn.PointR;
 public class BezierEvaluator {
 	private final PointR p0, pctrl, p1;
 	
+	// Used when calculate length and differential.
+	protected double A, B, C, b, c, k, sb, sA;
+	
 	public BezierEvaluator(
 		double x0, double xCtrl, double x1,
 		double y0, double yCtrl, double y1) {
 		this.p0 = new PointR(x0, y0);
 		this.pctrl = new PointR(xCtrl, yCtrl);
 		this.p1 = new PointR(x1, y1);
+		
+		this.calculateConstants();
 	}
 	
 	public BezierEvaluator(PointR p0, PointR pctrl, PointR p1) {
 		this.p0 = new PointR(p0);
 		this.pctrl = new PointR(pctrl);
 		this.p1 = new PointR(p1);
+		
+		this.calculateConstants();
+	}
+	
+	private void calculateConstants() {
+		double dX1 = pctrl.X - p0.X;
+		double dX2 = p1.X - pctrl.X;
+		double dY1 = pctrl.Y - p0.Y;
+		double dY2 = p1.Y - pctrl.Y;
+		
+		double c1 = dX1 * dX1 + dY1 * dY1;
+		double c2 = dX1 * dX2 + dY1 * dY2;
+		double c3 = dX2 * dX2 + dY2 * dY2;
+		
+		A = c3 - 2 * c2 + c1;
+		B = c2 - c1;
+		C = c1;
+		
+		b = B / (2 * A);
+		c = C / A;
+		k = c - b * b;
+		
+		sb = Math.sqrt(b * b + k);
+		sA = Math.sqrt(A);
 	}
 	
 	public void evaluate(double t, PointR result) {
@@ -37,7 +66,7 @@ public class BezierEvaluator {
 	}
 	
 	/**
-	 * Evaluate the length of the curve.
+	 * Evaluate the length of the curve P(0) to P(t).
 	 * 
 	 * The calculation is based on the integral:
 	 * ArcLen(P(t)) = lim(Dt -> 0) |P(t+Dt) - P(t)|
@@ -55,29 +84,54 @@ public class BezierEvaluator {
 	 */
 	public double length(double t) {
 		// We perform a series of variable substitution here.
-		double dX1 = pctrl.X - p0.X;
-		double dX2 = p1.X - pctrl.X;
-		double dY1 = pctrl.Y - p0.Y;
-		double dY2 = p1.Y - pctrl.Y;
-		
-		double c1 = dX1 * dX1 + dY1 * dY1;
-		double c2 = dX1 * dX2 + dY1 * dY2;
-		double c3 = dX2 * dX2 + dY2 * dY2;
-		
-		double A = c3 - 2 * c2 + c1;
-		double B = c2 - c1;
-		double C = c1;
-		
-		double b = B / (2 * A);
-		double c = C / A;
 		double u = t + b;
-		double k = c - b * b;
-		
 		double su = Math.sqrt(u * u + k);
-		double sb = Math.sqrt(b * b + k);
-		double sA = Math.sqrt(A);
 		
 		return sA * (u * su - b * sb + k * Math
 				.log(Math.abs((u + su) / (b + sb))));
+	}
+	
+	/**
+	 * Evaluate the derivative of length with parameter t.
+	 * 
+	 * @param t the curve parameter
+	 * @return the derivative of length of current piece of bezier curve.
+	 */
+	public double derivativeLength(double t) {
+		double u = t + b;
+		double su = Math.sqrt(u * u + k);
+		double dsu = u / su;
+		
+		return sA * (su + u * dsu + k * ((1 + dsu) / (u + su)));
+	}
+	
+	/**
+	 * Solve the equation at which l(t) = 0.5 * l(1)
+	 * @param t the parameter.
+	 * @param maxIteration when will solution stop.
+	 * @param epsilon at which precision will solution stop.
+	 * @return the control parameter.
+	 */
+	public double solveLengthEquation(double t, 
+			int maxIteration, double epsilon) {
+		double result = t;
+		double length1d2 = t * length(1);
+		
+		double distance = length(result) - length1d2;
+		if(Math.abs(distance) < epsilon) return result;
+		double newResult = t; int iteration = 0;
+		double newDistance = 0.0;
+		
+		do {
+			result = newResult;
+			newResult = result - (length(result) 
+					- length1d2) / derivativeLength(result);
+			newDistance = length(newResult) - length1d2;
+			++ iteration;
+		}
+		while(Math.abs(newDistance) > 
+			epsilon && iteration < maxIteration);
+		
+		return newResult;
 	}
 }

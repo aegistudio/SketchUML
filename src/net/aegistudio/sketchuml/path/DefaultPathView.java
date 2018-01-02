@@ -185,6 +185,7 @@ public class DefaultPathView implements PathView<DefaultPath> {
 				g2d.drawPolyline(bx, by, BEZIER_RENDER + 1);
 				
 				// Find intersection.
+				@SuppressWarnings("unused") 
 				double offsetLength = 0.0, offsetT = 0.0;
 				if(pBegin == pointBegin) offsetLength = evaluator.length(
 						offsetT = intersectBezier(boundBegin, evaluator, 
@@ -210,8 +211,12 @@ public class DefaultPathView implements PathView<DefaultPath> {
 				// XXX This part may be changed later, or may never.
 				bezierLength -= (trailLength + offsetLength);
 				if(bezierLength > lengthThreshold && lengthThreshold >= 0) {
-					evaluator.evaluate(offsetT + (lengthThreshold / bezierLength) 
-							* (trailT - offsetT), centerPoint);
+					double requestParameter = (lengthThreshold 
+							+ offsetLength) / originalLength;
+					
+					double solveParameter = evaluator.solveLengthEquation(
+							requestParameter, 5, 1e-3);
+					evaluator.evaluate(solveParameter, centerPoint);
 					renderText(g2d, centerPoint, centerText, selected);
 				}
 				lengthThreshold -= bezierLength;
@@ -459,13 +464,19 @@ public class DefaultPathView implements PathView<DefaultPath> {
 				
 				// Remove the start length.
 				if(pBegin == pointBegin)
-					totalLength -= intersectBezier(boundBegin, 
-							evaluator, tempDirection, tempIntersect);
+					totalLength -= evaluator.length(intersectBezier(
+							boundBegin, evaluator, 
+							tempDirection, tempIntersect));
 				
 				// Remove the start length.
-				if(pEnd == pointEnd)
-					totalLength -= intersectBezier(boundEnd, 
-							evaluator, tempDirection, tempIntersect);
+				if(pEnd == pointEnd) {
+					BezierEvaluator endEvaluator = new BezierEvaluator(
+							points[i + 1], control, points[i]);
+					totalLength -= endEvaluator.length(
+							intersectBezier(
+							boundEnd, endEvaluator, 
+							tempDirection, tempIntersect));
+				}
 			}
 		}
 		
