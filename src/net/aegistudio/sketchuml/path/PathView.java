@@ -35,7 +35,8 @@ public interface PathView<Path> {
 	public void render(Graphics2D graphics, boolean selected,
 			Path pathObject, LineStyle line,
 			Rectangle2D boundBegin, ArrowStyle arrowBegin, 
-			Rectangle2D boundEnd, ArrowStyle arrowEnd);
+			Rectangle2D boundEnd, ArrowStyle arrowEnd,
+			String startText, String centerText, String endText);
 	
 	/**
 	 * Retrieve the minimal distance between a point and the path.

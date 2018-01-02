@@ -13,11 +13,14 @@ public interface LinkView {
 		
 		public PathView.LineStyle lineStyle;
 		
+		public String startText, centerText, endText;
+		
 		public <Path> void paint(Graphics2D g2d, boolean preview,
 				Path path, PathView<Path> pathView,
 				Rectangle2D boundBegin, Rectangle2D boundEnd) {
 			pathView.render(g2d, preview, path, lineStyle, 
-					boundBegin, beginStyle, boundEnd, endStyle);
+					boundBegin, beginStyle, boundEnd, endStyle,
+					startText, centerText, endText);
 		}
 	}
 	

@@ -105,7 +105,10 @@ public class LinkComponentPanel<Path> extends JPanel {
 		// The editor panel.
 		property = link.entry.propertyView.getViewObject(e -> 
 			model.notifyLinkChanged(LinkComponentPanel.this));
-		if(property != null) add(property);
+		if(property != null) {
+			add(property);
+			link.entry.propertyView.updateEntity(link.link);
+		}
 		
 		updateUI();
 	}

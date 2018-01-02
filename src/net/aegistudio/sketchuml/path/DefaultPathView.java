@@ -14,7 +14,7 @@ public class DefaultPathView implements PathView<DefaultPath> {
 	public static final float ARROW_HORIZONTAL = 7;
 	public static final int BEZIER_RENDER = 20;
 	
-	private void intersectBox(Rectangle2D rect, PointR outPoint,
+	private double intersectBox(Rectangle2D rect, PointR outPoint,
 			PointR resultDirection, PointR resultIntersection) {
 		
 		PointR rectCenter = PointR.center(rect);
@@ -36,9 +36,10 @@ public class DefaultPathView implements PathView<DefaultPath> {
 		// Output result intersection.
 		resultIntersection.combine(1, rectCenter, 
 				vectorLength, resultDirection);
+		return vectorLength;
 	}
 	
-	private void intersectBezier(Rectangle2D rect, BezierEvaluator evaluator,
+	private double intersectBezier(Rectangle2D rect, BezierEvaluator evaluator,
 			PointR resultDirection, PointR resultIntersection) {
 		
 		// The control point coordinates.
@@ -48,16 +49,43 @@ public class DefaultPathView implements PathView<DefaultPath> {
 			// Check whether there's intersection.
 			if(!resultIntersection.inside(rect)) {
 				evaluator.tangent(t, resultDirection);
-				return;
+				return t;
 			}
 		}
+		
+		return 1.0;
+	}
+	
+	private void renderText(Graphics2D g2d, 
+			PointR point, String text, boolean preview) {
+		if(text == null) return;
+		
+		Rectangle2D bound = g2d.getFontMetrics()
+				.getStringBounds(text, g2d);
+		int pointX = (int)point.X;
+		int pointY = (int)point.Y;
+		int boundW = (int)bound.getWidth();
+		int boundH = (int)bound.getHeight();
+		int boundW2 = (int)bound.getWidth() / 2;
+		int boundH2 = (int)bound.getHeight() / 2;
+		
+		// Draw the background.
+		g2d.setColor(Color.WHITE);
+		g2d.fillRect(pointX - boundW2, 
+			pointY - boundH2, boundW, boundH);
+		
+		// Draw the text content.
+		g2d.setColor(preview? Color.GRAY : Color.BLACK);
+		g2d.drawString(text, 
+				pointX - boundW2, pointY + boundH2);
 	}
 	
 	@Override
 	public void render(Graphics2D g2d, boolean selected,
 			DefaultPath pathObject, LineStyle line, 
 			Rectangle2D boundBegin, ArrowStyle arrowBegin,
-			Rectangle2D boundEnd, ArrowStyle arrowEnd) {
+			Rectangle2D boundEnd, ArrowStyle arrowEnd,
+			String startText, String centerText, String endText) {
 		
 		// Prepare for rendering.
 		g2d.setColor(selected? Color.GRAY : Color.BLACK);
@@ -78,12 +106,21 @@ public class DefaultPathView implements PathView<DefaultPath> {
 		PointR directionBegin = new PointR();
 		PointR directionEnd = new PointR();
 		
+		// Calculate the total line length.
+		double totalLength = totalLength(pathObject, 
+				boundBegin, boundEnd);
+		double lengthThreshold = totalLength * 0.5;
+		
 		// Perform drawings.
+		PointR pieceLength = new PointR();
+		PointR centerPoint = new PointR();
 		for(int i = 0; i < numPoints + 1; ++ i) {
-			int xBegin = (int)points[i].X;
-			int yBegin = (int)points[i].Y;
-			int xEnd = (int)points[i + 1].X;
-			int yEnd = (int)points[i + 1].Y;
+			PointR pBegin = points[i];
+			PointR pEnd = points[i + 1];
+			int xBegin = pBegin.intX();
+			int yBegin = pBegin.intY();
+			int xEnd = pEnd.intX();
+			int yEnd = pEnd.intY();
 			
 			// Render knot when selected.
 			if(selected) {
@@ -106,44 +143,78 @@ public class DefaultPathView implements PathView<DefaultPath> {
 				// Just draw a direct line.
 				g2d.drawLine(xBegin, yBegin, xEnd, yEnd);
 				
+				// Calculate current piece length.
+				pieceLength.combine(-1, pBegin, 1, pEnd);
+				double lineLength = pieceLength.modulus();
+						
 				// Find intersection.
-				if(i == 0) intersectBox(boundBegin, points[1], 
-						directionBegin, intersectBegin);
-				if(i == numPoints) intersectBox(boundEnd, 
+				if(pBegin == pointBegin) lineLength -= intersectBox(boundBegin, 
+						points[1], directionBegin, intersectBegin);
+				if(pEnd == pointEnd) lineLength -= intersectBox(boundEnd, 
 						points[numPoints], directionEnd, intersectEnd);
+				
+				// Check whether guard condition is reached.
+				// XXX This part may be changed later, or may never.
+				if(lineLength > lengthThreshold && lengthThreshold >= 0) {
+					centerPoint.interpolate(lengthThreshold / lineLength, 
+							pBegin == pointBegin? intersectBegin : pBegin, 
+							pEnd == pointEnd? intersectEnd : pEnd);
+					renderText(g2d, centerPoint, centerText, selected);
+				}
+				lengthThreshold -= lineLength;
 			}
 			else {
 				// Retrieve control point and paint.
 				PointR control = pathObject.controlPoints.get(i);
 				
-				int xCtrl = (int)control.X; 
-				int yCtrl = (int)control.Y;
+				int xCtrl = control.intX(); 
+				int yCtrl = control.intY();
 				BezierEvaluator evaluator = new BezierEvaluator(
 						points[i], control, points[i + 1]);
+				double originalLength = evaluator.length(1.0);
+				double bezierLength = originalLength;
+				
 				PointR current = new PointR();
 				int[] bx = new int[BEZIER_RENDER + 1];
 				int[] by = new int[BEZIER_RENDER + 1];
 				for(int j = 0; j <= BEZIER_RENDER; ++ j) {
 					evaluator.evaluate(1.0 / BEZIER_RENDER * j, current);
-					bx[j] = (int)current.X;
-					by[j] = (int)current.Y;
+					bx[j] = current.intX();
+					by[j] = current.intY();
 				}
 				g2d.drawPolyline(bx, by, BEZIER_RENDER + 1);
 				
 				// Find intersection.
-				if(i == 0) intersectBezier(boundBegin, 
-						evaluator, directionBegin, intersectBegin);
-				if(i == numPoints) {
+				double offsetLength = 0.0, offsetT = 0.0;
+				if(pBegin == pointBegin) offsetLength = evaluator.length(
+						offsetT = intersectBezier(boundBegin, evaluator, 
+						directionBegin, intersectBegin));
+				
+				double trailLength = 0.0, trailT = 1.0;
+				if(pEnd == pointEnd) {
 					// Makes it easier for intersection.
-					//q2d.setCurve(xEnd, yEnd, xCtrl, yCtrl, xBegin, yBegin);
-					evaluator = new BezierEvaluator(points[i + 1], control, points[i]);
-					intersectBezier(boundEnd, evaluator, directionEnd, intersectEnd);
+					BezierEvaluator endEvaluator = new BezierEvaluator(
+							points[i + 1], control, points[i]);
+					trailT = 1.0 - intersectBezier(boundEnd, endEvaluator, 
+							directionEnd, intersectEnd);
+					trailLength = evaluator.length(trailT);
+					trailLength = originalLength - trailLength;
 				}
 				
 				// Render control points when selected.
 				g2d.setStroke(new BasicStroke(selected? 3.0f : 2.0f));
 				if(selected)
 					g2d.fillRect(xCtrl - 3, yCtrl - 3, 6, 6);
+				
+				// Check whether guard condition is reached.
+				// XXX This part may be changed later, or may never.
+				bezierLength -= (trailLength + offsetLength);
+				if(bezierLength > lengthThreshold && lengthThreshold >= 0) {
+					evaluator.evaluate(offsetT + (lengthThreshold / bezierLength) 
+							* (trailT - offsetT), centerPoint);
+					renderText(g2d, centerPoint, centerText, selected);
+				}
+				lengthThreshold -= bezierLength;
 			}
 		}
 		
@@ -335,4 +406,69 @@ public class DefaultPathView implements PathView<DefaultPath> {
 		return distance;
 	}
 	
+	/**
+	 * Notice the part inside the rectangles will not be counted.
+	 * @return
+	 */
+	public double totalLength(DefaultPath pathObject, 
+			Rectangle2D boundBegin, Rectangle2D boundEnd) {
+		
+		// Collect path object information.
+		double totalLength = 0.0;
+		int numPoints = pathObject.separatePoints.size();
+		PointR pointBegin = PointR.center(boundBegin);
+		PointR pointEnd = PointR.center(boundEnd);
+		PointR[] points = new PointR[numPoints + 2];
+		points[0] = pointBegin;
+		points[points.length - 1] = pointEnd;
+		for(int i = 0; i < numPoints; ++ i) 
+			points[i + 1] = pathObject.separatePoints.get(i);
+
+		// Perform calculation.
+		PointR temp = new PointR();
+		PointR tempDirection = new PointR();
+		PointR tempIntersect = new PointR();
+		for(int i = 0; i < numPoints + 1; ++ i) {
+			PointR pBegin = points[i];
+			PointR pEnd = points[i + 1];
+			
+			if(pathObject.controlPoints.size() <= i || 
+					pathObject.controlPoints.get(i) == null) {
+				
+				// Update distance.
+				temp.combine(1.0, pEnd, -1.0, pBegin);
+				totalLength += temp.modulus();
+				
+				// Remove the start length.
+				if(pBegin == pointBegin)
+					totalLength -= intersectBox(boundBegin, 
+						pEnd, tempDirection, tempIntersect);
+				
+				// Remove the end length.
+				if(pEnd == pointEnd)
+					totalLength -= intersectBox(boundEnd, 
+						pBegin, tempDirection, tempIntersect);
+					
+			}
+			else {
+				// Retrieve control point and calculate.
+				PointR control = pathObject.controlPoints.get(i);
+				BezierEvaluator evaluator = new BezierEvaluator(
+						points[i], control, points[i + 1]);
+				totalLength += evaluator.length(1.0);
+				
+				// Remove the start length.
+				if(pBegin == pointBegin)
+					totalLength -= intersectBezier(boundBegin, 
+							evaluator, tempDirection, tempIntersect);
+				
+				// Remove the start length.
+				if(pEnd == pointEnd)
+					totalLength -= intersectBezier(boundEnd, 
+							evaluator, tempDirection, tempIntersect);
+			}
+		}
+		
+		return totalLength;
+	}
 }

@@ -54,7 +54,8 @@ public class PathPreview extends JComponent {
 				PointR position = new PointR(me.getX(), me.getY());
 				double distance = view.distance(path,
 						position, boundBegin, boundEnd);
-				statusBar.setText(Double.toString(distance));
+				statusBar.setText(view.totalLength(
+						path, boundBegin, boundEnd) + ", " + distance);
 			}
 		}
 	};
@@ -84,7 +85,8 @@ public class PathPreview extends JComponent {
 			if(path != null) view.render((Graphics2D)g, 
 					true, path, PathView.LineStyle.DASHDOT, 
 					boundBegin, PathView.ArrowStyle.DIAMOND_FILLED, 
-					boundEnd, PathView.ArrowStyle.DIAMOND_EMPTY);
+					boundEnd, PathView.ArrowStyle.DIAMOND_EMPTY,
+					"Start", "Center", "End");
 		}
 	};
 	

@@ -38,10 +38,20 @@ public class LinkMetaStateTransition implements PropertyView, LinkView {
 
 	@Override
 	public LinkRender render(Entity source, Entity destination, Entity link) {
+		LinkStateTransition transition = (LinkStateTransition)link;
 		return new LinkView.LinkRender() { {
 			beginStyle = PathView.ArrowStyle.NONE;
 			endStyle = PathView.ArrowStyle.FISHBONE;
 			lineStyle = PathView.LineStyle.COHERENT;
+			
+			// Replace the guard condition if any.
+			if(transition.guard.length() > 0)
+				centerText = "[" + transition.guard + "]";
+			
+			// Append the action to the end.
+			if(transition.action.length() > 0)
+				centerText = centerText == null? transition.action : 
+					(centerText + " " + transition.action);
 		} };
 	}
 
