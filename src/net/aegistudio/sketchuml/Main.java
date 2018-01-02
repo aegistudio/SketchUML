@@ -12,12 +12,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.UIManager;
 
 import net.aegistudio.sketchuml.framework.CandidatePanel;
+import net.aegistudio.sketchuml.framework.ComponentEditPanel;
 import net.aegistudio.sketchuml.framework.DefaultSketchModel;
-import net.aegistudio.sketchuml.framework.EntityComponentPanel;
 import net.aegistudio.sketchuml.framework.SketchPanel;
 import net.aegistudio.sketchuml.path.DefaultPath;
 import net.aegistudio.sketchuml.path.DefaultPathManager;
@@ -81,12 +80,10 @@ public class Main {
 				candidatePanel, model, pathManager, pathView);
 		frame.add(sketchPanel, BorderLayout.CENTER);
 		
-		// Create the property panel.
-		JPanel propertyTempPanel = new JPanel();
-		EntityComponentPanel propertyPanel 
-			= new EntityComponentPanel(model);
-		propertyTempPanel.add(propertyPanel);
-		frame.add(propertyTempPanel, BorderLayout.EAST);
+		// Create the property panels.
+		ComponentEditPanel<DefaultPath> editPanel 
+			= new ComponentEditPanel<>(model);
+		frame.add(editPanel, BorderLayout.EAST);
 		
 		// Create the keyboard capture's listener.
 		frame.addKeyListener(new KeyAdapter() {

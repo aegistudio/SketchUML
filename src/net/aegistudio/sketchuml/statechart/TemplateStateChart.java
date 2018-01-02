@@ -1,17 +1,10 @@
 package net.aegistudio.sketchuml.statechart;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
-import net.aegistudio.sketchuml.Entity;
 import net.aegistudio.sketchuml.EntityEntry;
 import net.aegistudio.sketchuml.LinkEntry;
-import net.aegistudio.sketchuml.LinkView;
 import net.aegistudio.sketchuml.Template;
 import net.aegistudio.sketchuml.general.EntityDecision;
 import net.aegistudio.sketchuml.general.EntityMetaDecision;
-import net.aegistudio.sketchuml.path.PathView;
 
 public class TemplateStateChart implements Template {
 	private final EntityStateStart entityStart = new EntityStateStart();
@@ -19,9 +12,12 @@ public class TemplateStateChart implements Template {
 	private final EntityStateExit entityExit = new EntityStateExit();
 	private final EntityMetaStateObject entityMetaState = new EntityMetaStateObject();
 	private final EntityMetaDecision entityMetaDecision = new EntityMetaDecision();
+	private final LinkMetaStateTransition linkMetaTransition = new LinkMetaStateTransition();
 	
-	@Override
-	public EntityEntry[] entities() {
+	private final EntityEntry[] entities;
+	private final LinkEntry[] links;
+	public TemplateStateChart() {
+		// The entities initialization.
 		EntityEntry stateStart = new EntityEntry(
 				"statechart/start", "Start",
 				"A start point of a state machine",
@@ -57,31 +53,26 @@ public class TemplateStateChart implements Template {
 				EntityDecision::new, entityMetaDecision, 
 				entityMetaDecision);
 		
-		return new EntityEntry[]{ stateStart, stateEnd, stateExit, 
+		this.entities = new EntityEntry[] { 
+				stateStart, stateEnd, stateExit, 
 				stateBrief, stateComplete, decision };
+		
+		// The links initialization.
+		LinkEntry transition = new LinkEntry("Transition", 
+				"Transformation from a state to another.", 
+				() -> new LinkStateTransition(), 
+				(e1, e2) -> true, linkMetaTransition, linkMetaTransition);
+		this.links = new LinkEntry[] { transition };
+	}
+	
+	@Override
+	public EntityEntry[] entities() {
+		return this.entities;
 	}
 
 	@Override
 	public LinkEntry[] links() {
-		LinkEntry transition = new LinkEntry("Transition", 
-				"Transformation from a state to another.", 
-				() -> new Entity() {
-					@Override
-					public void load(DataInputStream inputStream) throws IOException {
-
-					}
-
-					@Override
-					public void save(DataOutputStream outputStream) throws IOException {
-						
-					}
-					
-				}, (e1, e2) -> true, null, (s, d, l) -> new LinkView.LinkRender() { {
-					beginStyle = PathView.ArrowStyle.NONE;
-					endStyle = PathView.ArrowStyle.FISHBONE;
-					lineStyle = PathView.LineStyle.COHERENT;
-				} });
-		return new LinkEntry[] { transition };
+		return this.links;
 	}
 
 }

@@ -12,6 +12,12 @@ public class Configuration {
 	/** The path to find the gesture notations. */
 	public String GESTURE_PATH = "data";
 	
+	/** The preferred width for the component edit panel */
+	public int EDITPANEL_WIDTH = 300;
+	
+	/** The preferred width for the component edit panel */
+	public int LINKPANEL_TYPEWIDTH = 200;
+	
 	/** The maximum distance to select a link line. */ 
 	public double MAX_LINKTHRESHOLD = 10.0;
 	

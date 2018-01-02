@@ -135,5 +135,8 @@ public interface SketchModel<Path> {
 	 */
 	public void selectLink(Object key, SketchLinkComponent<Path> link);
 	
-	
+	/**
+	 * @param source the source's caller object.
+	 */
+	void notifyLinkChanged(Object sourceObject);
 }

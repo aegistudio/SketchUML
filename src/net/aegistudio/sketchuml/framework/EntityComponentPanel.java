@@ -153,7 +153,7 @@ public class EntityComponentPanel extends JPanel {
 		
 		// Set the property editing panel.
 		property = component.entry.propertyView.getViewObject(
-				e -> model.notifyEntityChanged(this));
+				e -> model.notifyEntityChanged(EntityComponentPanel.this));
 		if(property != null) {
 			component.entry.propertyView.updateEntity(component.entity);
 			super.add(property);
