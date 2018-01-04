@@ -63,6 +63,12 @@ public interface SketchModel<Path> {
 	public SketchEntityComponent getEntity(int i);
 	
 	/**
+	 * @param entity the entity to query.
+	 * @return the index of the entity.
+	 */
+	public int entityIndexOf(SketchEntityComponent entity);
+	
+	/**
 	 * Used to notify when the underlying entity selection is changed.
 	 * 
 	 * @param sourceKey the object representing the caller object.

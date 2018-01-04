@@ -164,10 +164,40 @@ public class SketchPanel<Path> extends JComponent implements
 		// Initial editing parameters when right clicked.
 		if(arg0.getButton() == MouseEvent.BUTTON3) {
 			model.selectEntity(null, null);
-			SketchEntityComponent entityToSelect = 
-					model.entityAt(arg0.getX(), arg0.getY());
+			SketchEntityComponent entityToSelect = null;
+			SketchLinkComponent<Path> linkToSelect = null;
 			
-			// Judge whether an entity is already selected.
+			if(!Configuration.getInstance().LINK_INTERLEAVED_RENDER) {
+				// When the link component is not interleaved, we just need
+				// to judge whether there's entity at the front.
+				entityToSelect = model.entityAt(arg0.getX(), arg0.getY());
+				
+				// Judge whether an entity is already selected.
+				if(entityToSelect == null) 
+					linkToSelect = model.linkAt(arg0.getX(), arg0.getY());
+				
+				// Nothing is selected, the initial selection is enough.
+			}
+			else {
+				// A more complicated case, both link and entity is required to
+				// be judged.
+				entityToSelect = model.entityAt(arg0.getX(), arg0.getY());
+				linkToSelect = model.linkAt(arg0.getX(), arg0.getY());
+				
+				// Judge whether the link overlays the entity.
+				if(entityToSelect != null && linkToSelect != null) {
+					int entityIndex = model.entityIndexOf(entityToSelect);
+					int sourceIndex = model.entityIndexOf(linkToSelect.source);
+					int destinationIndex = model.entityIndexOf(linkToSelect.destination);
+					if(entityIndex < sourceIndex || entityIndex < destinationIndex)
+						// Entity is selected, as link is overlaid.
+						linkToSelect = null;
+					else // Link is selected, as entity does not overlay it.
+						entityToSelect = null;
+				}
+			}
+			
+			// Perform actual entity selection if any.
 			if(entityToSelect != null) {
 				model.selectEntity(null, entityToSelect);
 				focusSelected();
@@ -175,16 +205,11 @@ public class SketchPanel<Path> extends JComponent implements
 				return;
 			}
 			
-			SketchLinkComponent<Path> linkToSelect =
-					model.linkAt(arg0.getX(), arg0.getY());
-			
-			// Judge whether a link is already selected.
+			// Perform actual link selection if any.
 			if(linkToSelect != null) {
 				model.selectLink(null, linkToSelect);
 				return;
 			}
-			
-			// Nothing is selected, the initial selection is enough.
 		}
 	}
 
@@ -244,8 +269,20 @@ public class SketchPanel<Path> extends JComponent implements
 					.entityAt(strokeEnd.intX(), strokeEnd.intY());
 			if(componentEnd == model.getSelectedEntity())
 				componentEnd = model.getOriginalEntity();
+			
+			// Begin to find some stroke.
 			if(componentBegin != null && componentEnd != null) {
-				for(LinkEntry link : model.getTemplate().links()) 
+				// Ensure the stroke is not intrinsic, or all stroke contained in
+				// a single shape in other word.
+				boolean isIntrinsic = false;
+				if(componentBegin == componentEnd) {
+					Rectangle2D monoBound = componentBegin
+							.getBoundRectangle();
+					isIntrinsic = stroke0.stream().allMatch(p -> 
+						monoBound.contains(p.X, p.Y));
+				}
+				
+				if(!isIntrinsic) for(LinkEntry link : model.getTemplate().links()) 
 					if(link.filter.test(componentBegin.entity, componentEnd.entity)) {
 						// We've found a link that is applicable, so add it.
 						LinkCandidate linkCandidate = new LinkCandidate(

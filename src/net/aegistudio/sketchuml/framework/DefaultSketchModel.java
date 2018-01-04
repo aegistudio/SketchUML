@@ -16,7 +16,7 @@ import net.aegistudio.sketchuml.stroke.SketchRecognizer;
 public class DefaultSketchModel<Path> implements SketchModel<Path> {
 	private final Template template;
 	private final SketchRecognizer recognizer;
-	private final List<SketchEntityComponent> components;
+	private final List<SketchEntityComponent> entities;
 	private final List<SketchLinkComponent<Path>> links;
 	
 	private final PathView<Path> pathView;
@@ -32,7 +32,7 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 		this.recognizer = recognizer;
 		this.pathManager = pathManager;
 		this.pathView = pathView;
-		this.components = new ArrayList<>();
+		this.entities = new ArrayList<>();
 		this.links = new ArrayList<>();
 	}
 	
@@ -43,15 +43,15 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 	private boolean isEntitySelected(SketchEntityComponent component) {
 		if(selectedIndexEntity < 0) return false;
 		if(component == selectedEntity) return true;
-		if(component == components.get(selectedIndexEntity))
+		if(component == entities.get(selectedIndexEntity))
 			return true;
 		return false;
 	}
 	
 	@Override
 	public SketchEntityComponent entityAt(int x, int y) {
-		for(int i = 0; i < components.size(); ++ i) {
-			SketchEntityComponent current = components.get(i);
+		for(int i = 0; i < entities.size(); ++ i) {
+			SketchEntityComponent current = entities.get(i);
 			int xLocal = x - current.x;
 			int yLocal = y - current.y;
 			
@@ -61,15 +61,22 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 		}
 		return null;
 	}
+	
+	@Override
+	public int entityIndexOf(SketchEntityComponent entity) {
+		if(entity == null) return -1;
+		if(entity == selectedEntity) return selectedIndexEntity;
+		return entities.indexOf(entity);
+	}
 
 	@Override
 	public void create(Object key, SketchEntityComponent component) {
 		// Discard for the duplicated element.
 		if(isEntitySelected(component)) return;
-		if(components.contains(component)) return;
+		if(entities.contains(component)) return;
 		
 		// Create a new component here.
-		components.add(0, component);
+		entities.add(0, component);
 		if(selectedIndexEntity >= 0) selectedIndexEntity ++;
 		notifyUpdate(observerEntity, key);
 	}
@@ -81,7 +88,7 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 			// The component to remove is selected.
 			// However, as you cannot select link and component simultaneously,
 			// there's no need to check whether component is selected.
-			SketchEntityComponent original = components.remove(selectedIndexEntity);
+			SketchEntityComponent original = entities.remove(selectedIndexEntity);
 			if(original != null) links.removeIf(l -> l.relatedTo(original));
 			selectedIndexEntity = -1;
 			selectedEntity = null;
@@ -89,11 +96,11 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 		}
 		else {
 			// Try to get the component index for removing.
-			int index = components.indexOf(component);
+			int index = entities.indexOf(component);
 			if(index < 0) return;
 			
 			// Remove the component by status.
-			if((components.remove(index)) == null) return;
+			if((entities.remove(index)) == null) return;
 			
 			// Remove all components related to this entity.
 			// Need to check the selected link index this case.
@@ -116,19 +123,19 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 		// Judge whether the moving component is selected.
 		if(isEntitySelected(c)) {
 			// If it is selected, just move it to the end.
-			components.add(components
+			entities.add(entities
 					.remove(selectedIndexEntity));
-			selectedIndexEntity = components.size() - 1;
+			selectedIndexEntity = entities.size() - 1;
 			notifyUpdate(observerEntity, key);
 		}
 		else {
 			// Else judge by the index to update the selected 
 			// component's index.
-			int index = components.indexOf(c);
+			int index = entities.indexOf(c);
 			if(index < 0) return;
 			
 			// Judge by index.
-			components.add(components.get(selectedIndexEntity));
+			entities.add(entities.remove(index));
 			if(index < selectedIndexEntity) selectedIndexEntity --;
 			notifyUpdate(observerEntity, key);
 		}
@@ -139,17 +146,17 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 		// Judge whether the moving component is selected.
 		if(isEntitySelected(c)) {
 			// If it is selected, just move it to the front.
-			components.add(0, components
+			entities.add(0, entities
 					.remove(selectedIndexEntity));
 			selectedIndexEntity = 0;
 			notifyUpdate(observerEntity, key);
 		}
 		else {
-			int index = components.indexOf(c);
+			int index = entities.indexOf(c);
 			if(index < 0) return;
 			
 			// Judge by index.
-			components.add(0, components.get(selectedIndexEntity));
+			entities.add(0, entities.remove(index));
 			if(index < selectedIndexEntity) selectedIndexEntity ++;
 			notifyUpdate(observerEntity, key);
 		}
@@ -167,14 +174,14 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 	
 	@Override
 	public int numEntities() {
-		return components.size();
+		return entities.size();
 	}
 	
 	@Override
 	public SketchEntityComponent getEntity(int i) {
 		if(i == selectedIndexEntity)
 			return selectedEntity;
-		return components.get(i);
+		return entities.get(i);
 	}
 
 	Map<Object, Runnable> observerEntity = new HashMap<>();
@@ -198,14 +205,14 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 	public void selectEntity(Object key, SketchEntityComponent component) {
 		int newSelectedIndex = -1;
 		if(component != null) 
-			newSelectedIndex = components.indexOf(component);
+			newSelectedIndex = entities.indexOf(component);
 		
 		boolean entityUpdated = false;
 		if(selectedIndexEntity != newSelectedIndex) {
 			if(selectedIndexEntity >= 0) {
 				// Replace the selection.
 				SketchEntityComponent original 
-					= components.get(selectedIndexEntity);
+					= entities.get(selectedIndexEntity);
 				original.x = selectedEntity.x;
 				original.y = selectedEntity.y;
 				original.w = selectedEntity.w;
@@ -248,7 +255,7 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 	@Override
 	public SketchEntityComponent getOriginalEntity() {
 		if(selectedIndexEntity < 0) return null;
-		return components.get(selectedIndexEntity);
+		return entities.get(selectedIndexEntity);
 	}
 	
 	@Override
