@@ -16,6 +16,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;import javax.swing.JComponent;
 
@@ -370,9 +371,17 @@ public class SketchPanel<Path> extends JComponent implements
 						boundSource, boundDestination);
 	}
 	
+	private interface SketchPaintInterface<Path> {
+		public void paint(Graphics2D g2d,
+			SketchEntityComponent selectedEntity,
+			SketchEntityComponent originalEntity,
+			SketchLinkComponent<Path> selectedLink);
+	}
+	
 	@Override
 	public void paint(Graphics g) {
 		SketchEntityComponent selectedEntity = model.getSelectedEntity();
+		SketchEntityComponent originalEntity = model.getOriginalEntity();
 		SketchLinkComponent<Path> selectedLink = model.getSelectedLink();
 		
 		g.setFont(Configuration.getInstance().HANDWRITING_FONT);
@@ -380,27 +389,14 @@ public class SketchPanel<Path> extends JComponent implements
 		g.fillRect(0, 0, getWidth(), getHeight());
 		Graphics2D g2d = (Graphics2D) g;
 		
-		// Render the links in order.
-		for(int i = 0; i < model.numLinks(); ++ i) {
-			SketchLinkComponent<Path> current = model.getLink(i);
-			if(current != selectedLink)
-				paintSketchLink(g, current, false);
-		}
-		
-		// Render the entities in order.
-		for(int i = model.numEntities() - 1; i >= 0; -- i) {
-			SketchEntityComponent current = model.getEntity(i);
-			
-			// Selection box if the object is selected.
-			if(current == selectedEntity) {
-				g.setColor(Color.LIGHT_GRAY);
-				g.fillRect(selectedEntity.x, selectedEntity.y, 
-						selectedEntity.w, selectedEntity.h);
-			}
-			
-			// Default object component.
-			paintSketchComponent(g, current, false);
-		}
+		// Render common objects.
+		SketchPaintInterface<Path> paintInterface;
+		if(Configuration.getInstance().LINK_INTERLEAVED_RENDER)
+			// Render the objects with links-first-entities-last manner.
+			paintInterface = this::paintObjectsInterleaved;
+		else // Render links alongside with its entities.
+			paintInterface = this::paintObjectsSeparated;
+		paintInterface.paint(g2d, selectedEntity, originalEntity, selectedLink);
 		
 		// Render the candidate object.
 		CandidatePanel.CandidateObject candidate = candidatePanel.current();
@@ -419,10 +415,6 @@ public class SketchPanel<Path> extends JComponent implements
 			paintSketchLink(g, linkCandidate.component, true);
 		}
 		
-		// Render the current selected link object.
-		if(selectedLink != null)
-			paintSketchLink(g, selectedLink, true);
-		
 		// Render the newly painting stroke.
 		g2d.setStroke(new BasicStroke(2));
 		g2d.setColor(Color.BLACK);
@@ -433,7 +425,82 @@ public class SketchPanel<Path> extends JComponent implements
 		}
 		if(!(points.size() < 2)) RenderUtils.drawStroke(g2d, points);
 	}
-
+	
+	private void paintObjectsSeparated(Graphics2D g2d,
+			SketchEntityComponent selectedEntity,
+			SketchEntityComponent originalEntity,
+			SketchLinkComponent<Path> selectedLink) {
+		// Render the links in order.
+		for(int i = 0; i < model.numLinks(); ++ i) {
+			SketchLinkComponent<Path> current = model.getLink(i);
+			if(current != selectedLink)
+				paintSketchLink(g2d, current, false);
+		}
+		
+		// Render the entities in order.
+		for(int i = model.numEntities() - 1; i >= 0; -- i) {
+			SketchEntityComponent current = model.getEntity(i);
+			
+			// Selection box if the object is selected.
+			if(current == selectedEntity) {
+				g2d.setColor(Color.LIGHT_GRAY);
+				g2d.fillRect(selectedEntity.x, selectedEntity.y, 
+						selectedEntity.w, selectedEntity.h);
+			}
+			
+			// Default object component.
+			paintSketchComponent(g2d, current, false);
+		}
+		
+		// Render the current selected link object.
+		if(selectedLink != null)
+			paintSketchLink(g2d, selectedLink, true);
+	}
+	
+	private void paintObjectsInterleaved(Graphics2D g2d,
+			SketchEntityComponent selectedEntity,
+			SketchEntityComponent originalEntity,
+			SketchLinkComponent<Path> selectedLink) {
+		
+		// Retrieve all paths first.
+		List<SketchLinkComponent<Path>> paths = new ArrayList<>();
+		for(int i = 0; i < model.numLinks(); ++ i)
+			paths.add(model.getLink(i));
+		
+		// Sort the links with correct order.
+		for(int i = model.numEntities() - 1; i >= 0; -- i) {
+			SketchEntityComponent current = model.getEntity(i);
+			
+			// Selection box if the object is selected.
+			if(current == selectedEntity) {
+				g2d.setColor(Color.LIGHT_GRAY);
+				g2d.fillRect(selectedEntity.x, selectedEntity.y, 
+						selectedEntity.w, selectedEntity.h);
+			}
+			
+			// Iterate for every paths in the model.
+			Iterator<SketchLinkComponent<Path>> iterator = paths.iterator();
+			while(iterator.hasNext()) {
+				SketchLinkComponent<Path> currentLink = iterator.next();
+				SketchEntityComponent relation = 
+						current == selectedEntity? 
+						originalEntity : current;
+				if(currentLink.relatedTo(relation)) {
+					if(selectedLink != currentLink)
+						paintSketchLink(g2d, currentLink, false);
+					iterator.remove();
+				}
+			}
+			
+			// Default object component.
+			paintSketchComponent(g2d, current, false);
+		}
+		
+		// Render the current selected link object.
+		if(selectedLink != null)
+			paintSketchLink(g2d, selectedLink, true);
+	}
+	
 	@Override
 	public void mouseMoved(MouseEvent arg0) {
 		

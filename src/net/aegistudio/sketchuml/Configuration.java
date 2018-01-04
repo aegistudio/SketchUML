@@ -21,6 +21,9 @@ public class Configuration {
 	/** The maximum distance to select a link line. */ 
 	public double MAX_LINKTHRESHOLD = 10.0;
 	
+	/** Should the links be rendered in interleaved mode */
+	public boolean LINK_INTERLEAVED_RENDER = true;
+	
 	// Begin handwriting font's configuration.
 	/** The hand writing font's name */
 	public String HANDWRITING_FONTNAME = "Comic Sans MS";

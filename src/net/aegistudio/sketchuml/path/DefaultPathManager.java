@@ -137,6 +137,7 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 					pointEnd, current);
 			if(!current.inside(boundEnd)) break;
 		}
+		
 		representIndex.add(points.size() - 1);
 		representTangent.add(lastTangent);*/
 		
@@ -194,7 +195,8 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 			// Calculate distance between bezier subdivide point.
 			BezierEvaluator bezier = new BezierEvaluator(
 					before, intersect, after);
-			bezier.evaluate(0.5, pointFitting);
+			bezier.evaluate(bezier.solveLengthEquation(
+					0.5, 10, 1e-3), pointFitting);
 			double distanceBezier = minusModulus(
 					ignoreRepresent, midPoint, pointFitting);
 			
