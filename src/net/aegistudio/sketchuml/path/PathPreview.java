@@ -19,7 +19,7 @@ public class PathPreview extends JComponent {
 	private static final long serialVersionUID = 1L;
 	
 	private final DefaultPathManager manager = new DefaultPathManager();
-	private final DefaultPathView view = new DefaultPathView();
+	private final BezierPathView<DefaultPath> view = new BezierPathView<>();
 	private DefaultPath path;
 	
 	private final Vector<PointR> points = new Vector<>();

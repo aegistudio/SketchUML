@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.UIManager;
 
 import net.aegistudio.sketchuml.framework.CandidatePanel;
@@ -20,7 +22,7 @@ import net.aegistudio.sketchuml.framework.DefaultSketchModel;
 import net.aegistudio.sketchuml.framework.SketchPanel;
 import net.aegistudio.sketchuml.path.DefaultPath;
 import net.aegistudio.sketchuml.path.DefaultPathManager;
-import net.aegistudio.sketchuml.path.DefaultPathView;
+import net.aegistudio.sketchuml.path.BezierPathView;
 import net.aegistudio.sketchuml.statechart.TemplateStateChart;
 import net.aegistudio.sketchuml.stroke.SketchRecognizer;
 
@@ -53,7 +55,7 @@ public class Main {
 		
 		// Create the path manager and view.
 		DefaultPathManager pathManager = new DefaultPathManager();
-		DefaultPathView pathView = new DefaultPathView();
+		BezierPathView<DefaultPath> pathView = new BezierPathView<>();
 		
 		// Initialize the recognizers.
 		SketchRecognizer recognizer = new SketchRecognizer(
@@ -70,6 +72,25 @@ public class Main {
 		frame.setLocationRelativeTo(null);
 		frame.setLocation(0, 0);
 		frame.setSize(1400, 768);
+		
+		// Add the title bar.
+		JMenuBar menuBar = new JMenuBar();
+		frame.setJMenuBar(menuBar);
+		
+		// Add the file menu.
+		JMenu menuFile = new JMenu("File");
+		menuFile.setMnemonic('F');
+		menuBar.add(menuFile);
+		
+		// Add the edit menu.
+		JMenu menuEdit = new JMenu("Edit");
+		menuEdit.setMnemonic('E');
+		menuBar.add(menuEdit);
+		
+		// Set the menu's text font.
+		for(int i = 0; i < menuBar.getMenuCount(); ++ i)
+			menuBar.getMenu(i).setFont(Configuration
+					.getInstance().PROPERTY_FONT);
 		
 		// Add the result selection panel.
 		CandidatePanel candidatePanel = new CandidatePanel();

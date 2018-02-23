@@ -4,10 +4,11 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 
 import de.dubs.dollarn.PointR;
 
-public class DefaultPathView implements PathView<DefaultPath> {
+public class BezierPathView<T extends BezierPath> implements PathView<T> {
 	public static final float[][] DASH_DECORATION= { 
 			/*DASH*/{10.f}, /*DOT*/{2.f}, /*DASHDOT*/{10.f, 4.0f, 4.f} };
 	public static final float ARROW_ZONAL = 20;
@@ -82,7 +83,7 @@ public class DefaultPathView implements PathView<DefaultPath> {
 	
 	@Override
 	public void render(Graphics2D g2d, boolean selected,
-			DefaultPath pathObject, LineStyle line, 
+			T pathObject, LineStyle line, 
 			Rectangle2D boundBegin, ArrowStyle arrowBegin,
 			Rectangle2D boundEnd, ArrowStyle arrowEnd,
 			String startText, String centerText, String endText) {
@@ -91,14 +92,18 @@ public class DefaultPathView implements PathView<DefaultPath> {
 		g2d.setColor(selected? Color.GRAY : Color.BLACK);
 		
 		// Collect path object information.
-		int numPoints = pathObject.separatePoints.size();
+		List<PointR> separatePoints = pathObject
+				.separatePoints(boundBegin, boundEnd);
+		List<PointR> controlPoints = pathObject
+				.controlPoints(boundBegin, boundEnd);
+		int numPoints = separatePoints.size();
 		PointR pointBegin = PointR.center(boundBegin);
 		PointR pointEnd = PointR.center(boundEnd);
 		PointR[] points = new PointR[numPoints + 2];
 		points[0] = pointBegin;
 		points[points.length - 1] = pointEnd;
 		for(int i = 0; i < numPoints; ++ i) 
-			points[i + 1] = pathObject.separatePoints.get(i);
+			points[i + 1] = separatePoints.get(i);
 		
 		// The intersection and direction points.
 		PointR intersectBegin = new PointR();
@@ -138,8 +143,8 @@ public class DefaultPathView implements PathView<DefaultPath> {
 			}
 			else g2d.setStroke(new BasicStroke(selected? 3.0f : 2.0f));
 			
-			if(pathObject.controlPoints.size() <= i || 
-					pathObject.controlPoints.get(i) == null) {
+			if(controlPoints.size() <= i || 
+					controlPoints.get(i) == null) {
 				// Just draw a direct line.
 				g2d.drawLine(xBegin, yBegin, xEnd, yEnd);
 				
@@ -165,7 +170,7 @@ public class DefaultPathView implements PathView<DefaultPath> {
 			}
 			else {
 				// Retrieve control point and paint.
-				PointR control = pathObject.controlPoints.get(i);
+				PointR control = controlPoints.get(i);
 				
 				int xCtrl = control.intX(); 
 				int yCtrl = control.intY();
@@ -349,7 +354,7 @@ public class DefaultPathView implements PathView<DefaultPath> {
 	}
 	
 	@Override
-	public double distance(DefaultPath pathObject, PointR position, 
+	public double distance(BezierPath pathObject, PointR position, 
 			Rectangle2D boundBegin, Rectangle2D boundEnd) {
 		double distance = Double.POSITIVE_INFINITY;
 		
@@ -358,22 +363,26 @@ public class DefaultPathView implements PathView<DefaultPath> {
 		if(position.inside(boundEnd)) return distance;
 		
 		// Collect path object information.
-		int numPoints = pathObject.separatePoints.size();
+		List<PointR> separatePoints = pathObject
+				.separatePoints(boundBegin, boundEnd);
+		List<PointR> controlPoints = pathObject
+				.controlPoints(boundBegin, boundEnd);
+		int numPoints = separatePoints.size();
 		PointR pointBegin = PointR.center(boundBegin);
 		PointR pointEnd = PointR.center(boundEnd);
 		PointR[] points = new PointR[numPoints + 2];
 		points[0] = pointBegin;
 		points[points.length - 1] = pointEnd;
 		for(int i = 0; i < numPoints; ++ i) 
-			points[i + 1] = pathObject.separatePoints.get(i);
+			points[i + 1] = separatePoints.get(i);
 
 		// Perform calculation.
 		for(int i = 0; i < numPoints + 1; ++ i) {
 			PointR pBegin = points[i];
 			PointR pEnd = points[i + 1];
 			
-			if(pathObject.controlPoints.size() <= i || 
-					pathObject.controlPoints.get(i) == null) {
+			if(controlPoints.size() <= i || 
+					controlPoints.get(i) == null) {
 				// Treat current piece of stroke as line.
 				double lineDistance = Double.POSITIVE_INFINITY;
 				lineDistance = lineDistance(pBegin, pEnd, position);
@@ -384,7 +393,7 @@ public class DefaultPathView implements PathView<DefaultPath> {
 			}
 			else {
 				// Retrieve control point and calculate.
-				PointR control = pathObject.controlPoints.get(i);
+				PointR control = controlPoints.get(i);
 				BezierEvaluator evaluator = new BezierEvaluator(
 						points[i], control, points[i + 1]);
 				
@@ -415,19 +424,23 @@ public class DefaultPathView implements PathView<DefaultPath> {
 	 * Notice the part inside the rectangles will not be counted.
 	 * @return
 	 */
-	public double totalLength(DefaultPath pathObject, 
+	public double totalLength(BezierPath pathObject, 
 			Rectangle2D boundBegin, Rectangle2D boundEnd) {
 		
 		// Collect path object information.
+		List<PointR> separatePoints = pathObject
+				.separatePoints(boundBegin, boundEnd);
+		List<PointR> controlPoints = pathObject
+				.controlPoints(boundBegin, boundEnd);
 		double totalLength = 0.0;
-		int numPoints = pathObject.separatePoints.size();
+		int numPoints = separatePoints.size();
 		PointR pointBegin = PointR.center(boundBegin);
 		PointR pointEnd = PointR.center(boundEnd);
 		PointR[] points = new PointR[numPoints + 2];
 		points[0] = pointBegin;
 		points[points.length - 1] = pointEnd;
 		for(int i = 0; i < numPoints; ++ i) 
-			points[i + 1] = pathObject.separatePoints.get(i);
+			points[i + 1] = separatePoints.get(i);
 
 		// Perform calculation.
 		PointR temp = new PointR();
@@ -437,8 +450,8 @@ public class DefaultPathView implements PathView<DefaultPath> {
 			PointR pBegin = points[i];
 			PointR pEnd = points[i + 1];
 			
-			if(pathObject.controlPoints.size() <= i || 
-					pathObject.controlPoints.get(i) == null) {
+			if(controlPoints.size() <= i || 
+					controlPoints.get(i) == null) {
 				
 				// Update distance.
 				temp.combine(1.0, pEnd, -1.0, pBegin);
@@ -457,7 +470,7 @@ public class DefaultPathView implements PathView<DefaultPath> {
 			}
 			else {
 				// Retrieve control point and calculate.
-				PointR control = pathObject.controlPoints.get(i);
+				PointR control = controlPoints.get(i);
 				BezierEvaluator evaluator = new BezierEvaluator(
 						points[i], control, points[i + 1]);
 				totalLength += evaluator.length(1.0);

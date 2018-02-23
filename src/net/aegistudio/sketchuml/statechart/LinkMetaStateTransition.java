@@ -17,7 +17,12 @@ public class LinkMetaStateTransition implements PropertyView, LinkView {
 		if(viewObject == null) {
 			viewObject = new PropertyPanel<>();
 			
-			// Add the guard condition.
+			// Add the trigger.
+			viewObject.registerTextField("Trigger: ", 
+					(entity) -> entity.trigger, 
+					(entity, trigger) -> entity.trigger = trigger);
+			
+			// Add the guard.
 			viewObject.registerTextField("Guard: ", 
 					(entity) -> entity.guard, 
 					(entity, guard) -> entity.guard = guard);
@@ -44,14 +49,19 @@ public class LinkMetaStateTransition implements PropertyView, LinkView {
 			endStyle = PathView.ArrowStyle.FISHBONE;
 			lineStyle = PathView.LineStyle.COHERENT;
 			
+			// Add the trigger if any.
+			if(transition.trigger.length() > 0)
+				centerText = transition.trigger;
+			
 			// Replace the guard condition if any.
 			if(transition.guard.length() > 0)
-				centerText = "[" + transition.guard + "]";
+				centerText = (centerText == null? "" : 
+					centerText + " ") + "[" + transition.guard + "]";
 			
 			// Append the action to the end.
 			if(transition.action.length() > 0)
 				centerText = centerText == null? transition.action : 
-					(centerText + " " + transition.action);
+					(centerText + " / " + transition.action);
 		} };
 	}
 
