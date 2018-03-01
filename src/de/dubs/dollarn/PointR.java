@@ -109,7 +109,10 @@ public class PointR {
 		return false;
 	}
 
-	// This methods are trimmed to be used with sketch uml.
+	// These methods are trimmed to be used with sketch uml.
+	public String toString() {
+		return "(" + X + ", " + Y + ", " + T + ")";
+	}
 	
 	public void read(DataInputStream inputStream) throws IOException {
 		X = inputStream.readDouble();
