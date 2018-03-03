@@ -23,12 +23,15 @@ import net.aegistudio.sketchuml.framework.SketchPanel;
 import net.aegistudio.sketchuml.path.TrifoldProxyPath;
 import net.aegistudio.sketchuml.path.TrifoldPathManager;
 import net.aegistudio.sketchuml.path.BezierPathView;
+import net.aegistudio.sketchuml.path.PathEditor;
+import net.aegistudio.sketchuml.path.TrifoldPathEditor;
 import net.aegistudio.sketchuml.statechart.TemplateStateChart;
 import net.aegistudio.sketchuml.stroke.SketchRecognizer;
 
 public class Main {
 	public static Template[] templates = { new TemplateStateChart() };
 	public static Map<String, Font> fonts = new HashMap<>();
+	public static ComponentEditPanel<TrifoldProxyPath> editPanel;
 	
 	public static void main(String[] arguments) {
 		// Set the UI's major look and feel. Could fail.
@@ -102,8 +105,21 @@ public class Main {
 		frame.add(sketchPanel, BorderLayout.CENTER);
 		
 		// Create the property panels.
-		ComponentEditPanel<TrifoldProxyPath> editPanel 
-			= new ComponentEditPanel<>(model);
+		editPanel = new ComponentEditPanel<>(model, new TrifoldPathEditor(),
+			new PathEditor.PathChangeListener<TrifoldProxyPath>() {
+
+				@Override
+				public Object beforeChange(TrifoldProxyPath previousPath) {
+					return null;
+				}
+
+				@Override
+				public void receiveChange(Object beforeChange, 
+						TrifoldProxyPath newPath) {
+					if(editPanel == null) return;
+					model.notifyLinkStyleChanged(editPanel.linkEditor);
+				}
+			});
 		frame.add(editPanel, BorderLayout.EAST);
 		
 		// Create the keyboard capture's listener.

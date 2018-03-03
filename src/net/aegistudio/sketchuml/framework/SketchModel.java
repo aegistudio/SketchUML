@@ -145,4 +145,9 @@ public interface SketchModel<Path> {
 	 * @param source the source's caller object.
 	 */
 	void notifyLinkChanged(Object sourceObject);
+	
+	/**
+	 * @param source the source's caller object.
+	 */
+	void notifyLinkStyleChanged(Object sourceObject);
 }

@@ -16,17 +16,23 @@ import javax.swing.JPanel;
 
 import net.aegistudio.sketchuml.Configuration;
 import net.aegistudio.sketchuml.LinkEntry;
+import net.aegistudio.sketchuml.path.PathEditor;
 
 public class LinkComponentPanel<Path> extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private final SketchModel<Path> model;
+	private final PathEditor<Path> pathEditor;
+	private final PathEditor.PathChangeListener<Path> pathNotifier;
 	private final JButton delete;
 	private final JComboBox<LinkEntry> type;
 	private final DefaultComboBoxModel<LinkEntry> typeModel;
-	private Component property;
+	private Component property, pathStyle;
 	
-	public LinkComponentPanel(SketchModel<Path> model) {
-		this.model = model;
+	public LinkComponentPanel(SketchModel<Path> model, 
+			PathEditor<Path> pathEditor, 
+			PathEditor.PathChangeListener<Path> pathNotifier) {
+		this.model = model; this.pathEditor = pathEditor;
+		this.pathNotifier = pathNotifier;
 		super.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		
 		// Add the editing operation's panel.
@@ -101,6 +107,10 @@ public class LinkComponentPanel<Path> extends JPanel {
 				.test(link.source.entity, link.destination.entity))
 				.forEach(typeModel::addElement);
 		typeModel.setSelectedItem(link.entry);
+		
+		// The link style panel.
+		pathStyle = pathEditor.editPath(link.pathObject, this.pathNotifier);
+		if(pathStyle != null) add(pathStyle);
 		
 		// The editor panel.
 		property = link.entry.propertyView.getViewObject(e -> 

@@ -54,4 +54,16 @@ public class TrifoldRectPath implements TrifoldPath {
 		else {	highSkew = false; return varianceLowerSkew; }
 	}
 
+	@Override
+	public TrifoldRectPath clone() {
+		TrifoldRectPath path = new TrifoldRectPath();
+		path.highSkew = this.highSkew;
+		return path;
+	}
+	
+	@Override
+	public boolean equals(Object path) {
+		if(!(path instanceof TrifoldRectPath)) return false;
+		return this.highSkew == ((TrifoldRectPath)path).highSkew;
+	}
 }

@@ -23,4 +23,14 @@ public class TrifoldLinePath implements TrifoldPath {
 		pieces.add(pieceStraight);
 		return LinePiece.distance(stroke, pieces, 0, 0);
 	}
+	
+	@Override
+	public TrifoldLinePath clone() {
+		return new TrifoldLinePath();
+	}
+	
+	@Override
+	public boolean equals(Object path) {
+		return path instanceof TrifoldLinePath;
+	}
 }

@@ -15,6 +15,7 @@ import javax.swing.JLabel;
 
 import de.dubs.dollarn.PointR;
 
+@SuppressWarnings("deprecation")
 public class PathPreview extends JComponent {
 	private static final long serialVersionUID = 1L;
 	

@@ -5,7 +5,7 @@ import java.util.Vector;
 
 import de.dubs.dollarn.PointR;
 
-public interface TrifoldPath {
+public interface TrifoldPath extends Cloneable {
 	/**
 	 * Construct the path from the provided data.
 	 * 

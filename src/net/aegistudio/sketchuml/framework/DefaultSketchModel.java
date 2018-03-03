@@ -270,6 +270,11 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 		notifyUpdate(observerLink, sourceObject);
 	}
 	
+	@Override
+	public void notifyLinkStyleChanged(Object sourceObject) {
+		notifyLinkChanged(sourceObject);
+	}
+	
 	// Link related operations.
 
 	@Override

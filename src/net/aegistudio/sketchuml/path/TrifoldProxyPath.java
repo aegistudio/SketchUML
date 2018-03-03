@@ -51,7 +51,7 @@ public class TrifoldProxyPath implements BezierPath {
 		
 		boolean isCenterBegin = statusBegin.status 
 				== LinePiece.BoxIntersectStatus.BOX_INTERLEAVED;
-		boolean isCenterEnd = statusBegin.status 
+		boolean isCenterEnd = statusEnd.status 
 				== LinePiece.BoxIntersectStatus.BOX_INTERLEAVED;
 
 		// Calculate the beginning point.
@@ -74,17 +74,21 @@ public class TrifoldProxyPath implements BezierPath {
 		
 		// Remove the beginning separate and control points.
 		if(isCenterBegin) {
-			separatePoints.remove(0);
-			controlPoints.remove(0);
+			int index = separatePoints.indexOf(pointBegin);
+			if(index >= 0) {
+				separatePoints.remove(index);
+				controlPoints.remove(index);
+			}
 		}
 		
 		// Remove the ending separate and control points.
 		if(isCenterEnd) {
-			if(separatePoints.size() > 0) 
-				separatePoints.remove(separatePoints.size() - 1);
-			
-			if(controlPoints.size() > 0) 
-				controlPoints.remove(controlPoints.size() - 1);
+			int index = separatePoints.indexOf(pointEnd);
+			if(index >= 0) {
+				separatePoints.remove(index);
+				if(index - 1 >= 0)
+					controlPoints.remove(index - 1);
+			}
 		}
 	}
 	

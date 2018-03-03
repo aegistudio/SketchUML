@@ -166,20 +166,10 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 				if(pBegin == pointBegin) {
 					lineLength -= intersectBox(boundBegin, 
 						points[1], directionBegin, intersectBegin);
-					if(pathObject.arrowDirectionOnLine() && numPoints > 0) {
-						directionBegin.combine(-1, points[1], 1, 
-								points.length > 2? points[2] : points[1]);
-						directionBegin.normalize();
-					}
 				}
 				if(pEnd == pointEnd) {
 					lineLength -= intersectBox(boundEnd, 
-						points[numPoints], directionEnd, intersectEnd);
-					if(pathObject.arrowDirectionOnLine() && numPoints > 0) {
-						directionEnd.combine(-1, points[numPoints], 
-								1, points[numPoints - 1]);
-						directionEnd.normalize();
-					}
+						points[points.length - 2], directionEnd, intersectEnd);
 				}
 				
 				// Check whether guard condition is reached.
@@ -255,10 +245,31 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 		// Perform arrow rendering.
 		g2d.setStroke(new BasicStroke(3));
 		g2d.setColor(selected? Color.GRAY : Color.BLACK);
-		renderArrow(g2d, intersectBegin, directionBegin, 
-				arrowBegin, selected);
-		renderArrow(g2d, intersectEnd, directionEnd, 
-				arrowEnd, selected);
+		
+		if(pathObject.arrowDirectionOnLine()) {
+			// Indicates the line is placed on the edge.
+			if(!pathObject.renderInnerLineBegin()) {
+				directionBegin.combine(1., points[1], -1., points[2]);
+				directionBegin.normalize();
+			}
+			else {
+				renderArrow(g2d, intersectBegin, directionBegin, 
+					arrowBegin, selected);
+			}
+			
+			// Indicates the ending point is placed on the edge.
+			if(!pathObject.renderInnerLineEnd()) {
+				directionEnd.combine(-1., points[points.length - 2], 
+						1., points[points.length - 3]);
+				directionEnd.normalize();
+				renderArrow(g2d, separatePoints.get(separatePoints.size() - 1), 
+						directionEnd, arrowEnd, selected);
+			}
+			else {
+				renderArrow(g2d, intersectEnd, directionEnd, 
+					arrowEnd, selected);
+			}
+		}
 	}
 	
 	private void renderArrow(Graphics2D g2d, PointR origin, 

@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import javax.swing.JPanel;
 
 import net.aegistudio.sketchuml.Configuration;
+import net.aegistudio.sketchuml.path.PathEditor;
 
 public class ComponentEditPanel<Path> extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -14,10 +15,13 @@ public class ComponentEditPanel<Path> extends JPanel {
 	private final SketchModel<Path> model;
 	private Object selectedEditor;
 	
-	public ComponentEditPanel(SketchModel<Path> model) {
+	public ComponentEditPanel(SketchModel<Path> model, 
+			PathEditor<Path> pathEditor, 
+			PathEditor.PathChangeListener<Path> pathNotifier) {
 		this.model = model;
 		entityEditor = new EntityComponentPanel(model);
-		linkEditor = new LinkComponentPanel<Path>(model);
+		linkEditor = new LinkComponentPanel<Path>(model, 
+				pathEditor, pathNotifier);
 		
 		model.registerEntityObserver(this, this::onUpdate);
 		model.registerLinkObserver(this, this::onUpdate);

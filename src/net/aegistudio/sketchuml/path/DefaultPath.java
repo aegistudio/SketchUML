@@ -6,6 +6,7 @@ import java.util.List;
 
 import de.dubs.dollarn.PointR;
 
+@Deprecated
 public class DefaultPath implements BezierPath {
 	public List<PointR> separatePoints = new ArrayList<>();
 	
