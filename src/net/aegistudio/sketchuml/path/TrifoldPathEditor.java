@@ -125,8 +125,14 @@ public class TrifoldPathEditor extends JPanel
 		styleRectAngle.name = "(L) Rect-angle";
 		styleRectAngle.newInstance = TrifoldRectPath::new;
 		
+		// The zigzag line style object.
+		StyleObject<TrifoldZigzagPath> styleZigzag = new StyleObject<>();
+		styleZigzag.classObject = TrifoldZigzagPath.class;
+		styleZigzag.name = "(Z) Zigzag";
+		styleZigzag.newInstance = TrifoldZigzagPath::new;
+		
 		// Add these list objects to the map.
-		Arrays.asList(styleStraight, styleRectAngle)
+		Arrays.asList(styleStraight, styleRectAngle, styleZigzag)
 			.forEach(style -> PATHSTYLE.put(style.classObject, style));
 	}
 	

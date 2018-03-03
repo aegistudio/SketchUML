@@ -55,9 +55,12 @@ public interface TrifoldPath extends Cloneable {
 	 * @see net.aegistudio.sketchuml.path.LinePiece.BoxIntersectStatus
 	 * 
 	 * @param stroke the points in the user input stroke.
+	 * @param traningStroke the stroke for training, having the 
+	 * evaluated beginning and ending point for training.
 	 * @param intersectBegin the intersection of the begin bound.
 	 * @param intersectEnd the intersection of the end bound.
 	 */
 	public double articulateAndFitness(Vector<PointR> stroke,
+			Vector<PointR> trainingStroke,
 			int intersectBegin, int intersectEnd);
 }

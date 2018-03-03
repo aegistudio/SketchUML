@@ -210,8 +210,8 @@ public class ParametricLinePiece {
 				// Update the new vector with gradient of order two.
 				currentBias += status.distance * status.distance;
 				for(int k = 0; k < parameter.length; ++ k) {
-					gradient0[k] += 2 * status.distance * 
-						learnRate * gradient2[k];
+					gradient0[k] += 2 * status.distance 
+							* gradient2[k];
 				}
 			}
 			
@@ -226,19 +226,19 @@ public class ParametricLinePiece {
 			// Add essential values to the bias and gradient vectors.
 			currentBias += boundPotential;
 			for(int k = 0; k < parameter.length; ++ k) {
-				gradient0[k] += 2 * learnRate
+				gradient0[k] += 2 
 						* left.gammaTerm(gammaBoundIn, gammaBoundOut)
 						* (left.value - bound.pointLeft) 
 						* contributorLeft.dxdai(k, parameter);
-				gradient0[k] += 2 * learnRate
+				gradient0[k] += 2 
 						* right.gammaTerm(gammaBoundIn, gammaBoundOut)
 						* (right.value - bound.pointRight) 
 						* contributorRight.dxdai(k, parameter);
-				gradient0[k] += 2 * learnRate
+				gradient0[k] += 2 
 						* top.gammaTerm(gammaBoundIn, gammaBoundOut)
 						* (top.value - bound.pointTop) 
 						* contributorTop.dydai(k, parameter);
-				gradient0[k] += 2 * learnRate
+				gradient0[k] += 2 
 						* bottom.gammaTerm(gammaBoundIn, gammaBoundOut)
 						* (bottom.value - bound.pointBottom) 
 						* contributorBottom.dydai(k, parameter);
@@ -253,9 +253,14 @@ public class ParametricLinePiece {
 			if(Math.abs(currentBias) < terminateBias) break;
 			if(Math.abs(currentModulus) < terminateBias * terminateBias) break;
 			
+			// Perform normalization on gradient vector.
+			double currentNormalize = 1.0 / Math.sqrt(currentModulus);
+			for(int k = 0; k < parameter.length; ++ k)
+				gradient0[k] *= currentNormalize;
+			
 			// Update the parameter's vector.
 			for(int k = 0; k < parameter.length; ++ k)
-				parameter[k] -= gradient0[k];
+				parameter[k] -= learnRate * gradient0[k];
 			
 			// Swap the gradient vector buffers.
 			double[] gradientTemp = gradient0;

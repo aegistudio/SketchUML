@@ -29,6 +29,7 @@ public class TrifoldRectPath implements TrifoldPath {
 
 	@Override
 	public double articulateAndFitness(Vector<PointR> stroke,
+			Vector<PointR> trainingStroke,
 			int intersectBegin, int intersectEnd) {
 		PointR pointStart = stroke.get(0);
 		PointR pointEnd = stroke.get(stroke.size() - 1);

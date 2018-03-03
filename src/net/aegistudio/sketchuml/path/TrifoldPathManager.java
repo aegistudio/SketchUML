@@ -147,23 +147,9 @@ public class TrifoldPathManager implements PathManager<TrifoldProxyPath> {
 		LinePiece.BoxIntersectStatus intersectEnd = resultPath.statusEnd;
 		pieceEnd.intersectBox(intersectEnd, boundEnd);
 	
-		// Calculate and articulate the line path.
-		TrifoldPath trifoldLine = new TrifoldLinePath();
-		double varianceLine = trifoldLine
-				.articulateAndFitness(outerStroke,
-				intersectStart.status, intersectEnd.status);
-		double minimumVariance = varianceLine;
-		resultPath.setPath(trifoldLine);
-		
-		// Calculate and articulate the rect path.
-		TrifoldPath trifoldRect = new TrifoldRectPath();
-		double varianceRect = trifoldRect
-				.articulateAndFitness(outerStroke, 
-				intersectStart.status, intersectEnd.status);
-		if(varianceRect < minimumVariance) {
-			minimumVariance = varianceRect;
-			resultPath.setPath(trifoldRect);
-		}
+		// Record the status before aligning them to center.
+		int intersectStatusStart = intersectStart.status;
+		int intersectStatusEnd = intersectEnd.status;
 		
 		// See whether the starting and ending point is close
 		// enough to the center.
@@ -175,6 +161,49 @@ public class TrifoldPathManager implements PathManager<TrifoldProxyPath> {
 				stroke.get(i + 1).inside(boundEnd); -- i)
 			judgeCenter(stroke.get(i), stroke.get(i + 1), 
 					boundEnd, resultPath.statusEnd);
+		
+		// Add the center point to training if possible.
+		Vector<PointR> trainingStroke = outerStroke;
+		if(intersectStart.status == LinePiece
+				.BoxIntersectStatus.BOX_INTERLEAVED) {
+			if(trainingStroke == outerStroke)
+				trainingStroke = new Vector<>(outerStroke);
+			trainingStroke.add(0, PointR.center(boundBegin));
+		}
+		if(intersectEnd.status == LinePiece
+				.BoxIntersectStatus.BOX_INTERLEAVED) {
+			if(trainingStroke == outerStroke)
+				trainingStroke = new Vector<>(outerStroke);
+			trainingStroke.add(PointR.center(boundEnd));
+		}
+		
+		// Calculate and articulate the line path.
+		TrifoldPath trifoldLine = new TrifoldLinePath();
+		double varianceLine = trifoldLine
+				.articulateAndFitness(outerStroke, trainingStroke,
+				intersectStatusStart, intersectStatusEnd);
+		double minimumVariance = varianceLine;
+		resultPath.setPath(trifoldLine);
+		
+		// Calculate and articulate the rect path.
+		TrifoldPath trifoldRect = new TrifoldRectPath();
+		double varianceRect = trifoldRect
+				.articulateAndFitness(outerStroke, trainingStroke,
+				intersectStatusStart, intersectStatusEnd);
+		if(varianceRect < minimumVariance) {
+			minimumVariance = varianceRect;
+			resultPath.setPath(trifoldRect);
+		}
+		
+		// Calculate and articulate the zig-zag path.
+		TrifoldPath trifoldZigzag = new TrifoldZigzagPath();
+		double varianceZigzag = trifoldZigzag
+				.articulateAndFitness(outerStroke, trainingStroke,
+				intersectStatusStart, intersectStatusEnd);
+		if(varianceZigzag < minimumVariance) {
+			minimumVariance = varianceZigzag;
+			resultPath.setPath(trifoldZigzag);
+		}
 		
 		// Collect and return the result.
 		return resultPath;

@@ -16,6 +16,7 @@ public class TrifoldLinePath implements TrifoldPath {
 
 	@Override
 	public double articulateAndFitness(Vector<PointR> stroke,
+			Vector<PointR> trainingStroke,
 			int intersectBegin, int intersectEnd) {
 		LinePiece pieceStraight = new LinePiece(stroke.get(0), 
 				stroke.get(stroke.size() - 1));
