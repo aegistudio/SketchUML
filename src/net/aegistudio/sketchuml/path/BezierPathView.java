@@ -127,10 +127,18 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 			int xEnd = pEnd.intX();
 			int yEnd = pEnd.intY();
 			
+			// Indicates whether begin line or end line should render.
+			boolean renderBegin = true;
+			boolean renderEnd = true;
+			if(pBegin == pointBegin) renderBegin = 
+					pathObject.renderInnerLineBegin();
+			if(pEnd == pointEnd) renderEnd = 
+					pathObject.renderInnerLineEnd();
+			
 			// Render knot when selected.
 			if(selected) {
-				g2d.fillRect(xBegin - 3, yBegin - 3, 6, 6);
-				g2d.fillRect(xEnd - 3, yEnd - 3, 6, 6);
+				if(renderBegin) g2d.fillRect(xBegin - 3, yBegin - 3, 6, 6);
+				if(renderEnd) g2d.fillRect(xEnd - 3, yEnd - 3, 6, 6);
 			}
 			
 			// Configure line style.
@@ -145,18 +153,34 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 			
 			if(controlPoints.size() <= i || 
 					controlPoints.get(i) == null) {
+				boolean renderLine = renderBegin && renderEnd;
+				
 				// Just draw a direct line.
-				g2d.drawLine(xBegin, yBegin, xEnd, yEnd);
+				if(renderLine) g2d.drawLine(xBegin, yBegin, xEnd, yEnd);
 				
 				// Calculate current piece length.
 				pieceLength.combine(-1, pBegin, 1, pEnd);
 				double lineLength = pieceLength.modulus();
 						
 				// Find intersection.
-				if(pBegin == pointBegin) lineLength -= intersectBox(boundBegin, 
+				if(pBegin == pointBegin) {
+					lineLength -= intersectBox(boundBegin, 
 						points[1], directionBegin, intersectBegin);
-				if(pEnd == pointEnd) lineLength -= intersectBox(boundEnd, 
+					if(pathObject.arrowDirectionOnLine() && numPoints > 0) {
+						directionBegin.combine(-1, points[1], 1, 
+								points.length > 2? points[2] : points[1]);
+						directionBegin.normalize();
+					}
+				}
+				if(pEnd == pointEnd) {
+					lineLength -= intersectBox(boundEnd, 
 						points[numPoints], directionEnd, intersectEnd);
+					if(pathObject.arrowDirectionOnLine() && numPoints > 0) {
+						directionEnd.combine(-1, points[numPoints], 
+								1, points[numPoints - 1]);
+						directionEnd.normalize();
+					}
+				}
 				
 				// Check whether guard condition is reached.
 				// XXX This part may be changed later, or may never.

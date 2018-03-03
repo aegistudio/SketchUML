@@ -1,5 +1,6 @@
 package net.aegistudio.sketchuml.path;
 
+import java.awt.geom.Rectangle2D;
 import java.util.Vector;
 
 import de.dubs.dollarn.PointR;
@@ -130,5 +131,165 @@ public class LinePiece {
 		
 		// The final distance result.
 		return totalDistance + potential;
+	}
+	
+	public static class BoxIntersectStatus {
+		public static final int BOX_INTERLEAVED = 0;
+		public static final int BOX_TOP = 1;
+		public static final int BOX_RIGHT = 2;
+		public static final int BOX_BOTTOM = 3;
+		public static final int BOX_LEFT = 4;
+		
+		// The status should be a provided constant value.
+		public int status;
+		
+		// The ratio should be in range -1 ~ +1.
+		public double ratio; 
+		
+		/** Attempt to test if the point is on the boundary. */
+		public boolean attemptBound(PointR point, 
+				int left, int right, int top, int bottom) {
+			double ratio = 0.0;
+			
+			// The point is either on the top or on the bottom.
+			if(left <= point.intX() && point.intX() <= right
+					&& status == BOX_INTERLEAVED) {
+				int distance = right - left;
+				if(distance == 0) distance = 1;
+				
+				ratio = (1.0 * point.intX() - left) / distance;
+				if(point.intY() == top) status = BOX_TOP;
+				else if(point.intY() == bottom) status = BOX_BOTTOM;
+			}
+			
+			// The point is either on the left or on the right.
+			if(top <= point.intY() && point.intY() <= bottom
+					&& status == BOX_INTERLEAVED) {
+				int distance = bottom - top;
+				if(distance == 0) distance = 1;
+				
+				ratio = (1.0 * point.intY() - top) / distance;
+				if(point.intX() == left) status = BOX_LEFT;
+				else if(point.intX() == right) status = BOX_RIGHT;
+			}
+			
+			// Collect the evaluated status and return result.
+			if(status != BOX_INTERLEAVED) {
+				this.ratio = 2 * ratio - 1;
+				return true;
+			}
+			else return false;
+		}
+		
+		public void retrievePoint(PointR result, Rectangle2D bound) {
+			// Fall-back solution for interleaved line.
+			if(status == BOX_INTERLEAVED) {
+				result.X = bound.getCenterX();
+				result.Y = bound.getCenterY();
+				return;
+			}
+			
+			// Initialize local variables.
+			PointR start = new PointR(), end = new PointR();
+			
+			// Perform selection of points.
+			boolean selected = false;
+			switch(status) {
+				case BOX_RIGHT:
+					if(!selected) {
+						start.X = end.X = bound.getMaxX();
+						selected = true;
+					}
+				case BOX_LEFT:
+					if(!selected) {
+						start.X = end.X = bound.getMinX();
+						selected = true;
+					}
+					
+				// Collected case for both left and right.
+				start.Y = bound.getMinY();
+				end.Y = bound.getMaxY();
+				break;
+				
+				case BOX_TOP:
+					if(!selected) {
+						start.Y = end.Y = bound.getMinY();
+						selected = true;
+					}
+				case BOX_BOTTOM:
+					if(!selected) {
+						start.Y = end.Y = bound.getMaxY();
+						selected = true;
+					}
+					
+				// Collected case for both top and bottom.
+				start.X = bound.getMinX();
+				end.X = bound.getMaxX();
+				break;
+			}
+			
+			// Perform interpolation on points.
+			result.interpolate(ratio * 0.5 + 0.5, start, end);
+		}
+		
+		public boolean distancedAttempt(LinePiece piece, double distance,
+				int left, int right, int top, int bottom) {
+			if(this.status != BOX_INTERLEAVED) return true;
+			if(distance < 0) return false;
+			if(distance >= piece.pointDistance) return false;
+			PointR interpolateObject = new PointR();
+			interpolateObject.combine(1, piece.pointBegin, 
+					distance, piece.direction);
+			return attemptBound(interpolateObject, left, right, top, bottom);
+		}
+	}
+	
+	/**
+	 * Try to find how does the line piece specified intersects with 
+	 * the specified bounding box.
+	 * 
+	 * @param status the result to store the intersection status.
+	 * @param box the provided bounding box.
+	 */
+	public void intersectBox(BoxIntersectStatus status, Rectangle2D box) {
+		status.status = BoxIntersectStatus.BOX_INTERLEAVED;
+		int left = (int)Math.floor(box.getMinX());
+		int right = (int)Math.ceil(box.getMaxX());
+		int top = (int)Math.floor(box.getMinY());
+		int bottom = (int)Math.floor(box.getMaxY());
+		
+		// Primary test for whether the beginning point or the ending point
+		// is on the bounding box.
+		if(status.attemptBound(pointBegin, left, right, top, bottom)) return;
+		if(status.attemptBound(pointEnd, left, right, top, bottom)) return;
+		
+		// Either the beginning point or the ending point should be 
+		// outside the box. We use exclusive-or (xor) here.
+		if(!(this.pointBegin.inside(box) ^ this.pointEnd.inside(box))) return;
+		
+		// Intersection with the bound of the bounding box.
+		if(direction.X != 0) {
+			// Test for the left boundary.
+			double distanceLeft = (left - pointBegin.X) / direction.X;
+			if(status.distancedAttempt(this, distanceLeft, 
+					left, right, top, bottom)) return;
+			
+			// Test for the right boundary.
+			double distanceRight = (right - pointBegin.X) / direction.X;
+			if(status.distancedAttempt(this, distanceRight, 
+					left, right, top, bottom)) return;
+		}
+		
+		if(direction.Y != 0) {
+			// Test for the top boundary.
+			double distanceTop = (top - pointBegin.Y) / direction.Y;
+			if(status.distancedAttempt(this, distanceTop, 
+					left, right, top, bottom)) return;
+			
+			// Test for the bottom boundary.
+			double distanceBottom = (bottom - pointBegin.Y) / direction.Y;
+			if(status.distancedAttempt(this, distanceBottom, 
+					left, right, top, bottom)) return;
+		}
 	}
 }

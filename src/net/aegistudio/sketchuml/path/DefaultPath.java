@@ -22,4 +22,19 @@ public class DefaultPath implements BezierPath {
 			Rectangle2D boundEnd) {
 		return controlPoints;
 	}
+
+	@Override
+	public boolean arrowDirectionOnLine() {
+		return false;
+	}
+
+	@Override
+	public boolean renderInnerLineBegin() {
+		return true;
+	}
+
+	@Override
+	public boolean renderInnerLineEnd() {
+		return true;
+	}
 }

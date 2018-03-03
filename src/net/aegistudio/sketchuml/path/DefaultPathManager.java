@@ -1,6 +1,7 @@
 package net.aegistudio.sketchuml.path;
 
 import java.awt.geom.Rectangle2D;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.util.Vector;
 
 import de.dubs.dollarn.PointR;
 
+@Deprecated
 public class DefaultPathManager implements PathManager<DefaultPath> {
 	public static float MERGE_RMSTHRESHOLD = 0.57f;
 	public static float MERGE_MINIMAL = 5.f;

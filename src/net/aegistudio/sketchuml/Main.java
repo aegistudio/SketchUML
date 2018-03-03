@@ -20,8 +20,8 @@ import net.aegistudio.sketchuml.framework.CandidatePanel;
 import net.aegistudio.sketchuml.framework.ComponentEditPanel;
 import net.aegistudio.sketchuml.framework.DefaultSketchModel;
 import net.aegistudio.sketchuml.framework.SketchPanel;
-import net.aegistudio.sketchuml.path.DefaultPath;
-import net.aegistudio.sketchuml.path.DefaultPathManager;
+import net.aegistudio.sketchuml.path.TrifoldProxyPath;
+import net.aegistudio.sketchuml.path.TrifoldPathManager;
 import net.aegistudio.sketchuml.path.BezierPathView;
 import net.aegistudio.sketchuml.statechart.TemplateStateChart;
 import net.aegistudio.sketchuml.stroke.SketchRecognizer;
@@ -54,14 +54,14 @@ public class Main {
 					Configuration.getInstance().PROPERTY_FONTSIZE);
 		
 		// Create the path manager and view.
-		DefaultPathManager pathManager = new DefaultPathManager();
-		BezierPathView<DefaultPath> pathView = new BezierPathView<>();
+		TrifoldPathManager pathManager = new TrifoldPathManager();
+		BezierPathView<TrifoldProxyPath> pathView = new BezierPathView<>();
 		
 		// Initialize the recognizers.
 		SketchRecognizer recognizer = new SketchRecognizer(
 				new File(Configuration.getInstance().GESTURE_PATH), 
 				templates[0].entities());
-		DefaultSketchModel<DefaultPath> model = 
+		DefaultSketchModel<TrifoldProxyPath> model = 
 				new DefaultSketchModel<>(templates[0], 
 						recognizer, pathView, pathManager);
 		recognizer.initializeNDollar();
@@ -97,12 +97,12 @@ public class Main {
 		frame.add(candidatePanel, BorderLayout.SOUTH);
 		
 		// Create the sketch painting panel.
-		SketchPanel<DefaultPath> sketchPanel = new SketchPanel<>(
+		SketchPanel<TrifoldProxyPath> sketchPanel = new SketchPanel<>(
 				candidatePanel, model, pathManager, pathView);
 		frame.add(sketchPanel, BorderLayout.CENTER);
 		
 		// Create the property panels.
-		ComponentEditPanel<DefaultPath> editPanel 
+		ComponentEditPanel<TrifoldProxyPath> editPanel 
 			= new ComponentEditPanel<>(model);
 		frame.add(editPanel, BorderLayout.EAST);
 		
