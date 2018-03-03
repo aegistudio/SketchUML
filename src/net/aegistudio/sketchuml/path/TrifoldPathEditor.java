@@ -33,6 +33,7 @@ public class TrifoldPathEditor extends JPanel
 		
 		private final JComboBox<String> positionBox;
 		private final JSlider positionSlider;
+		private double positionValue;
 		
 		public PointEditingPanel(String label, Runnable react){
 			setLayout(new BorderLayout());
@@ -63,6 +64,8 @@ public class TrifoldPathEditor extends JPanel
 			positionSlider.setMaximum(+ SLIDER_STEPS);
 			positionSlider.addChangeListener(a -> {
 				if(!editting) {
+					positionValue = 1. * positionSlider
+							.getValue() / SLIDER_STEPS;
 					hasChanged = true;
 					react.run();
 				}
@@ -81,7 +84,8 @@ public class TrifoldPathEditor extends JPanel
 		public void setData(LinePiece.BoxIntersectStatus data) {
 			editting = true;
 			positionBox.setSelectedIndex(data.status);
-			positionSlider.setValue((int)(data.ratio * SLIDER_STEPS));
+			this.positionValue = data.ratio;
+			positionSlider.setValue((int)(positionValue * SLIDER_STEPS));
 			positionSlider.setEnabled(data.status 
 					!= LinePiece.BoxIntersectStatus.BOX_INTERLEAVED);
 			editting = false;
@@ -89,7 +93,7 @@ public class TrifoldPathEditor extends JPanel
 		
 		public void fillData(LinePiece.BoxIntersectStatus data) {
 			data.status = positionBox.getSelectedIndex();
-			data.ratio = 1.0 * positionSlider.getValue() / SLIDER_STEPS;
+			data.ratio = positionValue;
 		}
 	}
 	
@@ -171,20 +175,25 @@ public class TrifoldPathEditor extends JPanel
 			PathEditor.PathChangeListener<TrifoldProxyPath> notifier) {
 		
 		// Initialize changing.
-		this.changing = true;
-		this.notifier = notifier;
 		this.edittingPath = path;
+		this.notifier = notifier;
 		
-		// Disable everything first.
-		
-		// Update the fields.
-		styleComboBox.setSelectedItem(path.path.getClass());
-		beginPanel.setData(path.statusBegin);
-		endPanel.setData(path.statusEnd);
+		// Update the path data.
+		refreshPath();
 		
 		// Finish changing and return the result.
-		this.changing = false;
 		return this;
+	}
+	
+	private synchronized void refreshPath() {
+		this.changing = true;
+		
+		// Update the fields.
+		styleComboBox.setSelectedItem(edittingPath.path.getClass());
+		beginPanel.setData(edittingPath.statusBegin);
+		endPanel.setData(edittingPath.statusEnd);
+		
+		this.changing = false;
 	}
 	
 	private boolean changing = false;
@@ -224,8 +233,7 @@ public class TrifoldPathEditor extends JPanel
 		
 		if(hasChanged) {
 			notifier.receiveChange(backup, edittingPath);
-			this.beginPanel.setData(this.edittingPath.statusBegin);
-			this.endPanel.setData(this.edittingPath.statusEnd);
+			refreshPath();
 		}
 	}
 }

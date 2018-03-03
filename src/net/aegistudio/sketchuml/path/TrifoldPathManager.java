@@ -14,6 +14,20 @@ public class TrifoldPathManager implements PathManager<TrifoldProxyPath> {
 	public static final int STATUS_ACCEPTING = 1;
 	public static final int STATUS_INSIDEB = 2;
 	public static final int STATUS_REJECTING = 3;
+	
+	public static final double CENTER_RATIO = 0.4;
+	private void judgeCenter(PointR pointBegin, PointR pointEnd,
+			Rectangle2D bound, LinePiece.BoxIntersectStatus status) {
+		
+		LinePiece linePiece = new LinePiece(pointBegin, pointEnd);
+		LinePiece.DistanceStatus distance = new LinePiece.DistanceStatus();
+		linePiece.distance(distance, PointR.center(bound));
+
+		double minBound = Math.max(1., 0.5 * CENTER_RATIO *
+				Math.min(bound.getWidth(), bound.getHeight()));
+		if(Math.abs(distance.distance) < minBound)
+			status.status = LinePiece.BoxIntersectStatus.BOX_INTERLEAVED;
+	}
 
 	/**
 	 * Find the stroke that is outside and connects the beginning and
@@ -136,18 +150,31 @@ public class TrifoldPathManager implements PathManager<TrifoldProxyPath> {
 		// Calculate and articulate the line path.
 		TrifoldPath trifoldLine = new TrifoldLinePath();
 		double varianceLine = trifoldLine
-				.articulateAndFitness(outerStroke);
+				.articulateAndFitness(outerStroke,
+				intersectStart.status, intersectEnd.status);
 		double minimumVariance = varianceLine;
 		resultPath.setPath(trifoldLine);
 		
 		// Calculate and articulate the rect path.
 		TrifoldPath trifoldRect = new TrifoldRectPath();
 		double varianceRect = trifoldRect
-				.articulateAndFitness(outerStroke);
+				.articulateAndFitness(outerStroke, 
+				intersectStart.status, intersectEnd.status);
 		if(varianceRect < minimumVariance) {
 			minimumVariance = varianceRect;
 			resultPath.setPath(trifoldRect);
 		}
+		
+		// See whether the starting and ending point is close
+		// enough to the center.
+		for(int i = 0; i + 1 < stroke.size() && 
+				stroke.get(i).inside(boundBegin); ++ i)
+			judgeCenter(stroke.get(i), stroke.get(i + 1), 
+					boundBegin, resultPath.statusBegin);
+		for(int i = stroke.size() - 2; i >= 0 &&
+				stroke.get(i + 1).inside(boundEnd); -- i)
+			judgeCenter(stroke.get(i), stroke.get(i + 1), 
+					boundEnd, resultPath.statusEnd);
 		
 		// Collect and return the result.
 		return resultPath;
