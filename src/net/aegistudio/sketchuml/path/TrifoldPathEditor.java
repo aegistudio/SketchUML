@@ -3,8 +3,6 @@ package net.aegistudio.sketchuml.path;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,10 +14,10 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
 import javax.swing.JTextField;
 
 import net.aegistudio.sketchuml.Configuration;
+import net.aegistudio.sketchuml.framework.BoundSlider;
 
 public class TrifoldPathEditor extends JPanel 
 	implements PathEditor<TrifoldProxyPath> {
@@ -33,100 +31,51 @@ public class TrifoldPathEditor extends JPanel
 		private static final long serialVersionUID = 1L;
 		private boolean editting = false;
 		private boolean hasChanged = false;
-		private boolean textNotifying = false;
-		public static final int SLIDER_STEPS = 1000;
+		public static final int SLIDER_STEPS = 2000;
 		
-		private final JComboBox<String> positionBox;
-		private final JSlider positionSlider;
-		private final JTextField positionText;
+		private final JComboBox<String> orientationBox;
+		private final BoundSlider positionRatio;
 		private double positionValue;
 		
-		private final Runnable react;
-		
 		public PointEditingPanel(String label, Runnable react){
-			this.react = react;
 			setLayout(new BorderLayout());
 			
 			Font propertyFont = Configuration
 					.getInstance().PROPERTY_FONT;
-			
 			JLabel pointEditLabel = new JLabel(label);
 			pointEditLabel.setFont(propertyFont);
 			add(pointEditLabel, BorderLayout.WEST);
 			
 			// The combo box to select the point's position.
-			positionBox = new JComboBox<>(new String[] 
+			orientationBox = new JComboBox<>(new String[] 
 					{ "CENTER", "TOP", "RIGHT", "BOTTOM", "LEFT" });
-			positionBox.setFont(propertyFont);
-			positionBox.addActionListener(a -> {
+			orientationBox.setFont(propertyFont);
+			orientationBox.addActionListener(a -> {
 				if(!editting) {
 					hasChanged = true;
 					react.run();
 				}
 			});
-			add(positionBox, BorderLayout.CENTER);
+			add(orientationBox, BorderLayout.CENTER);
+			
+			// Initialize the ration bound.
+			this.positionRatio = new BoundSlider(SLIDER_STEPS, 
+					-1.0, 1.0, "+0.0000 ", "%.4f") {
+				
+				public void change(double newValue) {
+					positionValue = newValue;
+					hasChanged = true;
+					react.run();
+				}
+			};
 			
 			// The input box for accepting the point's value.
-			positionText = new JTextField();
-			positionText.setHorizontalAlignment(JTextField.RIGHT);
-			positionText.setFont(propertyFont);
-			positionText.addActionListener(a -> textChanged());
-			positionText.addCaretListener(ce -> textChanged());
-			positionText.addFocusListener(new FocusAdapter() {
-				@Override
-				public void focusLost(FocusEvent fe) {
-					textChanged();
-					hasChanged = true;
-					react.run();
-				}
-			});
-			add(positionText, BorderLayout.EAST);
+			positionRatio.textField.setHorizontalAlignment(JTextField.RIGHT);
+			positionRatio.textField.setFont(propertyFont);
+			add(positionRatio.textField, BorderLayout.EAST);
 			
 			// The slider for inputting the point's value.
-			positionSlider = new JSlider();
-			positionSlider.setMinimum(- SLIDER_STEPS);
-			positionSlider.setMaximum(+ SLIDER_STEPS);
-			positionSlider.addChangeListener(a -> {
-				if(!editting) {
-					positionValue = 1. * positionSlider
-							.getValue() / SLIDER_STEPS;
-					hasChanged = true;
-					react.run();
-				}
-			});
-			add(positionSlider, BorderLayout.SOUTH);
-		}
-		
-		String previousText;
-		private void textChanged() {
-			// Remove the case while editting.
-			if(editting) {
-				previousText = positionText.getText(); 
-				return;
-			}
-			
-			// Remove the case while removing.
-			if(previousText.equals(positionText.getText())) return;
-			previousText = positionText.getText();
-			
-			// Parse the text first.
-			double value; try {
-				value = Double.parseDouble(previousText);
-			}
-			catch(NumberFormatException ne) {
-				return;
-			}
-			
-			// Perform updating.
-			if(value >= 1.0) value = 1.0;
-			else if(value <= -1.0) value = -1.0;
-			
-			// Update the position value this case.
-			positionValue = value;
-			hasChanged = true;
-			textNotifying = true;
-			react.run();
-			textNotifying = false;
+			add(positionRatio.slider, BorderLayout.SOUTH);
 		}
 		
 		public boolean interruptResponse() {
@@ -141,29 +90,16 @@ public class TrifoldPathEditor extends JPanel
 			editting = true;
 			
 			// Set the data of the panel.
-			positionBox.setSelectedIndex(data.status);
-			this.positionValue = data.ratio;
-			positionSlider.setValue((int)(positionValue * SLIDER_STEPS));
-			if(!textNotifying) {
-				String displayText = String.format("%.4f", data.ratio);
-				positionText.setText("+0.0000 ");
-				positionText.setPreferredSize(
-						positionText.getPreferredSize());
-				positionText.setText(displayText);
-			}
-			
-			// Set the status of input box and slider if the center 
-			// is selected.
-			boolean notCenterSelected = data.status 
-					!= LinePiece.BoxIntersectStatus.BOX_INTERLEAVED;
-			positionSlider.setEnabled(notCenterSelected);
-			positionText.setEnabled(notCenterSelected);
+			orientationBox.setSelectedIndex(data.status);
+			positionValue = data.ratio;
+			positionRatio.setValue(positionValue, data.status 
+					!= LinePiece.BoxIntersectStatus.BOX_INTERLEAVED);
 			
 			editting = false;
 		}
 		
 		public void fillData(LinePiece.BoxIntersectStatus data) {
-			data.status = positionBox.getSelectedIndex();
+			data.status = orientationBox.getSelectedIndex();
 			data.ratio = positionValue;
 		}
 	}
