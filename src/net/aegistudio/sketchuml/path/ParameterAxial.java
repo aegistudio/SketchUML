@@ -42,9 +42,9 @@ public abstract class ParameterAxial implements ParametricLinePiece.Parameter {
 	public double dxdai(int i, double[] vector) {
 		if(selectAxisX) {
 			dfdai(pointTemp, i, vector, pointBegin, pointEnd);
-			return pointTemp.Y;
+			return pointTemp.X;
 		}
-		return selectBegin? pointBegin.Y : pointEnd.Y;
+		return 0;
 	}
 
 	@Override
@@ -53,6 +53,6 @@ public abstract class ParameterAxial implements ParametricLinePiece.Parameter {
 			dfdai(pointTemp, i, vector, pointBegin, pointEnd);
 			return pointTemp.Y;
 		}
-		return selectBegin? pointBegin.Y : pointEnd.Y;
+		return 0;
 	}
 }
