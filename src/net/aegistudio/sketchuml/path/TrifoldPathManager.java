@@ -113,6 +113,8 @@ public class TrifoldPathManager implements PathManager<TrifoldProxyPath> {
 		}
 	}
 	
+	public static final double LINE_ACCEPTANCE = 10.;
+	
 	@Override
 	public TrifoldProxyPath quantize(Vector<PointR> stroke, 
 			Rectangle2D boundBegin, Rectangle2D boundEnd) {
@@ -184,6 +186,10 @@ public class TrifoldPathManager implements PathManager<TrifoldProxyPath> {
 				intersectStatusStart, intersectStatusEnd);
 		double minimumVariance = varianceLine;
 		resultPath.setPath(trifoldLine);
+		
+		// See the variance is no more than the acceptance variance.
+		if(varianceLine <= trainingStroke.size() * LINE_ACCEPTANCE)
+			return resultPath;
 		
 		// Calculate and articulate the rect path.
 		TrifoldPath trifoldRect = new TrifoldRectPath();

@@ -19,12 +19,14 @@ public class ComponentEditPanel<Path> extends JPanel {
 			PathEditor<Path> pathEditor, 
 			PathEditor.PathChangeListener<Path> pathNotifier) {
 		this.model = model;
+		
+		model.registerEntityObserver(this, this::onUpdate);
+		model.registerLinkObserver(this, this::onUpdate);
+		
 		entityEditor = new EntityComponentPanel(model);
 		linkEditor = new LinkComponentPanel<Path>(model, 
 				pathEditor, pathNotifier);
 		
-		model.registerEntityObserver(this, this::onUpdate);
-		model.registerLinkObserver(this, this::onUpdate);
 		onUpdate();
 	}
 	

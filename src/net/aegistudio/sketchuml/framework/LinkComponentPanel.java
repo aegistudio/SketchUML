@@ -93,8 +93,9 @@ public class LinkComponentPanel<Path> extends JPanel {
 		// Disable link status.
 		delete.setEnabled(false);
 		typeModel.removeAllElements();
+		if(pathStyle != null) remove(pathStyle);
 		if(property != null) remove(property);
-		property = null;
+		property = null;	pathStyle = null;
 
 		// Re-enable link status if there's link.
 		if(link == null) return;
@@ -120,6 +121,7 @@ public class LinkComponentPanel<Path> extends JPanel {
 			link.entry.propertyView.updateEntity(link.link);
 		}
 		
+		repaint();
 		updateUI();
 	}
 }

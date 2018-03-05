@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.swing.BoxLayout;
@@ -18,6 +19,7 @@ import javax.swing.JTextField;
 
 import net.aegistudio.sketchuml.Configuration;
 import net.aegistudio.sketchuml.framework.BoundSlider;
+import net.aegistudio.sketchuml.framework.PropertyPanel;
 
 public class TrifoldPathEditor extends JPanel 
 	implements PathEditor<TrifoldProxyPath> {
@@ -114,34 +116,63 @@ public class TrifoldPathEditor extends JPanel
 		String name;
 		
 		Supplier<T> newInstance;
+		
+		PropertyPanel<T> propertyPanel;
+		
+		Function<TrifoldPath, T> cast;
+		
+		public void updateEntity(TrifoldPath path) {
+			if(propertyPanel != null) propertyPanel
+				.updateEntity(cast.apply(path));
+		}
 	}
 	
-	public static final Map<Class<? extends TrifoldPath>, 
-		StyleObject<? extends TrifoldPath>> PATHSTYLE = new HashMap<>();
-	
-	static {
+	public Map<Class<? extends TrifoldPath>, 
+		StyleObject<? extends TrifoldPath>> pathStyle = new HashMap<>();
+	{
 		// The straight line style object.
 		StyleObject<TrifoldLinePath> styleStraight = new StyleObject<>();
 		styleStraight.classObject = TrifoldLinePath.class;
 		styleStraight.name = "(/) Straight";
 		styleStraight.newInstance = TrifoldLinePath::new;
+		styleStraight.cast = p -> p instanceof 
+				TrifoldLinePath? (TrifoldLinePath)p : null;
 			
 		// The rect-angle line style object.
 		StyleObject<TrifoldRectPath> styleRectAngle = new StyleObject<>();
 		styleRectAngle.classObject = TrifoldRectPath.class;
 		styleRectAngle.name = "(L) Rect-angle";
 		styleRectAngle.newInstance = TrifoldRectPath::new;
+		styleRectAngle.cast = p -> p instanceof
+				TrifoldRectPath? (TrifoldRectPath)p : null;
+		styleRectAngle.propertyPanel = new PropertyPanel<TrifoldRectPath>();
+		styleRectAngle.propertyPanel.registerCheckBox("Horizontal", 
+				p -> !p.highSkew, (p, q) -> p.highSkew = !q);
 		
 		// The zigzag line style object.
 		StyleObject<TrifoldZigzagPath> styleZigzag = new StyleObject<>();
 		styleZigzag.classObject = TrifoldZigzagPath.class;
 		styleZigzag.name = "(Z) Zigzag";
 		styleZigzag.newInstance = TrifoldZigzagPath::new;
-		
+		styleZigzag.cast = p -> p instanceof
+				TrifoldZigzagPath? (TrifoldZigzagPath)p : null;
+		styleZigzag.propertyPanel = new PropertyPanel<TrifoldZigzagPath>();
+		styleZigzag.propertyPanel.registerSlider("Progress (%)", 
+				p -> p.ratio * 1e2, (p, q) -> p.ratio = q * 1e-2, 
+				1000, 0., 100., "000.0", "%.1f");
+		styleZigzag.propertyPanel.registerCheckBox("Horizontal", 
+				p -> p.horizontal, (p, q) -> p.horizontal = q);
+				
 		// Add these list objects to the map.
 		Arrays.asList(styleStraight, styleRectAngle, styleZigzag)
-			.forEach(style -> PATHSTYLE.put(style.classObject, style));
+			.forEach(style -> {
+				pathStyle.put(style.classObject, style);
+				if(style.propertyPanel != null) style
+					.propertyPanel.setNotifier(p -> itemUpdated());
+			});
 	}
+	
+	private Class<? extends TrifoldPath> propertyClass;
 	
 	public TrifoldPathEditor() {
 		super();
@@ -157,7 +188,7 @@ public class TrifoldPathEditor extends JPanel
 		
 		styleComboBox = new JComboBox<>();
 		styleComboBox.setFont(Configuration.getInstance().PROPERTY_FONT);
-		PATHSTYLE.keySet().forEach(styleComboBox::addItem);
+		pathStyle.keySet().forEach(styleComboBox::addItem);
 		styleComboBox.setRenderer(new DefaultListCellRenderer() {
 			private static final long serialVersionUID = 1L;
 			
@@ -167,8 +198,8 @@ public class TrifoldPathEditor extends JPanel
 				
 				JLabel label = (JLabel) super.getListCellRendererComponent(list, 
 						value, index, isSelected, cellHasFocus);
-				if(PATHSTYLE.containsKey(value))
-					label.setText(PATHSTYLE.get(value).name);
+				if(pathStyle.containsKey(value))
+					label.setText(pathStyle.get(value).name);
 				return label;
 			}
 		});
@@ -200,12 +231,34 @@ public class TrifoldPathEditor extends JPanel
 	
 	private synchronized void refreshPath() {
 		this.changing = true;
+
+		Class<? extends TrifoldPath> newPropertyClass = 
+				edittingPath.path.getClass();
+		StyleObject<? extends TrifoldPath> previousStyle
+				= pathStyle.get(propertyClass);
+		StyleObject<? extends TrifoldPath> style
+				= pathStyle.get(newPropertyClass);
 		
 		// Update the fields.
-		styleComboBox.setSelectedItem(edittingPath.path.getClass());
+		styleComboBox.setSelectedItem(newPropertyClass);
 		beginPanel.setData(edittingPath.statusBegin);
 		endPanel.setData(edittingPath.statusEnd);
 		
+		// Retrieve the new editing panel.
+		if(newPropertyClass != propertyClass) {
+			propertyClass = newPropertyClass;
+			if(previousStyle != null) {
+				if(previousStyle.propertyPanel != null)
+					super.remove(previousStyle.propertyPanel);
+				previousStyle.updateEntity(null);
+			}
+			if(style.propertyPanel != null) 
+				super.add(style.propertyPanel);
+		}
+		
+		// Update the property data.
+		if(style.propertyPanel != null) style
+			.updateEntity(edittingPath.path);
 		this.changing = false;
 	}
 	
@@ -236,12 +289,13 @@ public class TrifoldPathEditor extends JPanel
 		if(this.edittingPath.path.getClass() != 
 				this.styleComboBox.getSelectedItem()) {
 			// Respond to the change on the line style.
-			this.edittingPath.path = PATHSTYLE.get(this.styleComboBox
+			this.edittingPath.path = pathStyle.get(this.styleComboBox
 					.getSelectedItem()).newInstance.get();
 			hasChanged = true;
 		}
 		else {
-			
+			// Caused by editing internal fields.
+			hasChanged = true;
 		}
 		
 		if(hasChanged) {

@@ -1,6 +1,7 @@
 package net.aegistudio.sketchuml.framework;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.FocusAdapter;
@@ -18,9 +19,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import net.aegistudio.sketchuml.Configuration;
-import net.aegistudio.sketchuml.Entity;
 
-public class PropertyPanel<T extends Entity> extends JPanel {
+public class PropertyPanel<T> extends JPanel {
 	public interface PropertyGetter<T, U> {
 		public U get(T entity) throws Exception;
 	}
@@ -30,7 +30,7 @@ public class PropertyPanel<T extends Entity> extends JPanel {
 	}
 	
 	private static final long serialVersionUID = 1L;
-	private Consumer<Entity> notifier;
+	private Consumer<? super T> notifier;
 	private T entity;
 	
 	private final List<Runnable> getterRunnables = new ArrayList<>();
@@ -43,7 +43,7 @@ public class PropertyPanel<T extends Entity> extends JPanel {
 		return Configuration.getInstance().PROPERTY_FONT;
 	}
 	
-	private <V> void safeRun(PropertySetter<T, V> setter, V value) {
+	protected <V> void safeRun(PropertySetter<T, V> setter, V value) {
 		if(entity == null) return;
 		if(notifier == null) return;
 		try {
@@ -55,7 +55,7 @@ public class PropertyPanel<T extends Entity> extends JPanel {
 		}
 	}
 	
-	private <V> void addGetterReactor(
+	protected <V> void addGetterReactor(
 			Consumer<V> consumer, PropertyGetter<T, V> getter) {
 		
 		getterRunnables.add(() -> {
@@ -154,7 +154,44 @@ public class PropertyPanel<T extends Entity> extends JPanel {
 		super.add(areaPanel);
 	}
 	
-	public void setNotifier(Consumer<Entity> notifier) {
+	public void registerSlider(String tag,
+			PropertyGetter<T, Double> getter,
+			PropertySetter<T, Double> setter,
+			int step, double minValue, double maxValue, 
+			String placeHoder, String format) {
+		
+		// Construct slider block.
+		JPanel sliderPanel = new JPanel();
+		sliderPanel.setLayout(new BorderLayout());
+		JLabel sliderLabel = new JLabel(tag);
+		sliderLabel.setFont(getPropertyFont());
+		sliderPanel.add(sliderLabel, BorderLayout.WEST);
+		
+		// The slider object.
+		BoundSlider sliderObject = new BoundSlider(
+			step, minValue, maxValue, placeHoder, format) {
+			
+			public void change(double newValue) {
+				safeRun(setter, newValue);
+			}
+		};
+		addGetterReactor(d -> sliderObject
+				.setValue(d, true), getter);
+		
+		// Add then to the parent object.
+		sliderPanel.add(sliderObject.slider, 
+				BorderLayout.CENTER);
+		sliderPanel.add(sliderObject.textField, 
+				BorderLayout.EAST);
+		sliderObject.textField.setFont(getPropertyFont());
+		sliderObject.textField
+			.setHorizontalAlignment(JTextField.RIGHT);
+		sliderObject.slider.setPreferredSize(new Dimension(50, 10));
+		
+		super.add(sliderPanel);
+	}
+	
+	public void setNotifier(Consumer<? super T> notifier) {
 		this.notifier = notifier;
 	}
 	
