@@ -127,6 +127,26 @@ public class TrifoldPathEditor extends JPanel
 		}
 	}
 	
+	static class PropertyLiftPath<T extends 
+		TrifoldAbstractLiftPath> extends PropertyPanel<T>{
+		private static final long serialVersionUID = 1L;
+
+		public PropertyLiftPath() {
+			registerSpinner("Offset: ", 
+					p -> p.lift, (p, q) -> {
+						if(q == TrifoldAbstractLiftPath.BLINDED_PIXEL - 1)
+							p.lift = - TrifoldAbstractLiftPath.BLINDED_PIXEL;
+						else if(q == -TrifoldAbstractLiftPath.BLINDED_PIXEL + 1)
+							p.lift = + TrifoldAbstractLiftPath.BLINDED_PIXEL;
+						else p.lift = q > 0? 
+							Math.max(TrifoldAbstractLiftPath.BLINDED_PIXEL, q):
+							Math.min(-TrifoldAbstractLiftPath.BLINDED_PIXEL, q);
+					}, null);
+			registerCheckBox("Horizontal", 
+					p -> p.horizontal, (p, q) -> p.horizontal = q);
+		} 
+	}
+	
 	public Map<Class<? extends TrifoldPath>, 
 		StyleObject<? extends TrifoldPath>> pathStyle = new HashMap<>();
 	{
@@ -181,23 +201,20 @@ public class TrifoldPathEditor extends JPanel
 		styleLift.newInstance = TrifoldLiftPath::new;
 		styleLift.cast = p -> p instanceof
 				TrifoldLiftPath? (TrifoldLiftPath)p : null;
-		styleLift.propertyPanel = new PropertyPanel<TrifoldLiftPath>();
-		styleLift.propertyPanel.registerSpinner("Offset: ", 
-				p -> p.lift, (p, q) -> {
-					if(q == TrifoldLiftPath.BLINDED_PIXEL - 1)
-						p.lift = - TrifoldLiftPath.BLINDED_PIXEL;
-					else if(q == -TrifoldLiftPath.BLINDED_PIXEL + 1)
-						p.lift = + TrifoldLiftPath.BLINDED_PIXEL;
-					else p.lift = q > 0? 
-						Math.max(TrifoldLiftPath.BLINDED_PIXEL, q):
-						Math.min(-TrifoldLiftPath.BLINDED_PIXEL, q);
-				}, null);
-		styleLift.propertyPanel.registerCheckBox("Horizontal", 
-				p -> p.horizontal, (p, q) -> p.horizontal = q);
+		styleLift.propertyPanel = new PropertyLiftPath<>();
+		
+		// The rect lifted line style object.
+		StyleObject<TrifoldRoundLiftPath> styleRoundLift = new StyleObject<>();
+		styleRoundLift.classObject = TrifoldRoundLiftPath.class;
+		styleRoundLift.name = "(() Round Lift";
+		styleRoundLift.newInstance = TrifoldRoundLiftPath::new;
+		styleRoundLift.cast = p -> p instanceof
+				TrifoldRoundLiftPath? (TrifoldRoundLiftPath)p : null;
+		styleRoundLift.propertyPanel = new PropertyLiftPath<>();
 		
 		// Add these list objects to the map.
-		Arrays.asList(styleStraight, styleRectAngle, 
-				styleZigzag, styleRoundRect, styleLift)
+		Arrays.asList(styleStraight, styleRectAngle, styleZigzag, 
+				styleRoundRect, styleLift, styleRoundLift)
 			.forEach(style -> {
 				pathStyle.put(style.classObject, style);
 				if(style.propertyPanel != null) style
