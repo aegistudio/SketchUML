@@ -174,9 +174,30 @@ public class TrifoldPathEditor extends JPanel
 		styleRoundRect.propertyPanel.registerCheckBox("Horizontal", 
 				p -> !p.highSkew, (p, q) -> p.highSkew = !q);
 		
+		// The lifted line style object.
+		StyleObject<TrifoldLiftPath> styleLift = new StyleObject<>();
+		styleLift.classObject = TrifoldLiftPath.class;
+		styleLift.name = "([) Rect Lift";
+		styleLift.newInstance = TrifoldLiftPath::new;
+		styleLift.cast = p -> p instanceof
+				TrifoldLiftPath? (TrifoldLiftPath)p : null;
+		styleLift.propertyPanel = new PropertyPanel<TrifoldLiftPath>();
+		styleLift.propertyPanel.registerSpinner("Offset: ", 
+				p -> p.lift, (p, q) -> {
+					if(q == TrifoldLiftPath.BLINDED_PIXEL - 1)
+						p.lift = - TrifoldLiftPath.BLINDED_PIXEL;
+					else if(q == -TrifoldLiftPath.BLINDED_PIXEL + 1)
+						p.lift = + TrifoldLiftPath.BLINDED_PIXEL;
+					else p.lift = q > 0? 
+						Math.max(TrifoldLiftPath.BLINDED_PIXEL, q):
+						Math.min(-TrifoldLiftPath.BLINDED_PIXEL, q);
+				}, null);
+		styleLift.propertyPanel.registerCheckBox("Horizontal", 
+				p -> p.horizontal, (p, q) -> p.horizontal = q);
+		
 		// Add these list objects to the map.
 		Arrays.asList(styleStraight, styleRectAngle, 
-				styleZigzag, styleRoundRect)
+				styleZigzag, styleRoundRect, styleLift)
 			.forEach(style -> {
 				pathStyle.put(style.classObject, style);
 				if(style.propertyPanel != null) style

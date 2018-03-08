@@ -15,8 +15,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SpinnerModel;
 
 import net.aegistudio.sketchuml.Configuration;
 
@@ -170,7 +172,7 @@ public class PropertyPanel<T> extends JPanel {
 		// The slider object.
 		BoundSlider sliderObject = new BoundSlider(
 			step, minValue, maxValue, placeHoder, format) {
-			
+			@Override
 			public void change(double newValue) {
 				safeRun(setter, newValue);
 			}
@@ -189,6 +191,37 @@ public class PropertyPanel<T> extends JPanel {
 		sliderObject.slider.setPreferredSize(new Dimension(50, 10));
 		
 		super.add(sliderPanel);
+	}
+	
+	public void registerSpinner(String tag, 
+			PropertyGetter<T, Integer> getter,
+			PropertySetter<T, Integer> setter,
+			SpinnerModel model) {
+		
+		// Construct spinner block.
+		JPanel spinnerPanel = new JPanel();
+		spinnerPanel.setLayout(new BorderLayout());
+		JLabel spinnerLabel = new JLabel(tag);
+		spinnerLabel.setFont(getPropertyFont());
+		spinnerPanel.add(spinnerLabel, BorderLayout.WEST);
+		
+		// Construct spinner.
+		JSpinner spinner = new JSpinner();
+		spinner.setFont(getPropertyFont());
+		if(model != null) spinner.setModel(model);
+		spinner.setValue(0);
+		spinner.addChangeListener(ce -> safeRun(
+				setter, (int)spinner.getValue()));
+		spinner.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent fe) {
+				safeRun(setter, (int)spinner.getValue());
+			}
+		});
+		addGetterReactor(spinner::setValue, getter);
+		spinnerPanel.add(spinner, BorderLayout.CENTER);
+		
+		super.add(spinnerPanel);
 	}
 	
 	public void setNotifier(Consumer<? super T> notifier) {

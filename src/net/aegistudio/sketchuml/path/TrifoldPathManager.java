@@ -195,8 +195,10 @@ public class TrifoldPathManager implements PathManager<TrifoldProxyPath> {
 		TrifoldPath trifoldRect = new TrifoldRectPath();
 		TrifoldPath trifoldZigzag = new TrifoldZigzagPath();
 		TrifoldPath trifoldRoundRect = new TrifoldRoundRectPath();
+		TrifoldPath trifoldLift = new TrifoldLiftPath();
 		TrifoldPath[] trifoldPaths = new TrifoldPath[] {
-				trifoldRect, trifoldZigzag, trifoldRoundRect };
+				trifoldRect, trifoldZigzag, 
+				trifoldRoundRect, trifoldLift };
 		
 		// Calculate and articulate paths for minimum variance.
 		for(TrifoldPath trifoldPath : trifoldPaths) {
