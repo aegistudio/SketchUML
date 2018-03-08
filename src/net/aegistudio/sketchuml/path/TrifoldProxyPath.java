@@ -77,19 +77,21 @@ public class TrifoldProxyPath implements BezierPath {
 			int index = separatePoints.indexOf(pointBegin);
 			if(index >= 0) {
 				separatePoints.remove(index);
-				controlPoints.remove(index);
+				//controlPoints.remove(index);
 			}
 		}
+		else controlPoints.add(0, null);
 		
 		// Remove the ending separate and control points.
 		if(isCenterEnd) {
 			int index = separatePoints.indexOf(pointEnd);
 			if(index >= 0) {
 				separatePoints.remove(index);
-				if(index - 1 >= 0)
-					controlPoints.remove(index - 1);
+				//if(index - 1 >= 0)
+				//	controlPoints.remove(index - 1);
 			}
 		}
+		else controlPoints.add(null);
 	}
 	
 	@Override

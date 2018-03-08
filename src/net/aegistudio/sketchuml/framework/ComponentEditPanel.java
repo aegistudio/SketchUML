@@ -37,6 +37,7 @@ public class ComponentEditPanel<Path> extends JPanel {
 				removeAll();
 				add(linkEditor);
 				selectedEditor = linkEditor;
+				updateUI();
 			}
 		}
 		else {
@@ -45,6 +46,7 @@ public class ComponentEditPanel<Path> extends JPanel {
 				removeAll();
 				add(entityEditor);
 				selectedEditor = entityEditor;
+				updateUI();
 			}
 		}
 		setPreferredSize(new Dimension(Configuration

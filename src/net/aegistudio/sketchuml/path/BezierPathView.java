@@ -14,6 +14,7 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 	public static final float ARROW_ZONAL = 20;
 	public static final float ARROW_HORIZONTAL = 7;
 	public static final int BEZIER_RENDER = 20;
+	public static final double ARROW_TANGENTBIAS = 0.05;
 	
 	private double intersectBox(Rectangle2D rect, PointR outPoint,
 			PointR resultDirection, PointR resultIntersection) {
@@ -249,8 +250,20 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 		if(pathObject.arrowDirectionOnLine()) {
 			// Indicates the line is placed on the edge.
 			if(!pathObject.renderInnerLineBegin()) {
-				directionBegin.combine(1., points[1], -1., points[2]);
-				directionBegin.normalize();
+				// Calculate the starting direction.
+				PointR controlPoint = controlPoints.size() > 1?
+						controlPoints.get(1) : null;
+				if(controlPoint != null) new BezierEvaluator(
+						points[1], controlPoint, points[2])
+						.tangent(ARROW_TANGENTBIAS, directionBegin);
+				else {
+					directionBegin.combine(1., points[1], -1., points[2]);
+					directionBegin.normalize();
+				}
+				
+				// Render the starting arrow.
+				renderArrow(g2d, separatePoints.get(0), 
+						directionBegin, arrowBegin, selected);
 			}
 			else {
 				renderArrow(g2d, intersectBegin, directionBegin, 
@@ -259,9 +272,20 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 			
 			// Indicates the ending point is placed on the edge.
 			if(!pathObject.renderInnerLineEnd()) {
-				directionEnd.combine(-1., points[points.length - 2], 
-						1., points[points.length - 3]);
-				directionEnd.normalize();
+				// Calculate the ending direction.
+				PointR controlPoint = controlPoints.size() > 1?
+						controlPoints.get(controlPoints.size() - 2) : null;
+				if(controlPoint != null) new BezierEvaluator(
+						points[points.length - 2], controlPoint, 
+						points[points.length - 3])
+						.tangent(ARROW_TANGENTBIAS, directionEnd);
+				else {
+					directionEnd.combine(-1., points[points.length - 2],
+							1., points[points.length - 3]);
+					directionEnd.normalize();
+				}
+				
+				// Render the ending arrow.
 				renderArrow(g2d, separatePoints.get(separatePoints.size() - 1), 
 						directionEnd, arrowEnd, selected);
 			}

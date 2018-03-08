@@ -292,4 +292,27 @@ public class LinePiece {
 					left, right, top, bottom)) return;
 		}
 	}
+	
+	public static Vector<LinePiece> quantizeBezier(
+			BezierEvaluator bezier, int precision) {
+		Vector<LinePiece> result = new Vector<LinePiece>();
+		PointR previous = new PointR();
+		PointR current = new PointR();
+		double dt = 1. / precision;
+		
+		// Retrieving bezier path points.
+		bezier.evaluate(0., previous);
+		for(int i = 1; i <= precision; ++ i) {
+			// Calculate new line path.
+			bezier.evaluate(dt * i, current);
+			result.add(new LinePiece(previous, current));
+			
+			// Swap current with previous point.
+			PointR temp = previous;
+			previous = current;
+			current = temp;
+		}
+		
+		return result;
+	}
 }

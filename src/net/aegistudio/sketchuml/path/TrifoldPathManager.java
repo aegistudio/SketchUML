@@ -191,24 +191,22 @@ public class TrifoldPathManager implements PathManager<TrifoldProxyPath> {
 		if(varianceLine <= trainingStroke.size() * LINE_ACCEPTANCE)
 			return resultPath;
 		
-		// Calculate and articulate the rect path.
+		// Initialize available list of paths for fitting.
 		TrifoldPath trifoldRect = new TrifoldRectPath();
-		double varianceRect = trifoldRect
-				.articulateAndFitness(outerStroke, trainingStroke,
-				intersectStatusStart, intersectStatusEnd);
-		if(varianceRect < minimumVariance) {
-			minimumVariance = varianceRect;
-			resultPath.setPath(trifoldRect);
-		}
-		
-		// Calculate and articulate the zig-zag path.
 		TrifoldPath trifoldZigzag = new TrifoldZigzagPath();
-		double varianceZigzag = trifoldZigzag
-				.articulateAndFitness(outerStroke, trainingStroke,
-				intersectStatusStart, intersectStatusEnd);
-		if(varianceZigzag < minimumVariance) {
-			minimumVariance = varianceZigzag;
-			resultPath.setPath(trifoldZigzag);
+		TrifoldPath trifoldRoundRect = new TrifoldRoundRectPath();
+		TrifoldPath[] trifoldPaths = new TrifoldPath[] {
+				trifoldRect, trifoldZigzag, trifoldRoundRect };
+		
+		// Calculate and articulate paths for minimum variance.
+		for(TrifoldPath trifoldPath : trifoldPaths) {
+			double pathVariance = trifoldPath.articulateAndFitness(
+					outerStroke, trainingStroke, 
+					intersectStatusStart, intersectStatusEnd);
+			if(pathVariance < minimumVariance) {
+				minimumVariance = pathVariance;
+				resultPath.setPath(trifoldPath);
+			}
 		}
 		
 		// Collect and return the result.

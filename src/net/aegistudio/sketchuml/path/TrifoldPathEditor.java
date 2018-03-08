@@ -141,7 +141,7 @@ public class TrifoldPathEditor extends JPanel
 		// The rect-angle line style object.
 		StyleObject<TrifoldRectPath> styleRectAngle = new StyleObject<>();
 		styleRectAngle.classObject = TrifoldRectPath.class;
-		styleRectAngle.name = "(L) Rect-angle";
+		styleRectAngle.name = "(L) Rect Angle";
 		styleRectAngle.newInstance = TrifoldRectPath::new;
 		styleRectAngle.cast = p -> p instanceof
 				TrifoldRectPath? (TrifoldRectPath)p : null;
@@ -162,9 +162,21 @@ public class TrifoldPathEditor extends JPanel
 				1000, 0., 100., "000.0", "%.1f");
 		styleZigzag.propertyPanel.registerCheckBox("Horizontal", 
 				p -> p.horizontal, (p, q) -> p.horizontal = q);
-				
+		
+		// The rect-angle line style object.
+		StyleObject<TrifoldRoundRectPath> styleRoundRect = new StyleObject<>();
+		styleRoundRect.classObject = TrifoldRoundRectPath.class;
+		styleRoundRect.name = "(J) Round Rect Angle";
+		styleRoundRect.newInstance = TrifoldRoundRectPath::new;
+		styleRoundRect.cast = p -> p instanceof
+				TrifoldRoundRectPath? (TrifoldRoundRectPath)p : null;
+		styleRoundRect.propertyPanel = new PropertyPanel<TrifoldRoundRectPath>();
+		styleRoundRect.propertyPanel.registerCheckBox("Horizontal", 
+				p -> !p.highSkew, (p, q) -> p.highSkew = !q);
+		
 		// Add these list objects to the map.
-		Arrays.asList(styleStraight, styleRectAngle, styleZigzag)
+		Arrays.asList(styleStraight, styleRectAngle, 
+				styleZigzag, styleRoundRect)
 			.forEach(style -> {
 				pathStyle.put(style.classObject, style);
 				if(style.propertyPanel != null) style
