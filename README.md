@@ -1,6 +1,9 @@
 SketchUML
 =========
 
+![Draw the process state chart](doc/ProcessSTM.gif)
+*(Draw a process state chart with SketchUML, the title and menu bar is not recorded.)*
+
 SketchUML is a pen-based interaction UML (Unified Modeling Language) diagram editor, 
 which converts the shapes user drawn into software UML objects.
 

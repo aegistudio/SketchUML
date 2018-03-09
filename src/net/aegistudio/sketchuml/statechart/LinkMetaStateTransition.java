@@ -60,8 +60,8 @@ public class LinkMetaStateTransition implements PropertyView, LinkView {
 			
 			// Append the action to the end.
 			if(transition.action.length() > 0)
-				centerText = centerText == null? transition.action : 
-					(centerText + " / " + transition.action);
+				centerText = (centerText == null? "" : 
+					centerText + " ") + "/ " + transition.action;
 		} };
 	}
 
