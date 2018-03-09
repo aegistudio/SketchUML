@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Font;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -147,6 +148,7 @@ public class TrifoldPathEditor extends JPanel
 		} 
 	}
 	
+	public List<StyleObject<? extends TrifoldPath>> pathStyleList;
 	public Map<Class<? extends TrifoldPath>, 
 		StyleObject<? extends TrifoldPath>> pathStyle = new HashMap<>();
 	{
@@ -213,13 +215,13 @@ public class TrifoldPathEditor extends JPanel
 		styleRoundLift.propertyPanel = new PropertyLiftPath<>();
 		
 		// Add these list objects to the map.
-		Arrays.asList(styleStraight, styleRectAngle, styleZigzag, 
-				styleRoundRect, styleLift, styleRoundLift)
-			.forEach(style -> {
-				pathStyle.put(style.classObject, style);
-				if(style.propertyPanel != null) style
-					.propertyPanel.setNotifier(p -> itemUpdated());
-			});
+		pathStyleList = Arrays.asList(styleStraight, styleRectAngle, 
+				styleRoundRect, styleZigzag, styleLift, styleRoundLift);
+		pathStyleList.forEach(style -> {
+			pathStyle.put(style.classObject, style);
+			if(style.propertyPanel != null) style
+				.propertyPanel.setNotifier(p -> itemUpdated());
+		});
 	}
 	
 	private Class<? extends TrifoldPath> propertyClass;
@@ -238,7 +240,8 @@ public class TrifoldPathEditor extends JPanel
 		
 		styleComboBox = new JComboBox<>();
 		styleComboBox.setFont(Configuration.getInstance().PROPERTY_FONT);
-		pathStyle.keySet().forEach(styleComboBox::addItem);
+		pathStyleList.stream().map(p -> p.classObject)
+			.forEach(styleComboBox::addItem);
 		styleComboBox.setRenderer(new DefaultListCellRenderer() {
 			private static final long serialVersionUID = 1L;
 			
