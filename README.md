@@ -1,7 +1,7 @@
 SketchUML
 =========
-
-![Draw the process state chart](doc/ProcessSTM.gif)
+<img src="https://github.com/aegistudio/SketchUML/blob/master/doc/ProcessSTM.gif"
+width="800px"></img><br/>
 *(Draw a process state chart with SketchUML, the title and menu bar is not recorded.)*
 
 SketchUML is a pen-based interaction UML (Unified Modeling Language) diagram editor, 
