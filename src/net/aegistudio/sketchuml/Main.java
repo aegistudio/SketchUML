@@ -8,15 +8,19 @@ import java.awt.Point;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
 import net.aegistudio.sketchuml.framework.CandidatePanel;
+import net.aegistudio.sketchuml.framework.CheatSheetGraphics;
 import net.aegistudio.sketchuml.framework.ComponentEditPanel;
 import net.aegistudio.sketchuml.framework.DefaultSketchModel;
 import net.aegistudio.sketchuml.framework.SketchPanel;
@@ -32,6 +36,7 @@ public class Main {
 	public static Template[] templates = { new TemplateStateChart() };
 	public static Map<String, Font> fonts = new HashMap<>();
 	public static ComponentEditPanel<TrifoldProxyPath> editPanel;
+	public static SketchPanel<TrifoldProxyPath> sketchPanel;
 	
 	public static void main(String[] arguments) {
 		// Set the UI's major look and feel. Could fail.
@@ -90,18 +95,40 @@ public class Main {
 		menuEdit.setMnemonic('E');
 		menuBar.add(menuEdit);
 		
+		// Add the help menu.
+		JMenu menuHelp = new JMenu("Help");
+		menuHelp.setMnemonic('H');
+		menuBar.add(menuHelp);
+		
+		JMenuItem menuItemCheatSheet = 
+				new JMenuItem("Show/Hide Cheat Sheet");
+		menuItemCheatSheet.addActionListener(a -> {
+			sketchPanel.displayUsage = !sketchPanel.displayUsage;
+			frame.repaint();
+		});
+		menuItemCheatSheet.setAccelerator(KeyStroke.getKeyStroke("F1"));
+		menuHelp.add(menuItemCheatSheet);
+		
 		// Set the menu's text font.
-		for(int i = 0; i < menuBar.getMenuCount(); ++ i)
-			menuBar.getMenu(i).setFont(Configuration
+		for(int i = 0; i < menuBar.getMenuCount(); ++ i) {
+			JMenu menu = menuBar.getMenu(i);
+			menu.setFont(Configuration
 					.getInstance().PROPERTY_FONT);
+			for(int j = 0; j < menu.getItemCount(); ++ j)
+				menu.getItem(j).setFont(Configuration
+						.getInstance().PROPERTY_FONT);
+		}
 		
 		// Add the result selection panel.
 		CandidatePanel candidatePanel = new CandidatePanel();
 		frame.add(candidatePanel, BorderLayout.SOUTH);
 		
 		// Create the sketch painting panel.
-		SketchPanel<TrifoldProxyPath> sketchPanel = new SketchPanel<>(
-				candidatePanel, model, pathManager, pathView);
+		CheatSheetGraphics cheatSheet = null;
+		try { cheatSheet = new CheatSheetGraphics("en_US"); }
+		catch(IOException e) {e.printStackTrace();}
+		sketchPanel = new SketchPanel<>(candidatePanel, model, 
+				pathManager, pathView, cheatSheet);
 		frame.add(sketchPanel, BorderLayout.CENTER);
 		
 		// Create the property panels.

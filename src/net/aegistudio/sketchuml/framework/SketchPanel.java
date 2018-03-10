@@ -37,13 +37,17 @@ public class SketchPanel<Path> extends JComponent implements
 	private final PathManager<Path> pathManager;
 	private final PathView<Path> pathView;
 	
+	private final CheatSheetGraphics cheatSheet;
+	
 	public SketchPanel(CandidatePanel candidatePanel, SketchModel<Path> model, 
-			PathManager<Path> pathManager, PathView<Path> pathView) {
+			PathManager<Path> pathManager, PathView<Path> pathView,
+			CheatSheetGraphics cheatsheet) {
 		
 		this.model = model;
 		this.candidatePanel = candidatePanel;
 		this.pathManager = pathManager;
 		this.pathView = pathView;
+		this.cheatSheet = cheatsheet;
 		
 		model.registerEntityObserver(this, this::repaint);
 		model.registerLinkObserver(this, this::repaint);
@@ -113,6 +117,7 @@ public class SketchPanel<Path> extends JComponent implements
 	
 	private int initMouseX, initMouseY;
 	private float zoomMultiplier = 1.0f;
+	public boolean displayUsage = true;
 	
 	@Override
 	public void mouseDragged(MouseEvent arg0) {
@@ -130,9 +135,24 @@ public class SketchPanel<Path> extends JComponent implements
 		
 		// Right mouse button down.
 		if(rightMouseDown(arg0) && (selected = model.getSelectedEntity()) != null) {
+			// Initialize parameters for updating.
 			SketchEntityComponent init = model.getOriginalEntity();
-			selected.x = init.x + (arg0.getX() - initMouseX);
-			selected.y = init.y + (arg0.getY() - initMouseY);
+			selected.x = init.x; selected.y = init.y;
+			selected.w = init.w; selected.h = init.h;
+			int dx = (arg0.getX() - initMouseX);
+			int dy = (arg0.getY() - initMouseY);
+			
+			// Resize or move according to the shift key state.
+			if(arg0.isShiftDown()) {
+				// Resize the object if shift is down.
+				selected.w = init.w + dx;
+				selected.h = init.h + dy;
+			}
+			else {
+				// Move the object if not.
+				selected.x = init.x + dx;
+				selected.y = init.y + dy;
+			}
 			model.notifyEntityChanged(null);
 		}
 	}
@@ -158,6 +178,8 @@ public class SketchPanel<Path> extends JComponent implements
 	
 	@Override
 	public void mousePressed(MouseEvent arg0) {
+		displayUsage = false; // Respond to mouse input.
+		
 		this.requestFocusInWindow();
 		if(candidatePanel.numCandidates() > 0) return;
 		
@@ -417,13 +439,14 @@ public class SketchPanel<Path> extends JComponent implements
 	
 	@Override
 	public void paint(Graphics g) {
-		SketchEntityComponent selectedEntity = model.getSelectedEntity();
-		SketchEntityComponent originalEntity = model.getOriginalEntity();
-		SketchLinkComponent<Path> selectedLink = model.getSelectedLink();
-		
 		g.setFont(Configuration.getInstance().HANDWRITING_FONT);
 		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, getWidth(), getHeight());
+		
+		// Draw other entities on the canvas.
+		SketchEntityComponent selectedEntity = model.getSelectedEntity();
+		SketchEntityComponent originalEntity = model.getOriginalEntity();
+		SketchLinkComponent<Path> selectedLink = model.getSelectedLink();
 		Graphics2D g2d = (Graphics2D) g;
 		
 		// Render common objects.
@@ -461,6 +484,13 @@ public class SketchPanel<Path> extends JComponent implements
 			RenderUtils.drawStroke(g2d, pts);
 		}
 		if(!(points.size() < 2)) RenderUtils.drawStroke(g2d, points);
+		
+		// Draw the cheat sheet if available.
+		if(displayUsage && cheatSheet != null) {
+			g.drawImage(cheatSheet.image, 
+					(getWidth() - cheatSheet.imageWidth) / 2, 
+					(getHeight() - cheatSheet.imageHeight) / 2, null);
+		}
 	}
 	
 	private void paintObjectsSeparated(Graphics2D g2d,
