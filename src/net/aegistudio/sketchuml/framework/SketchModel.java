@@ -1,8 +1,10 @@
 package net.aegistudio.sketchuml.framework;
 
-import net.aegistudio.sketchuml.Template;
-import net.aegistudio.sketchuml.stroke.SketchRecognizer;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
+import net.aegistudio.sketchuml.Template;
 public interface SketchModel<Path> {
 	/**
 	 * @return the entity at specified logic coordinate.
@@ -40,11 +42,6 @@ public interface SketchModel<Path> {
 	 * @param c the component to send to the front.
 	 */
 	public void moveToFront(Object key, SketchEntityComponent c);
-	
-	/**
-	 * @return the recognizer of a newly coming strokes.
-	 */
-	public SketchRecognizer getRecognizer();
 	
 	/**
 	 * @return the underlying template object.
@@ -144,10 +141,28 @@ public interface SketchModel<Path> {
 	/**
 	 * @param source the source's caller object.
 	 */
-	void notifyLinkChanged(Object sourceObject);
+	public void notifyLinkChanged(Object sourceObject);
 	
 	/**
 	 * @param source the source's caller object.
 	 */
-	void notifyLinkStyleChanged(Object sourceObject);
+	public void notifyLinkStyleChanged(Object sourceObject);
+	
+	/**
+	 * Persist the state of the sketch model.
+	 * 
+	 * @param outputStream the output stream.
+	 * @throws IOException when the lower level has IO exception, or 
+	 * higher level has unexpected problem.
+	 */
+	public void saveModel(DataOutputStream outputStream) throws IOException;
+	
+	/**
+	 * Persist the state of the sketch model.
+	 * 
+	 * @param inputStream the input stream.
+	 * @throws IOException when the lower level has IO exception, or 
+	 * higher level has unexpected problem.
+	 */
+	public void loadModel(DataInputStream inputStream) throws IOException;
 }

@@ -1,35 +1,39 @@
 package net.aegistudio.sketchuml.framework;
 
 import java.awt.geom.Rectangle2D;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import de.dubs.dollarn.PointR;
 import net.aegistudio.sketchuml.Configuration;
+import net.aegistudio.sketchuml.Entity;
+import net.aegistudio.sketchuml.EntityEntry;
+import net.aegistudio.sketchuml.LinkEntry;
 import net.aegistudio.sketchuml.Template;
 import net.aegistudio.sketchuml.path.PathManager;
 import net.aegistudio.sketchuml.path.PathView;
-import net.aegistudio.sketchuml.stroke.SketchRecognizer;
 
 public class DefaultSketchModel<Path> implements SketchModel<Path> {
 	private final Template template;
-	private final SketchRecognizer recognizer;
 	private final List<SketchEntityComponent> entities;
 	private final List<SketchLinkComponent<Path>> links;
 	
 	private final PathView<Path> pathView;
-	private final @SuppressWarnings("unused") PathManager<Path> pathManager;
+	private final PathManager<Path> pathManager;
 	
 	private int selectedIndexEntity = -1;
 	private int selectedIndexLink = -1;
 	private SketchEntityComponent selectedEntity;
 	
-	public DefaultSketchModel(Template template, SketchRecognizer recognizer,
+	public DefaultSketchModel(Template template, 
 			PathView<Path> pathView, PathManager<Path> pathManager) {
 		this.template = template;
-		this.recognizer = recognizer;
 		this.pathManager = pathManager;
 		this.pathView = pathView;
 		this.entities = new ArrayList<>();
@@ -160,11 +164,6 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 			if(index < selectedIndexEntity) selectedIndexEntity ++;
 			notifyUpdate(observerEntity, key);
 		}
-	}
-
-	@Override
-	public SketchRecognizer getRecognizer() {
-		return recognizer;
 	}
 
 	@Override
@@ -347,5 +346,128 @@ public class DefaultSketchModel<Path> implements SketchModel<Path> {
 					position, boundBegin, boundEnd)) return link;
 		}
 		return null;
+	}
+
+	@Override
+	public void saveModel(DataOutputStream outputStream) throws IOException {
+		// Model structure version, reversed for further use.
+		int modelStructureVersion = 0;
+		outputStream.writeInt(modelStructureVersion);
+		
+		// Initialize list of entity entries.
+		List<EntityEntry> entityEntries = 
+				Arrays.asList(template.entities());
+		
+		// Persistence for the entities.
+		outputStream.writeInt(entities.size());
+		for(int i = 0; i < entities.size(); ++ i) {
+			SketchEntityComponent component = entities.get(i);
+			
+			// Write the boundary parameters.
+			outputStream.writeInt(component.x);
+			outputStream.writeInt(component.y);
+			outputStream.writeInt(component.w);
+			outputStream.writeInt(component.h);
+			
+			// Write the component path.
+			int entityIndex = entityEntries.indexOf(component.entry);
+			if(entityIndex < 0) throw new IOException();
+			outputStream.writeShort(entityIndex);
+			component.entity.save(outputStream);
+		}
+		entityEntries = null;
+		
+		// Initialize list of link entries.
+		List<LinkEntry> linkEntries = Arrays.asList(template.links());
+		
+		// Persistence for the paths.
+		outputStream.writeInt(links.size());
+		for(int i = 0; i < links.size(); ++ i) {
+			SketchLinkComponent<Path> component = links.get(i);
+			
+			// Write the both ends of the components.
+			int sourceIndex = entities.indexOf(component.source);
+			if(sourceIndex < 0) throw new IOException();
+			outputStream.writeInt(sourceIndex);
+			
+			int destinationIndex = entities.indexOf(component.destination);
+			if(destinationIndex < 0) throw new IOException();
+			outputStream.writeInt(destinationIndex);
+			
+			// Write the path style of the component.
+			pathManager.save(outputStream, component.pathObject);
+			
+			// Persistent the link entity.
+			int linkIndex = linkEntries.indexOf(component.entry);
+			if(linkIndex < 0) throw new IOException();
+			outputStream.writeShort(linkIndex);
+			component.link.save(outputStream);
+		}
+		linkEntries = null;
+	}
+
+	@Override
+	public void loadModel(DataInputStream inputStream) throws IOException {
+		// Model structure version, reversed for further use.
+		@SuppressWarnings("unused")
+		int modelStructureVersion = inputStream.readInt();
+		
+		// Persistence of the entities.
+		EntityEntry[] entityEntries = template.entities();
+		int numEntities = inputStream.readInt();
+		entities.clear();
+		for(int i = 0; i < numEntities; ++ i) {
+			// Read the boundary parameters.
+			int x = inputStream.readInt();
+			int y = inputStream.readInt();
+			int w = inputStream.readInt();
+			int h = inputStream.readInt();
+			
+			// The index of the entity entry.
+			int entityIndex = inputStream.readShort();
+			if(entityIndex < 0 || entityIndex >= entityEntries.length)
+				throw new IOException();
+			EntityEntry entry = entityEntries[entityIndex];
+			Entity entity = entry.factory.get();
+			entity.load(inputStream);
+			
+			// The instantiation of the entity component.
+			SketchEntityComponent component = 
+					new SketchEntityComponent(entry, entity);
+			component.x = x; component.y = y;
+			component.w = w; component.h = h;
+			entities.add(component);
+		}
+		
+		// Persistence of the links.
+		LinkEntry[] linkEntries = template.links();
+		int numLinks = inputStream.readInt();
+		links.clear();
+		for(int i = 0; i < numLinks; ++ i) {
+			// Read both ends of the components.
+			int sourceIndex = inputStream.readInt();
+			if(sourceIndex < 0 || sourceIndex >= entities.size()) 
+				throw new IOException();
+			SketchEntityComponent source = entities.get(sourceIndex);
+			
+			int destinationIndex = inputStream.readInt();
+			if(destinationIndex < 0 || destinationIndex >= entities.size())
+				throw new IOException();
+			SketchEntityComponent destination = entities.get(destinationIndex);
+			
+			// Read the path style of the component.
+			Path pathObject = pathManager.read(inputStream);
+			
+			// Persist the link entity.
+			SketchLinkComponent<Path> component = new SketchLinkComponent<Path>(
+					source, destination, pathObject);
+			int linkIndex = inputStream.readShort();
+			if(linkIndex < 0 || linkIndex >= linkEntries.length) 
+				throw new IOException();
+			component.entry = linkEntries[linkIndex];
+			component.link = component.entry.factory.get();
+			component.link.load(inputStream);
+			links.add(component);
+		}
 	}
 }

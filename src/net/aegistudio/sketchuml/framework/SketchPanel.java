@@ -27,24 +27,28 @@ import net.aegistudio.sketchuml.LinkEntry;
 import net.aegistudio.sketchuml.SketchView;
 import net.aegistudio.sketchuml.path.PathManager;
 import net.aegistudio.sketchuml.path.PathView;
+import net.aegistudio.sketchuml.stroke.SketchRecognizer;
 
 public class SketchPanel<Path> extends JComponent implements 
 	MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
 	
 	private static final long serialVersionUID = 1L;
 	private final SketchModel<Path> model;
+	private final SketchRecognizer recognizer;
 	private final CandidatePanel candidatePanel;
 	private final PathManager<Path> pathManager;
 	private final PathView<Path> pathView;
 	
 	private final CheatSheetGraphics cheatSheet;
 	
-	public SketchPanel(CandidatePanel candidatePanel, SketchModel<Path> model, 
+	public SketchPanel(CandidatePanel candidatePanel, 
+			SketchModel<Path> model, SketchRecognizer recognizer, 
 			PathManager<Path> pathManager, PathView<Path> pathView,
 			CheatSheetGraphics cheatsheet) {
 		
 		this.model = model;
 		this.candidatePanel = candidatePanel;
+		this.recognizer = recognizer;
 		this.pathManager = pathManager;
 		this.pathView = pathView;
 		this.cheatSheet = cheatsheet;
@@ -117,7 +121,7 @@ public class SketchPanel<Path> extends JComponent implements
 	
 	private int initMouseX, initMouseY;
 	private float zoomMultiplier = 1.0f;
-	public boolean displayUsage = true;
+	public boolean displayUsage = false;
 	
 	@Override
 	public void mouseDragged(MouseEvent arg0) {
@@ -269,8 +273,8 @@ public class SketchPanel<Path> extends JComponent implements
 		boxW = maxX - minX;	boxH = maxY - minY;
 		
 		// Recognize input stroke.
-		EntityEntry[] entityCandidates = model
-				.getRecognizer().recognize(allPoints, strokes.size());
+		EntityEntry[] entityCandidates = recognizer
+				.recognize(allPoints, strokes.size());
 		if(entityCandidates != null && entityCandidates.length > 0) 
 			Arrays.stream(entityCandidates)
 				.map(ComponentCandidate::new)

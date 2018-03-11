@@ -1,5 +1,9 @@
 package net.aegistudio.sketchuml.path;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -63,4 +67,30 @@ public interface TrifoldPath extends Cloneable {
 	public double articulateAndFitness(Vector<PointR> stroke,
 			Vector<PointR> trainingStroke,
 			int intersectBegin, int intersectEnd);
+	
+	/**
+	 * Records the implementations of all trifold paths. While new 
+	 * implementation is added, to keep compatibility with previous
+	 * version, it should be directly appended to the end of the list.
+	 */
+	public static List<Class<? extends TrifoldPath>> IMPLEMENTATIONS = 
+		Arrays.asList(TrifoldLinePath.class, 
+			TrifoldRectPath.class, TrifoldRoundRectPath.class,
+			TrifoldLiftPath.class, TrifoldRoundLiftPath.class,
+			TrifoldZigzagPath.class);
+	
+	/**
+	 * Persistent of the internal state of this path object.
+	 * @param outputStream the data persistent output stream.
+	 * @throws IOException while the data block is malformed or there's
+	 * some I/O error occurs.
+	 */
+	public void writePath(DataOutputStream outputStream) throws IOException;
+	
+	/**
+	 * Persistent of the internal state of this path object.
+	 * @param inputStream the data persistent input stream.
+	 * @throws IOException while there's some I/O error occurs.
+	 */
+	public void readPath(DataInputStream inputStream) throws IOException;
 }

@@ -1,5 +1,8 @@
 package net.aegistudio.sketchuml.path;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -224,5 +227,17 @@ public abstract class TrifoldAbstractLiftPath implements TrifoldPath {
 				PointR begin, PointR end) {
 			result.X = result.Y = 1;
 		}
+	}
+	
+	@Override
+	public void readPath(DataInputStream dataInput) throws IOException {
+		this.horizontal = dataInput.readByte() == 1;
+		this.lift = dataInput.readInt();
+	}
+	
+	@Override
+	public void writePath(DataOutputStream dataOutput) throws IOException {
+		dataOutput.writeByte(this.horizontal? 1 : 0);
+		dataOutput.writeInt(this.lift);
 	}
 }

@@ -1,5 +1,8 @@
 package net.aegistudio.sketchuml.path;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
 
@@ -34,5 +37,15 @@ public class TrifoldLinePath implements TrifoldPath {
 	@Override
 	public boolean equals(Object path) {
 		return path instanceof TrifoldLinePath;
+	}
+
+	@Override
+	public void writePath(DataOutputStream outputStream) throws IOException {
+		
+	}
+
+	@Override
+	public void readPath(DataInputStream inputStream) throws IOException {
+		
 	}
 }

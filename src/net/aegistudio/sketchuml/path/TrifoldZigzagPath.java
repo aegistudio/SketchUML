@@ -1,5 +1,8 @@
 package net.aegistudio.sketchuml.path;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
 
@@ -139,5 +142,18 @@ public class TrifoldZigzagPath implements TrifoldPath {
 		if(!(path instanceof TrifoldZigzagPath)) return false;
 		if(this.horizontal != ((TrifoldZigzagPath)path).horizontal) return false;
 		return ((TrifoldZigzagPath)path).ratio == this.ratio;
+	}
+	
+
+	@Override
+	public void writePath(DataOutputStream outputStream) throws IOException {
+		outputStream.writeByte(this.horizontal? 1 : 0);
+		outputStream.writeDouble(this.ratio);
+	}
+
+	@Override
+	public void readPath(DataInputStream inputStream) throws IOException {
+		this.horizontal = inputStream.readByte() == 1;
+		this.ratio = inputStream.readDouble();
 	}
 }

@@ -216,15 +216,56 @@ public class TrifoldPathManager implements PathManager<TrifoldProxyPath> {
 		return resultPath;
 	}
 
+	private void saveIntersection(DataOutputStream output, 
+			LinePiece.BoxIntersectStatus status) throws IOException {
+		output.writeByte(status.status);
+		output.writeDouble(status.ratio);
+	}
+	
+	private void readIntersection(DataInputStream input,
+			LinePiece.BoxIntersectStatus status) throws IOException {
+		status.status = input.readByte();
+		status.ratio = input.readDouble();
+	}
+	
 	@Override
 	public void save(DataOutputStream output, TrifoldProxyPath pathObject) 
 			throws IOException {
+		// Persistent the bounding box.
+		saveIntersection(output, pathObject.statusBegin);
+		saveIntersection(output, pathObject.statusEnd);
 		
+		// Persistent the path object.
+		int pathIndex = TrifoldPath.IMPLEMENTATIONS
+				.indexOf(pathObject.path.getClass());
+		if(pathIndex == -1) throw new IOException();
+		output.writeByte(pathIndex);
+		pathObject.path.writePath(output);
 	}
 
 	@Override
 	public TrifoldProxyPath read(DataInputStream input) throws IOException {
-		return null;
+		TrifoldProxyPath result = new TrifoldProxyPath();
+		
+		// Persistent the bounding box.
+		readIntersection(input, result.statusBegin);
+		readIntersection(input, result.statusEnd);
+		
+		// Persistent the path object.
+		int pathIndex = input.readByte();
+		if(pathIndex < 0 || pathIndex >= TrifoldPath.IMPLEMENTATIONS.size())
+			throw new IOException();
+		try {
+			result.path = TrifoldPath.IMPLEMENTATIONS
+				.get(pathIndex).newInstance();
+		}
+		catch(Exception e) {
+			throw new AssertionError("Each trifold path should "+
+					"have its no-parameter constructor.");
+		}
+		result.path.readPath(input);
+		
+		return result;
 	}
 
 }

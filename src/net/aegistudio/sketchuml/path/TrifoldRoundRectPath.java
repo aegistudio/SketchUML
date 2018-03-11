@@ -1,5 +1,8 @@
 package net.aegistudio.sketchuml.path;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
 
@@ -69,4 +72,13 @@ public class TrifoldRoundRectPath implements TrifoldPath {
 		return this.highSkew == ((TrifoldRoundRectPath)path).highSkew;
 	}
 
+	@Override
+	public void writePath(DataOutputStream outputStream) throws IOException {
+		outputStream.writeByte(this.highSkew? 1 : 0);
+	}
+
+	@Override
+	public void readPath(DataInputStream inputStream) throws IOException {
+		this.highSkew = inputStream.readByte() == 1;
+	}
 }
