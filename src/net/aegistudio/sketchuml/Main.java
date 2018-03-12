@@ -117,8 +117,8 @@ public class Main {
 			}
 			
 			public File getPreviousFile() {
-				return previousFile == null? 
-						new File(".") : previousFile;
+				return previousFile == null? new File(
+						".", "Untitled.suml") : previousFile;
 			}
 			
 			public FileFilter getPreviousFormat() {
@@ -140,11 +140,15 @@ public class Main {
 		menuFile.setMnemonic('F');
 		menuBar.add(menuFile);
 		
-		JMenuItem menuItemOpen = new JMenuItem("Open...");
+		// The [File -> Open] item.
+		JMenuItem menuItemOpen = new JMenuItem("Open");
 		menuItemOpen.addActionListener(a -> {
 			SketchPersistence.SketchFile<TrifoldProxyPath> fileModel = 
 					 new SketchPersistence.SketchFile<>();
 			if(!persistence.openModelPanel(mainFrame, fileModel)) return;
+			
+			// Update workspace status.
+			updateTitle();
 			resetSketchModel(fileModel.template, 
 					(DefaultSketchModel<TrifoldProxyPath>)
 					fileModel.sketchModel);
@@ -152,17 +156,44 @@ public class Main {
 		menuItemOpen.setAccelerator(KeyStroke.getKeyStroke("ctrl O"));
 		menuFile.add(menuItemOpen);
 		
-		JMenuItem menuItemSave = new JMenuItem("Save as...");
+		// The [File -> Save] item.
+		JMenuItem menuItemSave = new JMenuItem("Save");
 		menuItemSave.addActionListener(a -> {
 			SketchPersistence.SketchFile<TrifoldProxyPath> fileModel = 
 					 new SketchPersistence.SketchFile<>();
 			fileModel.formatVersion = formatVersion;
 			fileModel.template = currentTemplate;
 			fileModel.sketchModel = currentModel;
-			if(!persistence.saveModelPanel(mainFrame, fileModel)) return;
+			
+			// Attempt to save previous file, or normal save if there's 
+			// no file previously save.
+			boolean saveStatus = false;
+			if(previousFile != null) saveStatus = 
+					persistence.savePreviousFile(mainFrame, fileModel);
+			else saveStatus = persistence.saveModelPanel(mainFrame, fileModel);
+			if(!saveStatus) return;
+			
+			// Update the workspace status.
+			updateTitle();
 		});
 		menuItemSave.setAccelerator(KeyStroke.getKeyStroke("ctrl S"));
 		menuFile.add(menuItemSave);
+		
+		// The [File -> Save As] item.
+		JMenuItem menuItemSaveAs = new JMenuItem("Save As");
+		menuItemSaveAs.addActionListener(a -> {
+			SketchPersistence.SketchFile<TrifoldProxyPath> fileModel = 
+					 new SketchPersistence.SketchFile<>();
+			fileModel.formatVersion = formatVersion;
+			fileModel.template = currentTemplate;
+			fileModel.sketchModel = currentModel;
+			if(!persistence.saveModelPanel(mainFrame, fileModel)) return;
+			
+			// Update workspace status.
+			updateTitle();
+		});
+		menuItemSaveAs.setAccelerator(KeyStroke.getKeyStroke("ctrl alt S"));
+		menuFile.add(menuItemSaveAs);
 		
 		// Add the edit menu.
 		JMenu menuEdit = new JMenu("Edit");
@@ -225,6 +256,7 @@ public class Main {
 		// Show the main user interface.
 		mainFrame.setVisible(true);
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		updateTitle();
 	}
 	
 	public static void resetSketchModel(Template newTemplate,
@@ -275,5 +307,14 @@ public class Main {
 		editPanel.repaint();
 		editPanel.updateUI();
 		mainFrame.repaint();
+	}
+	
+	public static void updateTitle() {
+		String fileName = previousFile == null? 
+				"Untitled" : previousFile.getName();
+		if(fileName.toLowerCase().endsWith(".suml"))
+			fileName = fileName.substring(0, 
+					fileName.length() - ".suml".length());
+		mainFrame.setTitle("SketchUML - " + fileName);
 	}
 }

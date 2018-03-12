@@ -36,9 +36,15 @@ public class CheatSheetGraphics {
 		for(int i = 0; i < image.getWidth(); ++ i)
 			for(int j = 0; j < image.getHeight(); ++ j) {
 				double value = sourceRaster.getSampleDouble(i, j, 0);
-				sample[3] = value > 210.? 0 : Math.min(210, 255. - value);
-				sample[0] = sample[1] = sample[2] 
+				if(value > 210.) {
+					sample[0] = sample[1] = sample[2] = 255.;
+					sample[3] = 230.;
+				}
+				else {
+					sample[3] = Math.min(210, 255. - value);
+					sample[0] = sample[1] = sample[2] 
 						= 255. - sample[3] * GRAYSCALE_RATIO;
+				}
 				raster.setPixel(i, j, sample);
 			}
 		

@@ -44,6 +44,15 @@ public class Persistence<Model> {
 		return fileChooser;
 	}
 	
+	
+	protected void showIOErrorMessage(Component parent, File file, 
+			IOException e, String title) {
+		JOptionPane.showConfirmDialog(parent, 
+				"Cannot open file " + file.getAbsolutePath() 
+				+ ":\n" + e.getMessage(), "Error opening file",
+				JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+	}
+	
 	/**
 	 * @param parent the component to go modal while saving.
 	 * @param model the model of the persisting object.
@@ -73,10 +82,8 @@ public class Persistence<Model> {
 		}
 		catch(IOException e) {
 			e.printStackTrace();
-			JOptionPane.showConfirmDialog(fileChooser, 
-					"Cannot open file " + chosenFile.getAbsolutePath() 
-					+ ":\n" + e.getMessage(), "Error opening file",
-					JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+			showIOErrorMessage(fileChooser, chosenFile, 
+					e, "Error opening file");
 			return false;
 		}
 		
@@ -118,10 +125,8 @@ public class Persistence<Model> {
 		}
 		catch(IOException e) {
 			e.printStackTrace();
-			JOptionPane.showConfirmDialog(fileChooser, 
-					"Cannot save file " + chosenFile.getAbsolutePath() 
-					+ ":\n" + e.getMessage(), "Error saving file",
-					JOptionPane.YES_OPTION, JOptionPane.ERROR_MESSAGE);
+			showIOErrorMessage(fileChooser, chosenFile, 
+					e, "Error saving file");
 			return false;
 		}
 		
@@ -152,5 +157,24 @@ public class Persistence<Model> {
 	public void save(Model model, File modelFile,
 			FileFilter modelFormat) throws IOException {
 		throw new IOException("Not yet implemented!");
+	}
+	
+	public boolean savePreviousFile(Component parent, Model model) {
+		
+		File previousFile = getPreviousFile();
+		FileFilter previousFormat = getPreviousFormat();
+		
+		// Attempt to perform save process.
+		try {
+			save(model, previousFile, previousFormat);
+			setPreviousStatus(previousFile, previousFormat);
+			return true;
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+			showIOErrorMessage(parent, previousFile, 
+					e, "Error saving file");
+			return false;
+		}
 	}
 }
