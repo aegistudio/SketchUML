@@ -21,8 +21,10 @@ import java.util.List;
 import java.util.Vector;import javax.swing.JComponent;
 
 import de.dubs.dollarn.PointR;
+import net.aegistudio.sketchuml.Command;
 import net.aegistudio.sketchuml.Configuration;
 import net.aegistudio.sketchuml.EntityEntry;
+import net.aegistudio.sketchuml.History;
 import net.aegistudio.sketchuml.LinkEntry;
 import net.aegistudio.sketchuml.SketchView;
 import net.aegistudio.sketchuml.path.PathManager;
@@ -33,6 +35,9 @@ public class SketchPanel<Path> extends JComponent implements
 	MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
 	
 	private static final long serialVersionUID = 1L;
+	private final Object keyPaintObject = new Object();
+	private final Object keyDeleteObject = new Object();
+	
 	private final SketchModel<Path> model;
 	private final SketchRecognizer recognizer;
 	private final CandidatePanel candidatePanel;
@@ -40,13 +45,15 @@ public class SketchPanel<Path> extends JComponent implements
 	private final PathView<Path> pathView;
 	
 	private final CheatSheetGraphics cheatSheet;
+	private final History history;
 	
-	public SketchPanel(CandidatePanel candidatePanel, 
+	public SketchPanel(CandidatePanel candidatePanel, History history,
 			SketchModel<Path> model, SketchRecognizer recognizer, 
 			PathManager<Path> pathManager, PathView<Path> pathView,
 			CheatSheetGraphics cheatsheet) {
 		
 		this.model = model;
+		this.history = history;
 		this.candidatePanel = candidatePanel;
 		this.recognizer = recognizer;
 		this.pathManager = pathManager;
@@ -77,8 +84,32 @@ public class SketchPanel<Path> extends JComponent implements
 			};
 			
 			this.confirmAction = () -> {
-				model.create(null, component);
-				model.selectEntity(null, component);
+				// Initialize the command of inserting entity.
+				Command entityCommand = new Command() {
+					@Override
+					public void execute() {
+						model.create(null, component);
+						model.selectEntity(null, component);
+					}
+
+					@Override
+					public void undo() {
+						if(model.getOriginalEntity() == component)
+							model.selectEntity(null, null);
+						model.destroy(null, component);
+					}
+
+					@Override
+					public String name() {
+						return "Insert Object " 
+								+ component.entry.name;
+					}
+				};
+				
+				// Conclude the painting process with the entity
+				// insertion.
+				history.finishLocal(keyPaintObject, 
+						entityCommand, true);
 			};
 		}
 	}
@@ -98,7 +129,37 @@ public class SketchPanel<Path> extends JComponent implements
 			this.component.link = entry.factory.get();
 			
 			this.scrollAction = () -> { repaint(); };
-			this.confirmAction = () -> { model.link(null, component); };
+			this.confirmAction = () -> {
+				// Initialize the command of inserting links.
+				Command linkCommand = new Command() {
+
+					@Override
+					public void execute() {
+						model.link(null, component);
+						model.selectLink(null, component);
+					}
+
+					@Override
+					public void undo() {
+						if(model.getSelectedLink() == component)
+							model.selectLink(null, null);
+						model.unlink(null, component);
+					}
+
+					@Override
+					public String name() {
+						return "Link Objects";
+					}
+				};
+				
+				// Conclude the painting process with the link
+				// insertion. Notice the link will not be selected
+				// because we need to distinguish the line on
+				// candidate demonstration and the line on selection.
+				history.finishLocal(keyPaintObject, 
+						linkCommand, false);
+				model.link(null, component);
+			};
 		}
 		
 	}
@@ -183,10 +244,11 @@ public class SketchPanel<Path> extends JComponent implements
 	@Override
 	public void mousePressed(MouseEvent arg0) {
 		displayUsage = false; // Respond to mouse input.
+		history.setHistoryProtection(true);
 		
 		this.requestFocusInWindow();
 		if(candidatePanel.numCandidates() > 0) return;
-		
+
 		// Initial editing parameters when right clicked.
 		if(arg0.getButton() == MouseEvent.BUTTON3) {
 			model.selectEntity(null, null);
@@ -327,6 +389,8 @@ public class SketchPanel<Path> extends JComponent implements
 	
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
+		history.setHistoryProtection(false);
+		
 		SketchEntityComponent selectedEntity = model.getSelectedEntity();
 		// Left button for stroke drawing.
 		if(arg0.getButton() == MouseEvent.BUTTON1) {
@@ -334,16 +398,53 @@ public class SketchPanel<Path> extends JComponent implements
 			candidatePanel.updateCandidates(null);
 			model.selectEntity(null, null);
 			
-			// Transport the points to the troke.
-			if (points.size() > 1) 
-				strokes.add(new Vector<PointR>(points));
-			points.clear();
-			
-			// Judge whether to perform soon recognizing.
-			if(strokes.size() > 0) {
-				if(Configuration.getInstance().INSTANT_RECOGNIZE)
-					performRecognition();
+			// Transport the points to the stroke.
+			if(points.size() > 1) {
+				// Clone the points and create stroke command.
+				Vector<PointR> newPoints = new Vector<>(points);
+				Command strokeCommand = new Command() {
+					@Override
+					public void execute() {
+						strokes.add(newPoints);
+						points.clear();
+						updateStrokes();
+					}
+	
+					@Override
+					public void undo() {
+						strokes.remove(newPoints);
+						points.clear();
+						updateStrokes();
+					}
+					
+					private void updateStrokes() {
+						// Judge whether to perform soon recognizing.
+						if(strokes.size() > 0) {
+							if(Configuration.getInstance().INSTANT_RECOGNIZE)
+								performRecognition();
+						}
+						repaint();
+					}
+
+					@Override
+					public String name() {
+						return "Draw Stroke";
+					}
+				};
+				
+				// See the number of strokes inputed.
+				if(strokes.size() == 0) {
+					// Create a local history when there's only one stroke 
+					// inputed. The first stroke can not be undone. 
+					strokeCommand.execute();
+					history.startLocal(keyPaintObject);
+				}
+				
+				// Add proceeding strokes and they can be undone in the local
+				// history.
+				else history.perform(keyPaintObject, strokeCommand, true);
 			}
+			else points.clear();
 			
 			repaint();
 		}
@@ -378,6 +479,8 @@ public class SketchPanel<Path> extends JComponent implements
 		
 		// Middle mouse button for reset.
 		else if(arg0.getButton() == MouseEvent.BUTTON2) {
+			if(strokes.size() > 0)
+				history.finishLocal(keyPaintObject, null, false);
 			resetInputState();
 			repaint();
 		}
@@ -586,7 +689,7 @@ public class SketchPanel<Path> extends JComponent implements
 					.getWheelRotation() > 0? 1 : -1));
 			repaint();
 		}
-		else if(selected != null){
+		else if(selected != null && hasFocus()) {
 			SketchEntityComponent init = model.getOriginalEntity();
 			zoomMultiplier += arg0.getWheelRotation() > 0? -0.1 : +0.1;
 			if(zoomMultiplier < 0) zoomMultiplier = 
@@ -616,9 +719,11 @@ public class SketchPanel<Path> extends JComponent implements
 		// Operate on the current selected entity (if any).
 		SketchEntityComponent selectedEntity = model.getSelectedEntity();
 		if(selectedEntity != null) {
-			if(e.getKeyCode() == KeyEvent.VK_DELETE)
+			if(e.getKeyCode() == KeyEvent.VK_DELETE) {
 				// Remove the selected object if any.
-				model.destroy(null, selectedEntity);
+				Command entityCommand = new CommandDeleteEntity<Path>(model);
+				history.perform(keyDeleteObject, entityCommand, true);
+			}
 			else if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
 				model.selectEntity(null, null);
 			else {
@@ -654,9 +759,12 @@ public class SketchPanel<Path> extends JComponent implements
 		// Operate on the current selected link (if any).
 		SketchLinkComponent<Path> selectedLink = model.getSelectedLink();
 		if(selectedLink != null) {
-			if(e.getKeyCode() == KeyEvent.VK_DELETE)
+			if(e.getKeyCode() == KeyEvent.VK_DELETE) {
 				// Remove the selected link if any.
-				model.unlink(null, selectedLink);
+				Command linkCommand = new CommandDeleteLink<Path>(
+						model, selectedLink);
+				history.perform(keyDeleteObject, linkCommand, true);
+			}
 		}
 		
 		// For other cases, just clear all strokes and state and paint.

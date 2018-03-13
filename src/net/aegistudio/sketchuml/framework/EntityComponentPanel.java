@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.aegistudio.sketchuml.Configuration;
+import net.aegistudio.sketchuml.History;
 
 public class EntityComponentPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -83,7 +84,7 @@ public class EntityComponentPanel extends JPanel {
 		return field;
 	}
 	
-	public EntityComponentPanel(SketchModel<?> model) {
+	public EntityComponentPanel(History history, SketchModel<?> model) {
 		this.model = model;
 		super.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		
@@ -93,7 +94,11 @@ public class EntityComponentPanel extends JPanel {
 		
 		// The delete button.
 		delete = this.createEditingButton(Configuration.getInstance()
-				.EDITING_DELETE, operationPanel, model::destroy);
+				.EDITING_DELETE, operationPanel, (id, selectedEntity) -> {
+					history.perform(EntityComponentPanel.this, 
+							new CommandDeleteEntity<>(model), false);
+					model.destroy(id, selectedEntity);
+				});
 		moveFront = this.createEditingButton(Configuration.getInstance()
 				.EDITING_MOVEFRONT, operationPanel, model::moveToFront);
 		sendBack = this.createEditingButton(Configuration.getInstance()

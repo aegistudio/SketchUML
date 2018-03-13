@@ -67,6 +67,10 @@ public class Main {
 	// The sketch recognizer and current template.
 	public static SketchRecognizer recognizer;
 	
+	// The history stack and the undo/redo item.
+	public static DefaultHistory history;
+	public static JMenuItem menuItemUndo, menuItemRedo;
+	
 	public static void main(String[] arguments) {
 		// Set the UI's major look and feel. Could fail.
 		try { UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"); } 
@@ -130,6 +134,34 @@ public class Main {
 				previousFilter = format;
 			}
 		};
+
+		// Initialize the history.
+		history = new DefaultHistory() {
+			@Override
+			public void perform(Object id, 
+					Command command, boolean perform) {
+				super.perform(id, command, perform);
+				updateHistoryItems();
+			}
+			
+			@Override
+			public void startLocal(Object id) {
+				super.startLocal(id);
+				updateHistoryItems();
+			}
+			
+			@Override
+			public void undo() {
+				super.undo();
+				updateHistoryItems();
+			}
+			
+			@Override
+			public void redo() {
+				super.redo();
+				updateHistoryItems();
+			}
+		};
 		
 		// Add the title bar.
 		JMenuBar menuBar = new JMenuBar();
@@ -149,6 +181,8 @@ public class Main {
 			
 			// Update workspace status.
 			updateTitle();
+			history.reset();
+			updateHistoryItems();
 			resetSketchModel(fileModel.template, 
 					(DefaultSketchModel<TrifoldProxyPath>)
 					fileModel.sketchModel);
@@ -200,6 +234,22 @@ public class Main {
 		menuEdit.setMnemonic('E');
 		menuBar.add(menuEdit);
 		
+		// Add the [Edit -> Undo] item.
+		menuItemUndo = new JMenuItem();
+		menuItemUndo.addActionListener(a -> history.undo());
+		menuEdit.add(menuItemUndo);
+		menuItemUndo.setAccelerator(KeyStroke.getKeyStroke("ctrl Z"));
+		menuItemUndo.setEnabled(false);
+		
+		// Add the [Edit -> Redo] item.
+		menuItemRedo = new JMenuItem();
+		menuItemRedo.addActionListener(a -> history.redo());
+		menuEdit.add(menuItemRedo);
+		menuItemRedo.setAccelerator(KeyStroke.getKeyStroke("ctrl Y"));
+		
+		// Initialize history items.
+		updateHistoryItems();
+		
 		// Add the help menu.
 		JMenu menuHelp = new JMenu("Help");
 		menuHelp.setMnemonic('H');
@@ -228,18 +278,6 @@ public class Main {
 		candidatePanel = new CandidatePanel();
 		mainFrame.add(candidatePanel, BorderLayout.SOUTH);
 		
-		// Create the sketch painting panel.
-		cheatSheet = null;
-		try { cheatSheet = new CheatSheetGraphics("en_US"); }
-		catch(IOException e) { e.printStackTrace(); }
-		
-		// Insert the welcome template.
-		DefaultSketchModel<TrifoldProxyPath> model = 
-				new DefaultSketchModel<>(templates[0],
-						pathView, pathManager);
-		resetSketchModel(templates[0], model);
-		sketchPanel.displayUsage = true;
-		
 		// Create the keyboard capture's listener.
 		mainFrame.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent ke) {
@@ -252,6 +290,18 @@ public class Main {
 					sketchPanel.keyPressed(ke);
 			}
 		});
+		
+		// Create the sketch painting panel.
+		cheatSheet = null;
+		try { cheatSheet = new CheatSheetGraphics("en_US"); }
+		catch(IOException e) { e.printStackTrace(); }
+		
+		// Insert the welcome template.
+		DefaultSketchModel<TrifoldProxyPath> model = 
+				new DefaultSketchModel<>(templates[0],
+						pathView, pathManager);
+		resetSketchModel(templates[0], model);
+		sketchPanel.displayUsage = true;
 		
 		// Show the main user interface.
 		mainFrame.setVisible(true);
@@ -279,12 +329,14 @@ public class Main {
 		
 		// Create the new sketch panel.
 		currentModel = model;
-		sketchPanel = new SketchPanel<>(candidatePanel, currentModel, 
-				recognizer, pathManager, pathView, cheatSheet);
+		sketchPanel = new SketchPanel<>(candidatePanel, 
+				history, currentModel, recognizer, 
+				pathManager, pathView, cheatSheet);
 		mainFrame.add(sketchPanel, BorderLayout.CENTER);
 		
 		// Create the new edit panel.
-		editPanel = new ComponentEditPanel<>(model, new TrifoldPathEditor(),
+		editPanel = new ComponentEditPanel<>(model, 
+			history, new TrifoldPathEditor(), 
 			new PathEditor.PathChangeListener<TrifoldProxyPath>() {
 
 				@Override
@@ -316,5 +368,21 @@ public class Main {
 			fileName = fileName.substring(0, 
 					fileName.length() - ".suml".length());
 		mainFrame.setTitle("SketchUML - " + fileName);
+	}
+	
+	public static void updateHistoryItems() {
+		// Get the undo description.
+		Command undo = history.lastUndo();
+		String undoName = undo == null? 
+				"..." : undo.name();
+		menuItemUndo.setEnabled(undo != null);
+		menuItemUndo.setText("Undo " + undoName);
+		
+		// Get the redo description.
+		Command redo = history.lastRedo();
+		String redoName = redo == null?
+				"..." : redo.name();
+		menuItemRedo.setEnabled(redo != null);
+		menuItemRedo.setText("Redo " + redoName);
 	}
 }

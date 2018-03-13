@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import javax.swing.JPanel;
 
 import net.aegistudio.sketchuml.Configuration;
+import net.aegistudio.sketchuml.History;
 import net.aegistudio.sketchuml.path.PathEditor;
 
 public class ComponentEditPanel<Path> extends JPanel {
@@ -16,16 +17,16 @@ public class ComponentEditPanel<Path> extends JPanel {
 	private Object selectedEditor;
 	
 	public ComponentEditPanel(SketchModel<Path> model, 
-			PathEditor<Path> pathEditor, 
+			History history, PathEditor<Path> pathEditor, 
 			PathEditor.PathChangeListener<Path> pathNotifier) {
 		this.model = model;
 		
 		model.registerEntityObserver(this, this::onUpdate);
 		model.registerLinkObserver(this, this::onUpdate);
 		
-		entityEditor = new EntityComponentPanel(model);
+		entityEditor = new EntityComponentPanel(history, model);
 		linkEditor = new LinkComponentPanel<Path>(model, 
-				pathEditor, pathNotifier);
+				history, pathEditor, pathNotifier);
 		
 		onUpdate();
 	}

@@ -15,6 +15,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 
 import net.aegistudio.sketchuml.Configuration;
+import net.aegistudio.sketchuml.History;
 import net.aegistudio.sketchuml.LinkEntry;
 import net.aegistudio.sketchuml.path.PathEditor;
 
@@ -29,7 +30,7 @@ public class LinkComponentPanel<Path> extends JPanel {
 	private Component property, pathStyle;
 	
 	public LinkComponentPanel(SketchModel<Path> model, 
-			PathEditor<Path> pathEditor, 
+			History history, PathEditor<Path> pathEditor, 
 			PathEditor.PathChangeListener<Path> pathNotifier) {
 		this.model = model; this.pathEditor = pathEditor;
 		this.pathNotifier = pathNotifier;
@@ -44,9 +45,12 @@ public class LinkComponentPanel<Path> extends JPanel {
 		operationPanel.add(delete);
 		delete.setFont(Configuration.getInstance().EDITING_FONT);
 		delete.setText(Configuration.getInstance().EDITING_DELETE);
-		delete.addActionListener(a -> model.unlink(
-				LinkComponentPanel.this, LinkComponentPanel.this
-					.model.getSelectedLink()));
+		delete.addActionListener(a -> {
+			history.perform(LinkComponentPanel.this, 
+					new CommandDeleteLink<Path>(model), false);
+			model.unlink(LinkComponentPanel.this, 
+					LinkComponentPanel.this.model.getSelectedLink());
+		});
 		
 		// The type combo box.
 		type = new JComboBox<>();
