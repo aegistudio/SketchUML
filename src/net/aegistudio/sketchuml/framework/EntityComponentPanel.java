@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -17,22 +18,25 @@ import javax.swing.JTextField;
 import net.aegistudio.sketchuml.Configuration;
 import net.aegistudio.sketchuml.History;
 
-public class EntityComponentPanel extends JPanel {
+public class EntityComponentPanel<Path> extends JPanel {
+	
 	private static final long serialVersionUID = 1L;
-	private final SketchModel<?> model;
+	private final SketchModel<Path> model;
+	private final SketchSelectionModel<Path> selectionModel;
 	private Component property;
 	
 	// The editing operations.
 	private final JButton delete, moveFront, sendBack;
 	
 	private JButton createEditingButton(String tag, JPanel operationPanel,
-			BiConsumer<Object, SketchEntityComponent> action) {
+			Consumer<SketchEntityComponent> action) {
 		JButton result = new JButton();
 		result.setFont(Configuration.getInstance().EDITING_FONT);
 		result.setText(tag);
 		result.addActionListener(a -> {
-			SketchEntityComponent selected = model.getSelectedEntity();
-			if(selected != null) action.accept(null, selected);
+			SketchEntityComponent selected = 
+					selectionModel.selectedEntity();
+			if(selected != null) action.accept(selected);
 		});
 		operationPanel.add(result);
 		return result;
@@ -40,6 +44,7 @@ public class EntityComponentPanel extends JPanel {
 	
 	// The location properties.
 	private final JTextField x, y, w, h;
+	private boolean dispatchLocation = false;
 	private JTextField createLocationField(String tag, JPanel locationPanel,
 			BiConsumer<SketchEntityComponent, Integer> processing) {
 		Font propertyFont = Configuration.getInstance().PROPERTY_FONT;
@@ -47,21 +52,28 @@ public class EntityComponentPanel extends JPanel {
 		JTextField field = new JTextField();
 		field.setFont(propertyFont);
 		field.setHorizontalAlignment(JTextField.RIGHT);
-		Runnable actionRunnable = () -> {
-			try {
-				// Parse and apply input.
-				String currentText = field.getText();
-				if(currentText.length() == 0) return;
-				
-				int newValue = Integer.parseInt(currentText);
-				SketchEntityComponent selected = model.getSelectedEntity();
-				if(selected == null) return;
-				processing.accept(selected, newValue);
-				
-				// Notify change but retain the input location.
-				model.notifyEntityChanged(this);
+		Runnable actionRunnable = new Runnable() {
+			@Override
+			public void run() {
+				if(dispatchLocation) return;
+				try {
+					dispatchLocation = true;
+					
+					// Parse and apply input.
+					String currentText = field.getText();
+					if(currentText.length() == 0) return;
+					
+					int newValue = Integer.parseInt(currentText);
+					SketchEntityComponent selected = selectionModel.selectedEntity();
+					if(selected == null) return;
+					processing.accept(selected, newValue);
+					
+					// Notify change but retain the input location.
+					model.notifyEntityMoved(selected);
+				}
+				catch(Exception e) {	}
+				finally { dispatchLocation = false; }
 			}
-			catch(Exception e) {	}
 		};
 		field.addActionListener((a) -> actionRunnable.run());
 		field.addCaretListener((a) -> actionRunnable.run());
@@ -84,8 +96,11 @@ public class EntityComponentPanel extends JPanel {
 		return field;
 	}
 	
-	public EntityComponentPanel(History history, SketchModel<?> model) {
+	public EntityComponentPanel(History history, SketchModel<Path> model, 
+			SketchSelectionModel<Path> selectionModel) {
+		
 		this.model = model;
+		this.selectionModel = selectionModel;
 		super.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		
 		// Add the editing operation's panel.
@@ -94,10 +109,10 @@ public class EntityComponentPanel extends JPanel {
 		
 		// The delete button.
 		delete = this.createEditingButton(Configuration.getInstance()
-				.EDITING_DELETE, operationPanel, (id, selectedEntity) -> {
+				.EDITING_DELETE, operationPanel, (selectedEntity) -> {
 					history.perform(EntityComponentPanel.this, 
-							new CommandDeleteEntity<>(model), false);
-					model.destroy(id, selectedEntity);
+							new CommandDeleteEntity<>(model, selectionModel), false);
+					model.destroy(selectedEntity);
 				});
 		moveFront = this.createEditingButton(Configuration.getInstance()
 				.EDITING_MOVEFRONT, operationPanel, model::moveToFront);
@@ -119,7 +134,35 @@ public class EntityComponentPanel extends JPanel {
 		this.h = this.createLocationField("H:", 
 				locationPanel, (c, v) -> c.h = v);
 		
-		model.registerEntityObserver(this, () -> updateComponent(model.getSelectedEntity()));
+		model.subscribe(new SketchModel.ObserverAdapter<Path>() {
+			@Override
+			public void entityMoved(SketchEntityComponent component) {
+				updateComponent(component);
+			}
+			
+			@Override
+			public void entityUpdated(SketchEntityComponent component) {
+				component.entry.propertyView.update(component.entity);
+			}
+		});
+		
+		selectionModel.subscribe(new SketchSelectionModel.Observer<Path>() {
+
+			@Override
+			public void selectEntity(SketchEntityComponent entity) {
+				updateComponent(entity);
+			}
+
+			@Override
+			public void selectLink(SketchLinkComponent<Path> link) {
+				updateComponent(null);
+			}
+
+			@Override
+			public void unselect() {
+				updateComponent(null);
+			}
+		});
 		updateComponent(null);
 	}
 	
@@ -129,10 +172,12 @@ public class EntityComponentPanel extends JPanel {
 		moveFront.setEnabled(false);
 		sendBack.setEnabled(false);
 		
-		this.x.setText(""); this.x.setEnabled(false);
-		this.y.setText(""); this.y.setEnabled(false);
-		this.w.setText(""); this.w.setEnabled(false);
-		this.h.setText(""); this.h.setEnabled(false);
+		if(!dispatchLocation) {
+			this.x.setText(""); this.x.setEnabled(false);
+			this.y.setText(""); this.y.setEnabled(false);
+			this.w.setText(""); this.w.setEnabled(false);
+			this.h.setText(""); this.h.setEnabled(false);
+		}
 		
 		if(property != null) super.remove(property);
 		property = null;
@@ -146,21 +191,24 @@ public class EntityComponentPanel extends JPanel {
 		sendBack.setEnabled(true);
 		
 		// Fill in fundamental parameters for component.
-		this.x.setEnabled(true);
-		this.y.setEnabled(true);
-		this.w.setEnabled(true);
-		this.h.setEnabled(true);
-		
-		this.x.setText(Integer.toString(component.x));
-		this.y.setText(Integer.toString(component.y));
-		this.w.setText(Integer.toString(component.w));
-		this.h.setText(Integer.toString(component.h));
+		if(!dispatchLocation) {
+			this.x.setEnabled(true);
+			this.y.setEnabled(true);
+			this.w.setEnabled(true);
+			this.h.setEnabled(true);
+			
+			this.x.setText(Integer.toString(component.x));
+			this.y.setText(Integer.toString(component.y));
+			this.w.setText(Integer.toString(component.w));
+			this.h.setText(Integer.toString(component.h));
+		}
 		
 		// Set the property editing panel.
 		property = component.entry.propertyView.getViewObject(
-				e -> model.notifyEntityChanged(EntityComponentPanel.this));
+				e -> model.notifyEntityUpdated(component));
 		if(property != null) {
-			component.entry.propertyView.updateEntity(component.entity);
+			component.entry.propertyView
+					.select(component.entity);
 			super.add(property);
 		}
 		

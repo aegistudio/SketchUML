@@ -24,11 +24,12 @@ import net.aegistudio.sketchuml.framework.CandidatePanel;
 import net.aegistudio.sketchuml.framework.CheatSheetGraphics;
 import net.aegistudio.sketchuml.framework.ComponentEditPanel;
 import net.aegistudio.sketchuml.framework.DefaultSketchModel;
+import net.aegistudio.sketchuml.framework.PathEditor;
+import net.aegistudio.sketchuml.framework.SketchLinkComponent;
 import net.aegistudio.sketchuml.framework.SketchPanel;
 import net.aegistudio.sketchuml.path.TrifoldProxyPath;
 import net.aegistudio.sketchuml.path.TrifoldPathManager;
 import net.aegistudio.sketchuml.path.BezierPathView;
-import net.aegistudio.sketchuml.path.PathEditor;
 import net.aegistudio.sketchuml.path.TrifoldPathEditor;
 import net.aegistudio.sketchuml.statechart.TemplateStateChart;
 import net.aegistudio.sketchuml.stroke.SketchRecognizer;
@@ -330,25 +331,26 @@ public class Main {
 		// Create the new sketch panel.
 		currentModel = model;
 		sketchPanel = new SketchPanel<>(candidatePanel, 
-				history, currentModel, recognizer, 
+				history, currentModel, currentModel, recognizer, 
 				pathManager, pathView, cheatSheet);
 		mainFrame.add(sketchPanel, BorderLayout.CENTER);
 		
 		// Create the new edit panel.
-		editPanel = new ComponentEditPanel<>(model, 
+		editPanel = new ComponentEditPanel<>(model, model,
 			history, new TrifoldPathEditor(), 
 			new PathEditor.PathChangeListener<TrifoldProxyPath>() {
 
 				@Override
-				public Object beforeChange(TrifoldProxyPath previousPath) {
+				public Object beforeChange(
+						SketchLinkComponent<TrifoldProxyPath> previousPath) {
 					return null;
 				}
 
 				@Override
 				public void receiveChange(Object beforeChange, 
-						TrifoldProxyPath newPath) {
+						SketchLinkComponent<TrifoldProxyPath> newPath) {
 					if(editPanel == null) return;
-					model.notifyLinkStyleChanged(editPanel.linkEditor);
+					model.notifyLinkStyleChanged(newPath);
 				}
 			});
 		mainFrame.add(editPanel, BorderLayout.EAST);

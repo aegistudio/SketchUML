@@ -34,10 +34,16 @@ public class EntityMetaDecision implements
 	}
 
 	@Override
-	public void updateEntity(Entity entity) {
+	public void update(Entity entity) {
 		decisionPanel.updateEntity((EntityDecision)entity);
 	}
 
+
+	@Override
+	public void select(Entity entity) {
+		decisionPanel.selectEntity((EntityDecision)entity);
+	}
+	
 	@Override
 	public void renderEntity(Graphics g, Entity entity, boolean preview) {
 		renderer.renderEntity(g, entity, preview);

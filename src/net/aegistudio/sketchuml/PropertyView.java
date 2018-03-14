@@ -17,5 +17,12 @@ public interface PropertyView {
 	/**
 	 * @param entity set the entity as current editing.
 	 */
-	public void updateEntity(Entity entity);
+	public void select(Entity entity);
+	
+	/**
+	 * @param entity update the entity whose view is this property
+	 * view. Do notice that the view should not be updated if it
+	 * is not currently being edited.
+	 */
+	public void update(Entity entity);
 }

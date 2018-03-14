@@ -228,8 +228,13 @@ public class PropertyPanel<T> extends JPanel {
 		this.notifier = notifier;
 	}
 	
-	public void updateEntity(T entity) {
+	public void selectEntity(T entity) {
 		this.entity = entity;
+		getterRunnables.forEach(Runnable::run);
+	}
+	
+	public void updateEntity(T updatedEntity) {
+		if(this.entity != updatedEntity) return;
 		getterRunnables.forEach(Runnable::run);
 	}
 }

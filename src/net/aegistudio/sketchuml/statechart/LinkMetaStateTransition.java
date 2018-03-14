@@ -37,8 +37,13 @@ public class LinkMetaStateTransition implements PropertyView, LinkView {
 	}
 
 	@Override
-	public void updateEntity(Entity entity) {
+	public void update(Entity entity) {
 		viewObject.updateEntity((LinkStateTransition)entity);
+	}
+	
+	@Override
+	public void select(Entity entity) {
+		viewObject.selectEntity((LinkStateTransition)entity);
 	}
 
 	@Override

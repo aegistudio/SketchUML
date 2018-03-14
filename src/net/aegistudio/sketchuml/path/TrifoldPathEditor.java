@@ -20,14 +20,16 @@ import javax.swing.JTextField;
 
 import net.aegistudio.sketchuml.Configuration;
 import net.aegistudio.sketchuml.framework.BoundSlider;
+import net.aegistudio.sketchuml.framework.PathEditor;
 import net.aegistudio.sketchuml.framework.PropertyPanel;
+import net.aegistudio.sketchuml.framework.SketchLinkComponent;
 
 public class TrifoldPathEditor extends JPanel 
 	implements PathEditor<TrifoldProxyPath> {
 	
 	private static final long serialVersionUID = 1L;
 	private PathEditor.PathChangeListener<TrifoldProxyPath> notifier = null;
-	private TrifoldProxyPath edittingPath;
+	private SketchLinkComponent<TrifoldProxyPath> edittingPath;
 	
 	// The point related objects.
 	static class PointEditingPanel extends JPanel {
@@ -125,6 +127,11 @@ public class TrifoldPathEditor extends JPanel
 		public void updateEntity(TrifoldPath path) {
 			if(propertyPanel != null) propertyPanel
 				.updateEntity(cast.apply(path));
+		}
+		
+		public void selectEntity(TrifoldPath path) {
+			if(propertyPanel != null) propertyPanel
+				.selectEntity(cast.apply(path));
 		}
 	}
 	
@@ -268,7 +275,8 @@ public class TrifoldPathEditor extends JPanel
 	}
 	
 	@Override
-	public synchronized Component editPath(TrifoldProxyPath path, 
+	public synchronized Component editPath(
+			SketchLinkComponent<TrifoldProxyPath> path, 
 			PathEditor.PathChangeListener<TrifoldProxyPath> notifier) {
 		
 		// Initialize changing.
@@ -286,7 +294,7 @@ public class TrifoldPathEditor extends JPanel
 		this.changing = true;
 
 		Class<? extends TrifoldPath> newPropertyClass = 
-				edittingPath.path.getClass();
+				edittingPath.pathObject.path.getClass();
 		StyleObject<? extends TrifoldPath> previousStyle
 				= pathStyle.get(propertyClass);
 		StyleObject<? extends TrifoldPath> style
@@ -294,8 +302,8 @@ public class TrifoldPathEditor extends JPanel
 		
 		// Update the fields.
 		styleComboBox.setSelectedItem(newPropertyClass);
-		beginPanel.setData(edittingPath.statusBegin);
-		endPanel.setData(edittingPath.statusEnd);
+		beginPanel.setData(edittingPath.pathObject.statusBegin);
+		endPanel.setData(edittingPath.pathObject.statusEnd);
 		
 		// Retrieve the new editing panel.
 		if(newPropertyClass != propertyClass) {
@@ -303,15 +311,16 @@ public class TrifoldPathEditor extends JPanel
 			if(previousStyle != null) {
 				if(previousStyle.propertyPanel != null)
 					super.remove(previousStyle.propertyPanel);
-				previousStyle.updateEntity(null);
+				previousStyle.selectEntity(null);
 			}
 			if(style.propertyPanel != null) 
 				super.add(style.propertyPanel);
+			style.selectEntity(edittingPath.pathObject.path);
 		}
 		
 		// Update the property data.
 		if(style.propertyPanel != null) style
-			.updateEntity(edittingPath.path);
+			.updateEntity(edittingPath.pathObject.path);
 		this.changing = false;
 	}
 	
@@ -328,22 +337,25 @@ public class TrifoldPathEditor extends JPanel
 		
 		// Respond to the beginning point's edit.
 		if(this.beginPanel.interruptResponse()) {
-			this.beginPanel.fillData(this.edittingPath.statusBegin);
+			this.beginPanel.fillData(this.edittingPath
+					.pathObject.statusBegin);
 			hasChanged = true;
 		}
 		
 		// Respond to the ending point's edit.
 		if(this.endPanel.interruptResponse()) {
-			this.endPanel.fillData(this.edittingPath.statusEnd);
+			this.endPanel.fillData(this.edittingPath
+					.pathObject.statusEnd);
 			hasChanged = true;
 		}
 		
 		// Check whether the user has changed the line style.
-		if(this.edittingPath.path.getClass() != 
+		if(this.edittingPath.pathObject.path.getClass() != 
 				this.styleComboBox.getSelectedItem()) {
 			// Respond to the change on the line style.
-			this.edittingPath.path = pathStyle.get(this.styleComboBox
-					.getSelectedItem()).newInstance.get();
+			this.edittingPath.pathObject.path = 
+					pathStyle.get(this.styleComboBox
+							.getSelectedItem()).newInstance.get();
 			hasChanged = true;
 		}
 		else {
@@ -355,5 +367,11 @@ public class TrifoldPathEditor extends JPanel
 			notifier.receiveChange(backup, edittingPath);
 			refreshPath();
 		}
+	}
+
+	@Override
+	public void updatePath(SketchLinkComponent<TrifoldProxyPath> path) {
+		if(path != this.edittingPath) return;
+		refreshPath();
 	}
 }

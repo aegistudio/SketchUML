@@ -46,7 +46,12 @@ public class EntityMetaStateObject implements SketchView, PropertyView {
 	}
 
 	@Override
-	public void updateEntity(Entity entity) {
+	public void select(Entity entity) {
+		viewObject.selectEntity((EntityStateObject)entity);
+	}
+
+	@Override
+	public void update(Entity entity) {
 		viewObject.updateEntity((EntityStateObject)entity);
 	}
 
@@ -92,5 +97,4 @@ public class EntityMetaStateObject implements SketchView, PropertyView {
 	public String overlayEntity(Entity entity, OverlayDirection old) {
 		return null;
 	}
-
 }

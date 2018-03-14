@@ -17,7 +17,6 @@ import javax.swing.JPanel;
 import net.aegistudio.sketchuml.Configuration;
 import net.aegistudio.sketchuml.History;
 import net.aegistudio.sketchuml.LinkEntry;
-import net.aegistudio.sketchuml.path.PathEditor;
 
 public class LinkComponentPanel<Path> extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -30,6 +29,7 @@ public class LinkComponentPanel<Path> extends JPanel {
 	private Component property, pathStyle;
 	
 	public LinkComponentPanel(SketchModel<Path> model, 
+			SketchSelectionModel<Path> selectionModel,
 			History history, PathEditor<Path> pathEditor, 
 			PathEditor.PathChangeListener<Path> pathNotifier) {
 		this.model = model; this.pathEditor = pathEditor;
@@ -46,10 +46,10 @@ public class LinkComponentPanel<Path> extends JPanel {
 		delete.setFont(Configuration.getInstance().EDITING_FONT);
 		delete.setText(Configuration.getInstance().EDITING_DELETE);
 		delete.addActionListener(a -> {
+			if(selectionModel.selectedLink() == null) return;
 			history.perform(LinkComponentPanel.this, 
-					new CommandDeleteLink<Path>(model), false);
-			model.unlink(LinkComponentPanel.this, 
-					LinkComponentPanel.this.model.getSelectedLink());
+					new CommandDeleteLink<Path>(model, selectionModel), false);
+			model.unlink(selectionModel.selectedLink());
 		});
 		
 		// The type combo box.
@@ -77,7 +77,7 @@ public class LinkComponentPanel<Path> extends JPanel {
 			if(a.getStateChange() != ItemEvent.SELECTED) return;
 			
 			// Filter un-changed conditions.
-			SketchLinkComponent<Path> linkComponent = model.getSelectedLink();
+			SketchLinkComponent<Path> linkComponent = selectionModel.selectedLink();
 			LinkEntry entry = (LinkEntry) typeModel.getSelectedItem();
 			if(linkComponent == null || entry == null) return;
 			if(linkComponent.entry == entry) return;
@@ -85,11 +85,39 @@ public class LinkComponentPanel<Path> extends JPanel {
 			// Perform creation and notification.
 			linkComponent.entry = entry;
 			linkComponent.link = entry.factory.get();
-			model.notifyLinkChanged(LinkComponentPanel.this);
+			model.notifyLinkUpdated(linkComponent);
 		});
 		
 		// The reactors.
-		model.registerLinkObserver(this, () -> updateComponent(model.getSelectedLink()));
+		model.subscribe(new SketchModel.ObserverAdapter<Path>() {
+			@Override
+			public void linkUpdated(SketchLinkComponent<Path> link) {
+				pathEditor.updatePath(link);
+			}
+			
+			@Override
+			public void linkStyleChanged(SketchLinkComponent<Path> link) {
+				pathEditor.updatePath(link);
+			}
+		});
+		
+		selectionModel.subscribe(new SketchSelectionModel.Observer<Path>() {
+			@Override
+			public void selectEntity(SketchEntityComponent entity) {
+				updateComponent(null);
+			}
+
+			@Override
+			public void selectLink(SketchLinkComponent<Path> link) {
+				updateComponent(link);
+			}
+
+			@Override
+			public void unselect() {
+				updateComponent(null);
+			}
+		});
+		
 		updateComponent(null);
 	}
 	
@@ -114,15 +142,15 @@ public class LinkComponentPanel<Path> extends JPanel {
 		typeModel.setSelectedItem(link.entry);
 		
 		// The link style panel.
-		pathStyle = pathEditor.editPath(link.pathObject, this.pathNotifier);
+		pathStyle = pathEditor.editPath(link, this.pathNotifier);
 		if(pathStyle != null) add(pathStyle);
 		
 		// The editor panel.
 		property = link.entry.propertyView.getViewObject(e -> 
-			model.notifyLinkChanged(LinkComponentPanel.this));
+					model.notifyLinkUpdated(link));
 		if(property != null) {
 			add(property);
-			link.entry.propertyView.updateEntity(link.link);
+			link.entry.propertyView.select(link.link);
 		}
 		
 		repaint();

@@ -4,32 +4,36 @@ import net.aegistudio.sketchuml.Command;
 
 public class CommandDeleteLink<Path> implements Command {
 	private final SketchModel<Path> model;
+	private final SketchSelectionModel<Path> selectionModel;
 	private final SketchLinkComponent<Path> selectedLink;
 	
-	public CommandDeleteLink(SketchModel<Path> model, 
+	public CommandDeleteLink(SketchModel<Path> model,
+			SketchSelectionModel<Path> selectionModel,
 			SketchLinkComponent<Path> link) {
 		this.model = model;
 		this.selectedLink = link;
+		this.selectionModel = selectionModel;
 		if(this.selectedLink == null) throw new AssertionError(
 				"The original link should never be null.");
 	}
 	
-	public CommandDeleteLink(SketchModel<Path> model) {
-		this(model, model.getSelectedLink());
+	public CommandDeleteLink(SketchModel<Path> model,
+			SketchSelectionModel<Path> selectionModel) {
+		this(model, selectionModel, selectionModel.selectedLink());
 	}
 	
 	
 	@Override
 	public void execute() {
-		if(model.getSelectedLink() == selectedLink)
-			model.selectLink(null, null);
-		model.unlink(null, selectedLink);
+		if(selectionModel.selectedLink() == selectedLink)
+			selectionModel.requestUnselect();
+		model.unlink(selectedLink);
 	}
 
 	@Override
 	public void undo() {
-		model.link(null, selectedLink);
-		model.selectLink(null, selectedLink);
+		model.link(selectedLink);
+		selectionModel.requestSelectLink(selectedLink);
 	}
 
 	@Override

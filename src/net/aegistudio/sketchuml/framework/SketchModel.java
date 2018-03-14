@@ -7,6 +7,64 @@ import java.io.IOException;
 import net.aegistudio.sketchuml.Template;
 public interface SketchModel<Path> {
 	/**
+	 * The observer that listen to the changes in the sketch 
+	 * data model, including entity created, entity removed,
+	 * entity data updated, entity relocated, link created,
+	 * link removed, link data updated, link style updated.
+	 */
+	public interface Observer<Path> {
+		public void entityCreated(SketchEntityComponent entity);
+		
+		public void entityDestroyed(SketchEntityComponent entity);
+		
+		public void entityUpdated(SketchEntityComponent entity);
+		
+		public void entityMoved(SketchEntityComponent entity);
+		
+		public void entityReordered(SketchEntityComponent entity);
+		
+		public void linkCreated(SketchLinkComponent<Path> link);
+		
+		public void linkDestroyed(SketchLinkComponent<Path> link);
+		
+		public void linkUpdated(SketchLinkComponent<Path> link);
+		
+		public void linkStyleChanged(SketchLinkComponent<Path> link);
+	}
+	
+	public static class ObserverAdapter<Path> implements Observer<Path> {
+
+		@Override
+		public void entityCreated(SketchEntityComponent entity) {}
+
+		@Override
+		public void entityDestroyed(SketchEntityComponent entity) {}
+
+		@Override
+		public void entityUpdated(SketchEntityComponent entity) {}
+
+		@Override
+		public void entityMoved(SketchEntityComponent entity) {}
+
+		@Override
+		public void entityReordered(SketchEntityComponent entity) {}
+
+		@Override
+		public void linkCreated(SketchLinkComponent<Path> link) {}
+
+		@Override
+		public void linkDestroyed(SketchLinkComponent<Path> link) {}
+
+		@Override
+		public void linkUpdated(SketchLinkComponent<Path> link) {}
+
+		@Override
+		public void linkStyleChanged(SketchLinkComponent<Path> link) {}
+	};
+	
+	public void subscribe(Observer<Path> path);
+	
+	/**
 	 * @return the entity at specified logic coordinate.
 	 * @param x the x coordinate.
 	 * @param y the y coordinate.
@@ -17,31 +75,25 @@ public interface SketchModel<Path> {
 	 * @param key the notifier's key.
 	 * @param component the component to create.
 	 */
-	public void create(Object key, SketchEntityComponent component);
-	
-	/**
-	 * @param key the notifier's key.
-	 * @param component the entity to set selected.
-	 */
-	public void selectEntity(Object key, SketchEntityComponent component);
+	public void create(SketchEntityComponent component);
 	
 	/**
 	 * @param key the notifier's key.
 	 * @param component the component to remove.
 	 */
-	public void destroy(Object key, SketchEntityComponent component);
+	public void destroy(SketchEntityComponent component);
 	
 	/**
 	 * @param key the notifier's key.
 	 * @param c the component to move to the back.
 	 */
-	public void moveToBack(Object key, SketchEntityComponent c);
+	public void moveToBack(SketchEntityComponent c);
 	
 	/**
 	 * @param key the notifier's key.
 	 * @param c the component to send to the front.
 	 */
-	public void moveToFront(Object key, SketchEntityComponent c);
+	public void moveToFront(SketchEntityComponent c);
 	
 	/**
 	 * @return the underlying template object.
@@ -66,42 +118,6 @@ public interface SketchModel<Path> {
 	public int entityIndexOf(SketchEntityComponent entity);
 	
 	/**
-	 * Used to notify when the underlying entity selection is changed.
-	 * 
-	 * @param sourceKey the object representing the caller object.
-	 * @param observer the closure the connect to model.
-	 */
-	public void registerEntityObserver(Object sourceKey, Runnable observer);
-	
-	/**
-	 * Used to notify when the underlying link selection is changed.
-	 * 
-	 * @param sourceKey the object representing the caller object.
-	 * @param observer the closure the connect to model.
-	 */
-	public void registerLinkObserver(Object sourceKey, Runnable observer);
-	
-	/**
-	 * @return the current selected entity (not link).
-	 */
-	SketchEntityComponent getSelectedEntity();
-
-	/**
-	 * @return the current selected entity's original object (not link).
-	 */
-	SketchEntityComponent getOriginalEntity();
-
-	/**
-	 * @return the current selected link (not entity).
-	 */
-	SketchLinkComponent<Path> getSelectedLink();
-	
-	/**
-	 * @param source the source's caller object.
-	 */
-	void notifyEntityChanged(Object source);
-	
-	/**
 	 * @return the number of links.
 	 */
 	public int numLinks();
@@ -118,35 +134,19 @@ public interface SketchModel<Path> {
 	 * @param key the notifier's key.
 	 * @param link the link to create.
 	 */
-	public void link(Object key, SketchLinkComponent<Path> link);
+	public void link(SketchLinkComponent<Path> link);
 	
 	/**
 	 * Remove link between two objects.
 	 * @param key the notifier's key.
 	 * @param link the link to create.
 	 */
-	public void unlink(Object key, SketchLinkComponent<Path> link);
+	public void unlink(SketchLinkComponent<Path> link);
 	
 	/**
 	 * @return the k-th link.
 	 */
 	public SketchLinkComponent<Path> getLink(int i);
-	
-	/**
-	 * @param key the notifier's key.
-	 * @param link the link to set selected.
-	 */
-	public void selectLink(Object key, SketchLinkComponent<Path> link);
-	
-	/**
-	 * @param source the source's caller object.
-	 */
-	public void notifyLinkChanged(Object sourceObject);
-	
-	/**
-	 * @param source the source's caller object.
-	 */
-	public void notifyLinkStyleChanged(Object sourceObject);
 	
 	/**
 	 * Persist the state of the sketch model.
@@ -165,4 +165,27 @@ public interface SketchModel<Path> {
 	 * higher level has unexpected problem.
 	 */
 	public void loadModel(DataInputStream inputStream) throws IOException;
+	
+	/**
+	 * @see Observer#entityUpdated(SketchEntityComponent)
+	 * @param entity the updated entity.
+	 */
+	public void notifyEntityUpdated(SketchEntityComponent entity);
+	
+	/**
+	 * @see Observer#entityMoved(SketchEntityComponent)
+	 * @param entity the moved entity.
+	 */
+	public void notifyEntityMoved(SketchEntityComponent entity);
+	
+	/**
+	 * @see Observer#linkUpdated(SketchLinkComponent)
+	 * @param link the updated link.
+	 */
+	public void notifyLinkUpdated(SketchLinkComponent<Path> link);
+	
+	/**
+	 * @param link the style-updated link.
+	 */
+	public void notifyLinkStyleChanged(SketchLinkComponent<Path> link);
 }

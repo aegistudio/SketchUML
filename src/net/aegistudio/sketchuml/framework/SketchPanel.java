@@ -32,13 +32,15 @@ import net.aegistudio.sketchuml.path.PathView;
 import net.aegistudio.sketchuml.stroke.SketchRecognizer;
 
 public class SketchPanel<Path> extends JComponent implements 
-	MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
+	MouseListener, MouseMotionListener, MouseWheelListener, KeyListener,
+	SketchModel.Observer<Path>, SketchSelectionModel.Observer<Path> {
 	
 	private static final long serialVersionUID = 1L;
 	private final Object keyPaintObject = new Object();
 	private final Object keyDeleteObject = new Object();
 	
 	private final SketchModel<Path> model;
+	private final SketchSelectionModel<Path> selectionModel;
 	private final SketchRecognizer recognizer;
 	private final CandidatePanel candidatePanel;
 	private final PathManager<Path> pathManager;
@@ -47,12 +49,14 @@ public class SketchPanel<Path> extends JComponent implements
 	private final CheatSheetGraphics cheatSheet;
 	private final History history;
 	
-	public SketchPanel(CandidatePanel candidatePanel, History history,
+	public SketchPanel(CandidatePanel candidatePanel, 
+			History history, SketchSelectionModel<Path> selectionModel, 
 			SketchModel<Path> model, SketchRecognizer recognizer, 
 			PathManager<Path> pathManager, PathView<Path> pathView,
 			CheatSheetGraphics cheatsheet) {
 		
 		this.model = model;
+		this.selectionModel = selectionModel;
 		this.history = history;
 		this.candidatePanel = candidatePanel;
 		this.recognizer = recognizer;
@@ -60,8 +64,8 @@ public class SketchPanel<Path> extends JComponent implements
 		this.pathView = pathView;
 		this.cheatSheet = cheatsheet;
 		
-		model.registerEntityObserver(this, this::repaint);
-		model.registerLinkObserver(this, this::repaint);
+		model.subscribe(this);
+		selectionModel.subscribe(this);
 		
 		addMouseListener(this);
 		addMouseMotionListener(this);
@@ -88,15 +92,15 @@ public class SketchPanel<Path> extends JComponent implements
 				Command entityCommand = new Command() {
 					@Override
 					public void execute() {
-						model.create(null, component);
-						model.selectEntity(null, component);
+						model.create(component);
+						selectionModel.requestSelectEntity(component);
 					}
 
 					@Override
 					public void undo() {
-						if(model.getOriginalEntity() == component)
-							model.selectEntity(null, null);
-						model.destroy(null, component);
+						if(selectionModel.selectedEntity() == component)
+							selectionModel.requestUnselect();
+						model.destroy(component);
 					}
 
 					@Override
@@ -135,15 +139,15 @@ public class SketchPanel<Path> extends JComponent implements
 
 					@Override
 					public void execute() {
-						model.link(null, component);
-						model.selectLink(null, component);
+						model.link(component);
+						selectionModel.requestSelectLink(component);
 					}
 
 					@Override
 					public void undo() {
-						if(model.getSelectedLink() == component)
-							model.selectLink(null, null);
-						model.unlink(null, component);
+						if(selectionModel.selectedLink() == component)
+							selectionModel.requestUnselect();
+						model.unlink(component);
 					}
 
 					@Override
@@ -158,7 +162,7 @@ public class SketchPanel<Path> extends JComponent implements
 				// candidate demonstration and the line on selection.
 				history.finishLocal(keyPaintObject, 
 						linkCommand, false);
-				model.link(null, component);
+				model.link(component);
 			};
 		}
 		
@@ -191,7 +195,8 @@ public class SketchPanel<Path> extends JComponent implements
 		if(leftMouseDown(arg0)) {
 			// Clear previous candidates.
 			candidatePanel.updateCandidates(null);
-			model.selectEntity(null, null);
+			selectionModel.requestUnselect();
+			//model.selectEntity(null, null);
 			
 			Point point = arg0.getPoint();
 			points.add(new PointR(point.x, point.y));
@@ -199,9 +204,11 @@ public class SketchPanel<Path> extends JComponent implements
 		}
 		
 		// Right mouse button down.
-		if(rightMouseDown(arg0) && (selected = model.getSelectedEntity()) != null) {
+		if(rightMouseDown(arg0) && (selected = 
+				selectionModel.selectedEntity()) != null) {
+			
 			// Initialize parameters for updating.
-			SketchEntityComponent init = model.getOriginalEntity();
+			//SketchEntityComponent init = model.getOriginalEntity();
 			selected.x = init.x; selected.y = init.y;
 			selected.w = init.w; selected.h = init.h;
 			int dx = (arg0.getX() - initMouseX);
@@ -218,7 +225,8 @@ public class SketchPanel<Path> extends JComponent implements
 				selected.x = init.x + dx;
 				selected.y = init.y + dy;
 			}
-			model.notifyEntityChanged(null);
+			model.notifyEntityMoved(selected);
+			//model.notifyEntityChanged(null);
 		}
 	}
 	
@@ -251,7 +259,7 @@ public class SketchPanel<Path> extends JComponent implements
 
 		// Initial editing parameters when right clicked.
 		if(arg0.getButton() == MouseEvent.BUTTON3) {
-			model.selectEntity(null, null);
+			selectionModel.requestUnselect();
 			SketchEntityComponent entityToSelect = null;
 			SketchLinkComponent<Path> linkToSelect = null;
 			
@@ -287,7 +295,7 @@ public class SketchPanel<Path> extends JComponent implements
 			
 			// Perform actual entity selection if any.
 			if(entityToSelect != null) {
-				model.selectEntity(null, entityToSelect);
+				selectionModel.requestSelectEntity(entityToSelect);
 				focusSelected();
 				initMouseX = arg0.getX(); initMouseY = arg0.getY();
 				return;
@@ -295,7 +303,7 @@ public class SketchPanel<Path> extends JComponent implements
 			
 			// Perform actual link selection if any.
 			if(linkToSelect != null) {
-				model.selectLink(null, linkToSelect);
+				selectionModel.requestSelectLink(linkToSelect);
 				return;
 			}
 		}
@@ -351,12 +359,8 @@ public class SketchPanel<Path> extends JComponent implements
 			// The stroke should touch the components.
 			SketchEntityComponent componentBegin = model
 					.entityAt(strokeBegin.intX(), strokeBegin.intY());
-			if(componentBegin == model.getSelectedEntity()) 
-				componentBegin = model.getOriginalEntity();
 			SketchEntityComponent componentEnd = model
 					.entityAt(strokeEnd.intX(), strokeEnd.intY());
-			if(componentEnd == model.getSelectedEntity())
-				componentEnd = model.getOriginalEntity();
 			
 			// Begin to find some stroke.
 			if(componentBegin != null && componentEnd != null) {
@@ -391,12 +395,12 @@ public class SketchPanel<Path> extends JComponent implements
 	public void mouseReleased(MouseEvent arg0) {
 		history.setHistoryProtection(false);
 		
-		SketchEntityComponent selectedEntity = model.getSelectedEntity();
+		SketchEntityComponent selectedEntity = selectionModel.selectedEntity();
 		// Left button for stroke drawing.
 		if(arg0.getButton() == MouseEvent.BUTTON1) {
 			// Clear previous candidates.
 			candidatePanel.updateCandidates(null);
-			model.selectEntity(null, null);
+			selectionModel.requestUnselect();
 			
 			// Transport the points to the stroke.
 			if(points.size() > 1) {
@@ -469,9 +473,9 @@ public class SketchPanel<Path> extends JComponent implements
 			// Right mouse for location confirmation.
 			else if(selectedEntity != null) {
 				// Partial confirmation.
-				selectedEntity = model.getOriginalEntity();
-				model.selectEntity(null, null);
-				model.selectEntity(null, selectedEntity);
+				selectedEntity = selectionModel.selectedEntity();
+				selectionModel.requestUnselect();
+				selectionModel.requestSelectEntity(selectedEntity);
 				focusSelected();
 				repaint();
 			}
@@ -525,10 +529,10 @@ public class SketchPanel<Path> extends JComponent implements
 		Rectangle2D boundDestination = current.destination.getBoundRectangle();
 		
 		// Judge whether the current object is selected, and replace with dynamic.
-		if(current.source == model.getOriginalEntity())
-			boundSource = model.getSelectedEntity().getBoundRectangle();
-		if(current.destination == model.getOriginalEntity())
-			boundDestination = model.getSelectedEntity().getBoundRectangle();
+		//if(current.source == model.getOriginalEntity())
+		//	boundSource = model.getSelectedEntity().getBoundRectangle();
+		//if(current.destination == model.getOriginalEntity())
+		//	boundDestination = model.getSelectedEntity().getBoundRectangle();
 		
 		// The concrete part of the rendering object.
 		current.entry.linkView.render(current.source.entity, 
@@ -540,8 +544,15 @@ public class SketchPanel<Path> extends JComponent implements
 	private interface SketchPaintInterface<Path> {
 		public void paint(Graphics2D g2d,
 			SketchEntityComponent selectedEntity,
-			SketchEntityComponent originalEntity,
 			SketchLinkComponent<Path> selectedLink);
+	}
+	
+	private boolean dirty = false;
+	@Override
+	public void repaint() {
+		if(dirty) return;
+		dirty = true;
+		super.repaint();
 	}
 	
 	@Override
@@ -551,9 +562,8 @@ public class SketchPanel<Path> extends JComponent implements
 		g.fillRect(0, 0, getWidth(), getHeight());
 		
 		// Draw other entities on the canvas.
-		SketchEntityComponent selectedEntity = model.getSelectedEntity();
-		SketchEntityComponent originalEntity = model.getOriginalEntity();
-		SketchLinkComponent<Path> selectedLink = model.getSelectedLink();
+		SketchEntityComponent selectedEntity = selectionModel.selectedEntity();
+		SketchLinkComponent<Path> selectedLink = selectionModel.selectedLink();
 		Graphics2D g2d = (Graphics2D) g;
 		
 		// Render common objects.
@@ -563,7 +573,7 @@ public class SketchPanel<Path> extends JComponent implements
 			paintInterface = this::paintObjectsInterleaved;
 		else // Render links alongside with its entities.
 			paintInterface = this::paintObjectsSeparated;
-		paintInterface.paint(g2d, selectedEntity, originalEntity, selectedLink);
+		paintInterface.paint(g2d, selectedEntity, selectedLink);
 		
 		// Render the candidate object.
 		CandidatePanel.CandidateObject candidate = candidatePanel.current();
@@ -598,11 +608,13 @@ public class SketchPanel<Path> extends JComponent implements
 					(getWidth() - cheatSheet.imageWidth) / 2, 
 					(getHeight() - cheatSheet.imageHeight) / 2, null);
 		}
+		
+		// Clear the painting bits.
+		dirty = false;
 	}
 	
 	private void paintObjectsSeparated(Graphics2D g2d,
 			SketchEntityComponent selectedEntity,
-			SketchEntityComponent originalEntity,
 			SketchLinkComponent<Path> selectedLink) {
 		// Render the links in order.
 		for(int i = 0; i < model.numLinks(); ++ i) {
@@ -633,7 +645,6 @@ public class SketchPanel<Path> extends JComponent implements
 	
 	private void paintObjectsInterleaved(Graphics2D g2d,
 			SketchEntityComponent selectedEntity,
-			SketchEntityComponent originalEntity,
 			SketchLinkComponent<Path> selectedLink) {
 		
 		// Retrieve all paths first.
@@ -656,9 +667,7 @@ public class SketchPanel<Path> extends JComponent implements
 			Iterator<SketchLinkComponent<Path>> iterator = paths.iterator();
 			while(iterator.hasNext()) {
 				SketchLinkComponent<Path> currentLink = iterator.next();
-				SketchEntityComponent relation = 
-						current == selectedEntity? 
-						originalEntity : current;
+				SketchEntityComponent relation = current;
 				if(currentLink.relatedTo(relation)) {
 					if(selectedLink != currentLink)
 						paintSketchLink(g2d, currentLink, false);
@@ -682,15 +691,14 @@ public class SketchPanel<Path> extends JComponent implements
 
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent arg0) {
-		SketchEntityComponent selected = model.getSelectedEntity();
+		SketchEntityComponent selected = selectionModel.selectedEntity();
 		if(candidatePanel.numCandidates() > 0) {
-			model.selectEntity(null, null);
+			selectionModel.requestUnselect();
 			candidatePanel.scroll((arg0
 					.getWheelRotation() > 0? 1 : -1));
 			repaint();
 		}
 		else if(selected != null && hasFocus()) {
-			SketchEntityComponent init = model.getOriginalEntity();
 			zoomMultiplier += arg0.getWheelRotation() > 0? -0.1 : +0.1;
 			if(zoomMultiplier < 0) zoomMultiplier = 
 					(float)Math.max(1.0 / init.w, 1.0 / init.h);
@@ -699,7 +707,7 @@ public class SketchPanel<Path> extends JComponent implements
 			selected.h = (int)(zoomMultiplier * init.h);
 			selected.x = (int)(init.x + init.w / 2 - zoomMultiplier / 2 * init.w);
 			selected.y = (int)(init.y + init.h / 2 - zoomMultiplier / 2 * init.h);
-			model.notifyEntityChanged(null);
+			model.notifyEntityMoved(selected);
 		}
 	}
 
@@ -717,15 +725,16 @@ public class SketchPanel<Path> extends JComponent implements
 		}
 		
 		// Operate on the current selected entity (if any).
-		SketchEntityComponent selectedEntity = model.getSelectedEntity();
+		SketchEntityComponent selectedEntity = selectionModel.selectedEntity();
 		if(selectedEntity != null) {
 			if(e.getKeyCode() == KeyEvent.VK_DELETE) {
 				// Remove the selected object if any.
-				Command entityCommand = new CommandDeleteEntity<Path>(model);
+				Command entityCommand = new CommandDeleteEntity<Path>(
+						model, selectionModel, selectedEntity);
 				history.perform(keyDeleteObject, entityCommand, true);
 			}
 			else if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
-				model.selectEntity(null, null);
+				selectionModel.requestUnselect();
 			else {
 				// Perform object moving if direction is pressed.
 				boolean moved = true;
@@ -752,17 +761,17 @@ public class SketchPanel<Path> extends JComponent implements
 						moved = false;
 						break;
 				}
-				if(moved) model.notifyEntityChanged(null);
+				if(moved) model.notifyEntityUpdated(selectedEntity);
 			}
 		}
 		
 		// Operate on the current selected link (if any).
-		SketchLinkComponent<Path> selectedLink = model.getSelectedLink();
+		SketchLinkComponent<Path> selectedLink = selectionModel.selectedLink();
 		if(selectedLink != null) {
 			if(e.getKeyCode() == KeyEvent.VK_DELETE) {
 				// Remove the selected link if any.
 				Command linkCommand = new CommandDeleteLink<Path>(
-						model, selectedLink);
+						model, selectionModel, selectedLink);
 				history.perform(keyDeleteObject, linkCommand, true);
 			}
 		}
@@ -782,5 +791,72 @@ public class SketchPanel<Path> extends JComponent implements
 	@Override
 	public void keyTyped(KeyEvent arg0) {
 		
+	}
+
+	@Override
+	public void entityCreated(SketchEntityComponent entity) {
+		repaint();
+	}
+
+	@Override
+	public void entityDestroyed(SketchEntityComponent entity) {
+		repaint();
+	}
+
+	@Override
+	public void entityUpdated(SketchEntityComponent entity) {
+		repaint();
+	}
+
+	@Override
+	public void entityMoved(SketchEntityComponent entity) {
+		repaint();
+	}
+
+	@Override
+	public void entityReordered(SketchEntityComponent entity) {
+		repaint();
+	}
+
+	@Override
+	public void linkCreated(SketchLinkComponent<Path> link) {
+		repaint();
+	}
+
+	@Override
+	public void linkDestroyed(SketchLinkComponent<Path> link) {
+		repaint();
+	}
+
+	@Override
+	public void linkUpdated(SketchLinkComponent<Path> link) {
+		repaint();
+	}
+
+	@Override
+	public void linkStyleChanged(SketchLinkComponent<Path> link) {
+		repaint();
+	}
+
+	SketchEntityComponent init;
+	
+	@Override
+	public void selectEntity(SketchEntityComponent entity) {
+		init = new SketchEntityComponent(null, null);
+		init.x = entity.x; init.y = entity.y;
+		init.w = entity.w; init.h = entity.h;
+		repaint();
+	}
+
+	@Override
+	public void selectLink(SketchLinkComponent<Path> link) {
+		init = null;
+		repaint();
+	}
+
+	@Override
+	public void unselect() {
+		init = null;
+		repaint();
 	}
 }

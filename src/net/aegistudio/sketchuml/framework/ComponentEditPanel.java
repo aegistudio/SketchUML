@@ -6,51 +6,57 @@ import javax.swing.JPanel;
 
 import net.aegistudio.sketchuml.Configuration;
 import net.aegistudio.sketchuml.History;
-import net.aegistudio.sketchuml.path.PathEditor;
 
-public class ComponentEditPanel<Path> extends JPanel {
+public class ComponentEditPanel<Path> extends JPanel 
+	implements SketchSelectionModel.Observer<Path> {
 	private static final long serialVersionUID = 1L;
 	
-	public final EntityComponentPanel entityEditor;
+	public final EntityComponentPanel<Path> entityEditor;
 	public final LinkComponentPanel<Path> linkEditor;
-	private final SketchModel<Path> model;
 	private Object selectedEditor;
 	
 	public ComponentEditPanel(SketchModel<Path> model, 
+			SketchSelectionModel<Path> selectionModel,
 			History history, PathEditor<Path> pathEditor, 
 			PathEditor.PathChangeListener<Path> pathNotifier) {
-		this.model = model;
-		
-		model.registerEntityObserver(this, this::onUpdate);
-		model.registerLinkObserver(this, this::onUpdate);
-		
-		entityEditor = new EntityComponentPanel(history, model);
+		entityEditor = new EntityComponentPanel<Path>(
+				history, model, selectionModel);
 		linkEditor = new LinkComponentPanel<Path>(model, 
-				history, pathEditor, pathNotifier);
+				selectionModel, history, pathEditor, pathNotifier);
 		
-		onUpdate();
+		selectionModel.subscribe(this);
+		unselect();
 	}
 	
-	private void onUpdate() {
-		if(model.getSelectedLink() != null) {
-			// Transit to use link editor.
-			if(selectedEditor != linkEditor) {
-				removeAll();
-				add(linkEditor);
-				selectedEditor = linkEditor;
-			}
-		}
-		else {
-			// Transit to use entity editor.
-			if(selectedEditor != entityEditor) {
-				removeAll();
-				add(entityEditor);
-				selectedEditor = entityEditor;
-			}
-		}
+	private void uiChange() {
 		setPreferredSize(new Dimension(Configuration
 				.getInstance().EDITPANEL_WIDTH, getHeight()));
 		updateUI();
 		repaint();
+	}
+
+	@Override
+	public void selectEntity(SketchEntityComponent entity) {
+		if(selectedEditor != entityEditor) {
+			removeAll();
+			add(entityEditor);
+			selectedEditor = entityEditor;
+		}
+		uiChange();
+	}
+
+	@Override
+	public void selectLink(SketchLinkComponent<Path> link) {
+		if(selectedEditor != linkEditor) {
+			removeAll();
+			add(linkEditor);
+			selectedEditor = linkEditor;
+		}
+		uiChange();
+	}
+
+	@Override
+	public void unselect() {
+		selectEntity(null);
 	}
 }

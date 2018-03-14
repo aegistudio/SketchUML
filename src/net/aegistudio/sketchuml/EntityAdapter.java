@@ -35,10 +35,15 @@ public abstract class EntityAdapter implements Entity,
 	}
 
 	@Override
-	public void updateEntity(Entity entity) {
+	public void update(Entity entity) {
 		
 	}
 
+	@Override
+	public void select(Entity entity) {
+		
+	}
+	
 	@Override
 	public String overlayEntity(Entity entity, OverlayDirection old) {
 		return null;
