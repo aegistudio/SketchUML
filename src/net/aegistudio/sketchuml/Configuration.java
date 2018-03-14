@@ -6,6 +6,12 @@ public class Configuration {
 	/**	The number of items to be shown or browse. */
 	public int MAX_CANDIDATE = 5;
 	
+	/** The minimum width of an entity. */
+	public int MIN_ENTITYWIDTH = 10;
+	
+	/** The minimum height of an entity. */
+	public int MIN_ENTITYHEIGHT = 10;
+	
 	/** Will the program recognize strokes soon after painting */
 	public boolean INSTANT_RECOGNIZE = true;
 

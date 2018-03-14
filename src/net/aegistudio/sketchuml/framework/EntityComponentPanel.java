@@ -130,9 +130,11 @@ public class EntityComponentPanel<Path> extends JPanel {
 		this.y = this.createLocationField("Y:", 
 				locationPanel, (c, v) -> c.y = v);
 		this.w = this.createLocationField("W:", 
-				locationPanel, (c, v) -> c.w = v);
+				locationPanel, (c, v) -> c.w = Math.max(v,
+						Configuration.getInstance().MIN_ENTITYWIDTH));
 		this.h = this.createLocationField("H:", 
-				locationPanel, (c, v) -> c.h = v);
+				locationPanel, (c, v) -> c.h = Math.max(v,
+						Configuration.getInstance().MIN_ENTITYHEIGHT));
 		
 		model.subscribe(new SketchModel.ObserverAdapter<Path>() {
 			@Override

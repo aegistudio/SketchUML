@@ -196,7 +196,6 @@ public class SketchPanel<Path> extends JComponent implements
 			// Clear previous candidates.
 			candidatePanel.updateCandidates(null);
 			selectionModel.requestUnselect();
-			//model.selectEntity(null, null);
 			
 			Point point = arg0.getPoint();
 			points.add(new PointR(point.x, point.y));
@@ -208,7 +207,6 @@ public class SketchPanel<Path> extends JComponent implements
 				selectionModel.selectedEntity()) != null) {
 			
 			// Initialize parameters for updating.
-			//SketchEntityComponent init = model.getOriginalEntity();
 			selected.x = init.x; selected.y = init.y;
 			selected.w = init.w; selected.h = init.h;
 			int dx = (arg0.getX() - initMouseX);
@@ -217,8 +215,10 @@ public class SketchPanel<Path> extends JComponent implements
 			// Resize or move according to the shift key state.
 			if(arg0.isShiftDown()) {
 				// Resize the object if shift is down.
-				selected.w = init.w + dx;
-				selected.h = init.h + dy;
+				selected.w = Math.max(init.w + dx,
+						Configuration.getInstance().MIN_ENTITYWIDTH);
+				selected.h = Math.max(init.h + dy,
+						Configuration.getInstance().MIN_ENTITYHEIGHT);
 			}
 			else {
 				// Move the object if not.
@@ -226,7 +226,6 @@ public class SketchPanel<Path> extends JComponent implements
 				selected.y = init.y + dy;
 			}
 			model.notifyEntityMoved(selected);
-			//model.notifyEntityChanged(null);
 		}
 	}
 	
@@ -528,12 +527,6 @@ public class SketchPanel<Path> extends JComponent implements
 		Rectangle2D boundSource = current.source.getBoundRectangle();
 		Rectangle2D boundDestination = current.destination.getBoundRectangle();
 		
-		// Judge whether the current object is selected, and replace with dynamic.
-		//if(current.source == model.getOriginalEntity())
-		//	boundSource = model.getSelectedEntity().getBoundRectangle();
-		//if(current.destination == model.getOriginalEntity())
-		//	boundDestination = model.getSelectedEntity().getBoundRectangle();
-		
 		// The concrete part of the rendering object.
 		current.entry.linkView.render(current.source.entity, 
 				current.destination.entity, current.link).paint(
@@ -700,8 +693,9 @@ public class SketchPanel<Path> extends JComponent implements
 		}
 		else if(selected != null && hasFocus()) {
 			zoomMultiplier += arg0.getWheelRotation() > 0? -0.1 : +0.1;
-			if(zoomMultiplier < 0) zoomMultiplier = 
-					(float)Math.max(1.0 / init.w, 1.0 / init.h);
+			zoomMultiplier = Math.max(zoomMultiplier, (float)Math.max(
+					1.0f * Configuration.getInstance().MIN_ENTITYWIDTH / init.w, 
+					1.0f * Configuration.getInstance().MIN_ENTITYHEIGHT / init.h));
 			
 			selected.w = (int)(zoomMultiplier * init.w);
 			selected.h = (int)(zoomMultiplier * init.h);
@@ -742,7 +736,9 @@ public class SketchPanel<Path> extends JComponent implements
 						& KeyEvent.SHIFT_DOWN_MASK) != 0;
 				switch(e.getKeyCode()) {
 					case KeyEvent.VK_UP:
-						if(shiftPressed) selectedEntity.h --;
+						if(shiftPressed) 
+							selectedEntity.h = Math.max(selectedEntity.h - 1, 
+									Configuration.getInstance().MIN_ENTITYHEIGHT);
 						else selectedEntity.y --;
 						break;
 					case KeyEvent.VK_DOWN:
@@ -750,7 +746,9 @@ public class SketchPanel<Path> extends JComponent implements
 						else selectedEntity.y ++;
 						break;
 					case KeyEvent.VK_LEFT:
-						if(shiftPressed) selectedEntity.w --;
+						if(shiftPressed) 
+							selectedEntity.w = Math.max(selectedEntity.w - 1, 
+									Configuration.getInstance().MIN_ENTITYWIDTH);
 						else selectedEntity.x --;
 						break;
 					case KeyEvent.VK_RIGHT:
