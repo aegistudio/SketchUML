@@ -447,9 +447,17 @@ public class SketchPanel<Path> extends JComponent implements
 				// history.
 				else history.perform(keyPaintObject, strokeCommand, true);
 			}
-			else points.clear();
-			
-			repaint();
+			else {
+				points.clear();
+				
+				// Judge whether to perform soon recognizing.
+				if(strokes.size() > 0) {
+					if(Configuration.getInstance().INSTANT_RECOGNIZE)
+						performRecognition();
+				}
+
+				repaint();
+			}
 		}
 		
 		else if(arg0.getButton() == MouseEvent.BUTTON3) {
