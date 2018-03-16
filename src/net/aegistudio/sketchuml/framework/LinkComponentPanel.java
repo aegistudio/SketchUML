@@ -4,6 +4,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
@@ -17,6 +19,7 @@ import javax.swing.JPanel;
 import net.aegistudio.sketchuml.Configuration;
 import net.aegistudio.sketchuml.History;
 import net.aegistudio.sketchuml.LinkEntry;
+import net.aegistudio.sketchuml.PropertyView;
 
 public class LinkComponentPanel<Path> extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -27,6 +30,9 @@ public class LinkComponentPanel<Path> extends JPanel {
 	private final JComboBox<LinkEntry> type;
 	private final DefaultComboBoxModel<LinkEntry> typeModel;
 	private Component property, pathStyle;
+	
+	private PropertyView propertyView;
+	private final Map<LinkEntry, PropertyView> propertyViews = new HashMap<>();
 	
 	public LinkComponentPanel(SketchModel<Path> model, 
 			SketchSelectionModel<Path> selectionModel,
@@ -92,7 +98,8 @@ public class LinkComponentPanel<Path> extends JPanel {
 		model.subscribe(new SketchModel.ObserverAdapter<Path>() {
 			@Override
 			public void linkUpdated(SketchLinkComponent<Path> link) {
-				pathEditor.updatePath(link);
+				if(link != null && propertyView != null) 
+					propertyView.update(link.link);
 			}
 			
 			@Override
@@ -128,7 +135,8 @@ public class LinkComponentPanel<Path> extends JPanel {
 		if(pathStyle != null) remove(pathStyle);
 		if(property != null) remove(property);
 		property = null;	pathStyle = null;
-
+		propertyView = null;
+		
 		// Re-enable link status if there's link.
 		if(link == null) return;
 		delete.setEnabled(true);
@@ -146,11 +154,20 @@ public class LinkComponentPanel<Path> extends JPanel {
 		if(pathStyle != null) add(pathStyle);
 		
 		// The editor panel.
-		property = link.entry.propertyView.getViewObject(e -> 
-					model.notifyLinkUpdated(link));
-		if(property != null) {
-			add(property);
-			link.entry.propertyView.select(link.link);
+		if(!propertyViews.containsKey(link.entry)) {
+			propertyViews.put(link.entry, 
+				propertyView = link.entry.propertyFactory
+				.newPropertyView(e -> model.notifyLinkUpdated(link)));
+		}
+		else propertyView = propertyViews.get(link.entry);
+		
+		// Update the internal view object.
+		if(propertyView != null) {
+			property = propertyView.getViewObject();
+			if(property != null) {
+				add(property);
+				propertyView.select(link.link);
+			}
 		}
 		
 		repaint();

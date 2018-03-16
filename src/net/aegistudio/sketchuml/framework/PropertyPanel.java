@@ -97,7 +97,10 @@ public class PropertyPanel<T> extends JPanel {
 		});
 		fieldField.addCaretListener(c ->
 			safeRun(setter, fieldField.getText()));
-		addGetterReactor(fieldField::setText, getter);
+		addGetterReactor(string -> {
+			if(fieldField.isFocusOwner()) return;
+			fieldField.setText(string);
+		}, getter);
 		
 		super.add(fieldPanel);
 	}
@@ -151,7 +154,10 @@ public class PropertyPanel<T> extends JPanel {
 		});
 		area.addCaretListener(c ->
 			safeRun(setter, area.getText()));
-		addGetterReactor(area::setText, getter);
+		addGetterReactor(string -> {
+			if(area.isFocusOwner()) return;
+			area.setText(string);
+		}, getter);
 		
 		super.add(areaPanel);
 	}

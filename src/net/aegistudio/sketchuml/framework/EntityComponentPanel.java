@@ -6,6 +6,8 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -16,14 +18,19 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.aegistudio.sketchuml.Configuration;
+import net.aegistudio.sketchuml.EntityEntry;
 import net.aegistudio.sketchuml.History;
+import net.aegistudio.sketchuml.PropertyView;
 
 public class EntityComponentPanel<Path> extends JPanel {
 	
 	private static final long serialVersionUID = 1L;
 	private final SketchModel<Path> model;
 	private final SketchSelectionModel<Path> selectionModel;
+	
 	private Component property;
+	private final Map<EntityEntry, PropertyView> propertyViews = new HashMap<>();
+	private PropertyView propertyView;
 	
 	// The editing operations.
 	private final JButton delete, moveFront, sendBack;
@@ -144,7 +151,8 @@ public class EntityComponentPanel<Path> extends JPanel {
 			
 			@Override
 			public void entityUpdated(SketchEntityComponent component) {
-				component.entry.propertyView.update(component.entity);
+				if(component != null && propertyView != null) 
+					propertyView.update(component.entity);
 			}
 		});
 		
@@ -206,12 +214,20 @@ public class EntityComponentPanel<Path> extends JPanel {
 		}
 		
 		// Set the property editing panel.
-		property = component.entry.propertyView.getViewObject(
-				e -> model.notifyEntityUpdated(component));
-		if(property != null) {
-			component.entry.propertyView
-					.select(component.entity);
-			super.add(property);
+		if(!propertyViews.containsKey(component.entry)) {
+			propertyViews.put(component.entry, propertyView =
+				component.entry.propertyFactory.newPropertyView(
+					e -> model.notifyEntityUpdated(component)));
+		}
+		else propertyView = propertyViews.get(component.entry);
+		
+		// Update the property view.
+		if(propertyView != null) {
+			property = propertyView.getViewObject();
+			if(property != null) {
+				super.add(property);
+				propertyView.select(component.entity);
+			}
 		}
 		
 		updateUI();

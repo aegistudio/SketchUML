@@ -14,34 +14,37 @@ import net.aegistudio.sketchuml.framework.PropertyPanel;
 import net.aegistudio.sketchuml.framework.RegularRenderer;
 
 public class EntityMetaDecision implements 
-	SketchView, PropertyView, RegularRenderer.Painter {
-	
-	private PropertyPanel<EntityDecision> decisionPanel;
+	SketchView, PropertyView.Factory, RegularRenderer.Painter {
 	private final RegularRenderer renderer = new RegularRenderer(this);
 	public static double DECISION_AXISRATIO = 2.0;	// Height by width.
-	
+
 	@Override
-	public Component getViewObject(Consumer<Entity> notifier) {
-		if(decisionPanel == null) {
-			decisionPanel = new PropertyPanel<>();
+	public PropertyView newPropertyView(Consumer<Entity> notifier) {
+		return new PropertyView() {
+			private PropertyPanel<EntityDecision> decisionPanel; {
+				decisionPanel = new PropertyPanel<>();
+				decisionPanel.setNotifier(notifier);
+				
+				decisionPanel.registerTextField("Guard: ", 
+						obj -> obj.guard, 
+						(obj, str) -> obj.guard = str);
+			}
 			
-			decisionPanel.registerTextField("Guard: ", 
-					obj -> obj.guard, 
-					(obj, str) -> obj.guard = str);
-		}
-		decisionPanel.setNotifier(notifier);
-		return decisionPanel;
-	}
+			@Override
+			public Component getViewObject() {
+				return decisionPanel;
+			}
 
-	@Override
-	public void update(Entity entity) {
-		decisionPanel.updateEntity((EntityDecision)entity);
-	}
+			@Override
+			public void update(Entity entity) {
+				decisionPanel.updateEntity((EntityDecision)entity);
+			}
 
-
-	@Override
-	public void select(Entity entity) {
-		decisionPanel.selectEntity((EntityDecision)entity);
+			@Override
+			public void select(Entity entity) {
+				decisionPanel.selectEntity((EntityDecision)entity);
+			}
+		};
 	}
 	
 	@Override

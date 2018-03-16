@@ -15,7 +15,7 @@ import java.util.function.Supplier;
  * @author Haoran Luo
  */
 public abstract class EntityAdapter implements Entity, 
-	PropertyView, SketchView, Supplier<Entity> {
+	PropertyView, PropertyView.Factory, SketchView, Supplier<Entity> {
 	
 	public Entity get() { return this; }
 	
@@ -30,7 +30,12 @@ public abstract class EntityAdapter implements Entity,
 	}
 	
 	@Override
-	public Component getViewObject(Consumer<Entity> notifier) {
+	public PropertyView newPropertyView(Consumer<Entity> notifier) {
+		return this;
+	}
+	
+	@Override
+	public Component getViewObject() {
 		return null;
 	}
 

@@ -9,10 +9,14 @@ import java.util.function.Consumer;
  * @author Haoran Luo
  */
 public interface PropertyView {
+	public interface Factory {
+		public PropertyView newPropertyView(Consumer<Entity> notifier);
+	}
+	
 	/**
 	 * @return the display panel shown on the side bar.
 	 */
-	public Component getViewObject(Consumer<Entity> notifier);
+	public Component getViewObject();
 	
 	/**
 	 * @param entity set the entity as current editing.

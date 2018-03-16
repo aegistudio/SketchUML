@@ -12,19 +12,20 @@ public class LinkEntry {
 	
 	public final BiPredicate<Entity, Entity> filter;
 	
-	public final PropertyView propertyView;
+	public final PropertyView.Factory propertyFactory;
 	
 	public final LinkView linkView;
 	
 	public LinkEntry(String name, String description, 
 			Supplier<Entity> factory,
 			BiPredicate<Entity, Entity> filter,
-			PropertyView propertyView, LinkView linkView) {
+			PropertyView.Factory propertyFactory, 
+			LinkView linkView) {
 		this.name = name;
 		this.description = description;
 		this.factory = factory;
 		this.filter = filter;
-		this.propertyView = propertyView;
+		this.propertyFactory = propertyFactory;
 		this.linkView = linkView;
 	}
 }

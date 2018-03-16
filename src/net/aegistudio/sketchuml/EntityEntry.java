@@ -17,18 +17,19 @@ public class EntityEntry {
 	
 	public final Supplier<Entity> factory;
 	
-	public final PropertyView propertyView;
+	public final PropertyView.Factory propertyFactory;
 	
 	public final SketchView sketchView;
 	
 	public EntityEntry(String entry, String name,
 			String description, Supplier<Entity> factory,
-			PropertyView propertyView, SketchView sketchView) {
+			PropertyView.Factory propertyFactory, 
+			SketchView sketchView) {
 		this.entry = entry;
 		this.name = name;
 		this.description = description;
 		this.factory = factory;
-		this.propertyView = propertyView;
+		this.propertyFactory = propertyFactory;
 		this.sketchView = sketchView;
 	}
 }

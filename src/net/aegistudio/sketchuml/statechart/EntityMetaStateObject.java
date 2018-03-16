@@ -15,44 +15,49 @@ import net.aegistudio.sketchuml.SketchView;
 import net.aegistudio.sketchuml.framework.PropertyPanel;
 import net.aegistudio.sketchuml.framework.RenderUtils;
 
-public class EntityMetaStateObject implements SketchView, PropertyView {
+public class EntityMetaStateObject implements SketchView, PropertyView.Factory {
 	public static int STATE_ROUNDSIZE = 50;
 	public static int STATE_ROUNDOFFSET = 10;
 	public static int STATE_NAMEHEIGHT = 24;
-	private PropertyPanel<EntityStateObject> viewObject;
 	
 	@Override
-	public Component getViewObject(Consumer<Entity> notifier) {
-		if(viewObject == null) {
-			viewObject = new PropertyPanel<EntityStateObject>();
+	public PropertyView newPropertyView(Consumer<Entity> notifier) {
+		return new PropertyView() {
+			private final PropertyPanel<EntityStateObject> viewObject; {
+				viewObject = new PropertyPanel<EntityStateObject>();
+				viewObject.setNotifier(notifier);
+				
+				// Add the state name.
+				viewObject.registerTextField("State Name: ", 
+						(entity) -> entity.name, 
+						(entity, name) -> entity.name = name);
+				
+				// Add is brief option.
+				viewObject.registerCheckBox("Hide actions",
+						(entity) -> entity.isBrief, 
+						(entity, isBrief) -> entity.isBrief = isBrief);
+				
+				// The concrete actions area.
+				viewObject.registerTextArea("Actions:", 
+						(entity) -> entity.actions,
+						(entity, actions) -> entity.actions = actions);
+			}
 			
-			// Add the state name.
-			viewObject.registerTextField("State Name: ", 
-					(entity) -> entity.name, 
-					(entity, name) -> entity.name = name);
-			
-			// Add is brief option.
-			viewObject.registerCheckBox("Hide actions",
-					(entity) -> entity.isBrief, 
-					(entity, isBrief) -> entity.isBrief = isBrief);
-			
-			// The concrete actions area.
-			viewObject.registerTextArea("Actions:", 
-					(entity) -> entity.actions,
-					(entity, actions) -> entity.actions = actions);
-		}
-		viewObject.setNotifier(notifier);
-		return viewObject;
-	}
-
-	@Override
-	public void select(Entity entity) {
-		viewObject.selectEntity((EntityStateObject)entity);
-	}
-
-	@Override
-	public void update(Entity entity) {
-		viewObject.updateEntity((EntityStateObject)entity);
+			@Override
+			public Component getViewObject() {
+				return viewObject;
+			}
+		
+			@Override
+			public void select(Entity entity) {
+				viewObject.selectEntity((EntityStateObject)entity);
+			}
+		
+			@Override
+			public void update(Entity entity) {
+				viewObject.updateEntity((EntityStateObject)entity);
+			}
+		};
 	}
 
 	@Override

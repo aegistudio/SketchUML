@@ -9,42 +9,47 @@ import net.aegistudio.sketchuml.PropertyView;
 import net.aegistudio.sketchuml.framework.PropertyPanel;
 import net.aegistudio.sketchuml.path.PathView;
 
-public class LinkMetaStateTransition implements PropertyView, LinkView {
-	private PropertyPanel<LinkStateTransition> viewObject;
+public class LinkMetaStateTransition implements PropertyView.Factory, LinkView {
 	
-	@Override
-	public Component getViewObject(Consumer<Entity> notifier) {
-		if(viewObject == null) {
-			viewObject = new PropertyPanel<>();
+	public PropertyView newPropertyView(Consumer<Entity> notifier) {
+		return new PropertyView() {
+			private PropertyPanel<LinkStateTransition> viewObject; {
+				viewObject = new PropertyPanel<>();
+				viewObject.setNotifier(notifier);
+				
+				// Add the trigger.
+				viewObject.registerTextField("Trigger: ", 
+						(entity) -> entity.trigger, 
+						(entity, trigger) -> entity.trigger = trigger);
+				
+				// Add the guard.
+				viewObject.registerTextField("Guard: ", 
+						(entity) -> entity.guard, 
+						(entity, guard) -> entity.guard = guard);
+				
+				// Add the action.
+				viewObject.registerTextField("Action: ",
+						(entity) -> entity.action, 
+						(entity, action) -> entity.action = action);
+			}
 			
-			// Add the trigger.
-			viewObject.registerTextField("Trigger: ", 
-					(entity) -> entity.trigger, 
-					(entity, trigger) -> entity.trigger = trigger);
-			
-			// Add the guard.
-			viewObject.registerTextField("Guard: ", 
-					(entity) -> entity.guard, 
-					(entity, guard) -> entity.guard = guard);
-			
-			// Add the action.
-			viewObject.registerTextField("Action: ",
-					(entity) -> entity.action, 
-					(entity, action) -> entity.action = action);
-		}
-		viewObject.setNotifier(notifier);
-		return viewObject;
-	}
+			@Override
+			public Component getViewObject() {
+				return viewObject;
+			}
 
-	@Override
-	public void update(Entity entity) {
-		viewObject.updateEntity((LinkStateTransition)entity);
+			@Override
+			public void update(Entity entity) {
+				viewObject.updateEntity((LinkStateTransition)entity);
+			}
+			
+			@Override
+			public void select(Entity entity) {
+				viewObject.selectEntity((LinkStateTransition)entity);
+			}
+		};
 	}
 	
-	@Override
-	public void select(Entity entity) {
-		viewObject.selectEntity((LinkStateTransition)entity);
-	}
 
 	@Override
 	public LinkRender render(Entity source, Entity destination, Entity link) {
