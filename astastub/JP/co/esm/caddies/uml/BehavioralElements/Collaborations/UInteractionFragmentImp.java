@@ -16,7 +16,7 @@ public class UInteractionFragmentImp extends JP.co.esm.caddies.uml.Foundation.Co
 
     public JP.co.esm.caddies.uml.BehavioralElements.Collaborations.UInteractionOperand enclosingOperand;
 
-    public java.util.List covereds;
+    public java.util.List covereds = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.BehavioralElements.Collaborations.UInteraction enclosingInteraction;
 }

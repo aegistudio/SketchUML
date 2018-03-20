@@ -18,5 +18,5 @@ public class MMLinkPresentation extends JP.co.esm.caddies.jomt.jmodel.BinaryRela
 
     public JP.co.esm.caddies.golf.geom2D.Pnt2d endInclination;
 
-    public java.util.Map customStyleMap;
+    public java.util.Map customStyleMap = new java.util.HashMap();
 }

@@ -22,9 +22,7 @@ public class EntityMetaDecision implements
 	public PropertyView newPropertyView(Consumer<Entity> notifier) {
 		return new PropertyView() {
 			private PropertyPanel<EntityDecision> decisionPanel; {
-				decisionPanel = new PropertyPanel<>();
-				decisionPanel.setNotifier(notifier);
-				
+				decisionPanel = new PropertyPanel<>(notifier);
 				decisionPanel.registerTextField("Guard: ", 
 						obj -> obj.guard, 
 						(obj, str) -> obj.guard = str);

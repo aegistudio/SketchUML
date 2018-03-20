@@ -14,7 +14,7 @@ public class USignalImp extends JP.co.esm.caddies.uml.Foundation.Core.UClassifie
     implements java.io.Serializable, JP.co.esm.caddies.uml.BehavioralElements.CommonBehavior.USignal {
     public static final long serialVersionUID = 2383198128435645431L;
 
-    public java.util.List context;
+    public java.util.List context = new java.util.ArrayList();
 
-    public java.util.List reception;
+    public java.util.List reception = new java.util.ArrayList();
 }

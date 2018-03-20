@@ -14,5 +14,5 @@ public class NodeInstancePresentation extends JP.co.esm.caddies.jomt.jmodel.Inst
     implements java.io.Serializable {
     public static final long serialVersionUID = 8941188606589008175L;
 
-    public java.util.List subElements;
+    public java.util.List subElements = new java.util.ArrayList();
 }

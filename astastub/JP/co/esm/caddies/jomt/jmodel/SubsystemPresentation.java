@@ -28,9 +28,9 @@ public class SubsystemPresentation extends JP.co.esm.caddies.jomt.jmodel.Package
 
     public boolean operationConstraintVisibility;
 
-    public java.util.List specificationElements;
+    public java.util.List specificationElements = new java.util.ArrayList();
 
-    public java.util.List realizationElements;
+    public java.util.List realizationElements = new java.util.ArrayList();
 
     public JP.co.esm.caddies.golf.geom2D.Pnt2d intersection;
 }

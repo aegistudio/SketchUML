@@ -22,15 +22,15 @@ public class UOperationImp extends JP.co.esm.caddies.uml.Foundation.Core.UBehavi
 
     public boolean isAbst;
 
-    public java.util.List method;
+    public java.util.List method = new java.util.ArrayList();
 
-    public java.util.List operationInv;
+    public java.util.List operationInv = new java.util.ArrayList();
 
-    public java.util.List representedOperationInv;
+    public java.util.List representedOperationInv = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.Foundation.Core.UConstraint bodyCondition;
 
-    public java.util.List preConditions;
+    public java.util.List preConditions = new java.util.ArrayList();
 
-    public java.util.List postConditions;
+    public java.util.List postConditions = new java.util.ArrayList();
 }

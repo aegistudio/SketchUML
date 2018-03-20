@@ -16,7 +16,7 @@ public class UTemplateParameterImp extends JP.co.esm.caddies.uml.Foundation.Core
 
     public JP.co.esm.caddies.uml.Foundation.Core.UTemplateSignature signature;
 
-    public java.util.List formalInv;
+    public java.util.List formalInv = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.Foundation.Core.UParameterableElement ownedParameteredElement;
 

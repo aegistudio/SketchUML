@@ -14,5 +14,5 @@ public class ComponentPresentation extends JP.co.esm.caddies.jomt.jmodel.Classif
     implements java.io.Serializable {
     public static final long serialVersionUID = 3886472912586197508L;
 
-    public java.util.List subElements;
+    public java.util.List subElements = new java.util.ArrayList();
 }

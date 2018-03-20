@@ -18,13 +18,13 @@ public class ERAttributeImp extends JP.co.esm.caddies.uml.Foundation.Core.UAttri
 
     public JP.co.esm.caddies.er.ERAttribute referencedPrimaryKey;
 
-    public java.util.List subtypeRelationships;
+    public java.util.List subtypeRelationships = new java.util.ArrayList();
 
     public JP.co.esm.caddies.er.ERSubtypeRelationship subTypeForeignKeyInv;
 
-    public java.util.List referencedForeignKeys;
+    public java.util.List referencedForeignKeys = new java.util.ArrayList();
 
     public JP.co.esm.caddies.er.ERAttribute identifiedAttribute;
 
-    public java.util.List erIndexes;
+    public java.util.List erIndexes = new java.util.ArrayList();
 }

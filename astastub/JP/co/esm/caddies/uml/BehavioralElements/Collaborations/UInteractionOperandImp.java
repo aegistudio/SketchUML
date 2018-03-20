@@ -14,11 +14,11 @@ public class UInteractionOperandImp extends JP.co.esm.caddies.uml.BehavioralElem
     implements java.io.Serializable, JP.co.esm.caddies.uml.BehavioralElements.Collaborations.UInteractionOperand {
     public static final long serialVersionUID = -3876398529578033055L;
 
-    public java.util.List fragments;
+    public java.util.List fragments = new java.util.ArrayList();
 
-    public java.util.List ownedElementOwnership;
+    public java.util.List ownedElementOwnership = new java.util.ArrayList();
 
-    public java.util.List messages;
+    public java.util.List messages = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.BehavioralElements.Collaborations.UInteractionConstraint guard;
 

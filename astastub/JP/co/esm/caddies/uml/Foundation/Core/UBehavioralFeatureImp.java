@@ -16,5 +16,5 @@ public class UBehavioralFeatureImp extends JP.co.esm.caddies.uml.Foundation.Core
 
     public boolean query;
 
-    public java.util.List parameter;
+    public java.util.List parameter = new java.util.ArrayList();
 }

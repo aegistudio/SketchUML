@@ -18,13 +18,13 @@ public class UCollaborationImp extends JP.co.esm.caddies.uml.Foundation.Core.UNa
 
     public JP.co.esm.caddies.uml.Foundation.Core.UClassifier representedClassifier;
 
-    public java.util.List ownedClassifierRole;
+    public java.util.List ownedClassifierRole = new java.util.ArrayList();
 
-    public java.util.List ownedAssociationRole;
+    public java.util.List ownedAssociationRole = new java.util.ArrayList();
 
-    public java.util.List constrainingElement;
+    public java.util.List constrainingElement = new java.util.ArrayList();
 
-    public java.util.List interactions;
+    public java.util.List interactions = new java.util.ArrayList();
 
     public boolean root;
 
@@ -32,9 +32,9 @@ public class UCollaborationImp extends JP.co.esm.caddies.uml.Foundation.Core.UNa
 
     public boolean abst;
 
-    public java.util.List generalization;
+    public java.util.List generalization = new java.util.ArrayList();
 
-    public java.util.List specialization;
+    public java.util.List specialization = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.Foundation.Core.UDiagram diagram;
 }

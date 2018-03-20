@@ -14,5 +14,5 @@ public class NodePresentation extends JP.co.esm.caddies.jomt.jmodel.ClassifierPr
     implements java.io.Serializable {
     public static final long serialVersionUID = 3929218447013730165L;
 
-    public java.util.List subElements;
+    public java.util.List subElements = new java.util.ArrayList();
 }

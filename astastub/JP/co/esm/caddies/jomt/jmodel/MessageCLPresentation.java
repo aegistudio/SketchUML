@@ -32,7 +32,7 @@ public class MessageCLPresentation extends JP.co.esm.caddies.jomt.jmodel.LabelPr
 
     public JP.co.esm.caddies.jomt.jmodel.ILinkPresentation linkPs;
 
-    public java.util.List stereotypePresentations;
+    public java.util.List stereotypePresentations = new java.util.ArrayList();
 
     public JP.co.esm.caddies.golf.geom2D.Pnt2d[] points;
 }

@@ -14,5 +14,5 @@ public class UModelImp extends JP.co.esm.caddies.uml.ModelManagement.UPackageImp
     implements java.io.Serializable {
     public static final long serialVersionUID = -6810303441827904595L;
 
-    public java.util.Map styleMap;
+    public java.util.Map styleMap = new java.util.HashMap();
 }

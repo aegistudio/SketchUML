@@ -14,8 +14,7 @@ public class LinkMetaStateTransition implements PropertyView.Factory, LinkView {
 	public PropertyView newPropertyView(Consumer<Entity> notifier) {
 		return new PropertyView() {
 			private PropertyPanel<LinkStateTransition> viewObject; {
-				viewObject = new PropertyPanel<>();
-				viewObject.setNotifier(notifier);
+				viewObject = new PropertyPanel<>(notifier);
 				
 				// Add the trigger.
 				viewObject.registerTextField("Trigger: ", 

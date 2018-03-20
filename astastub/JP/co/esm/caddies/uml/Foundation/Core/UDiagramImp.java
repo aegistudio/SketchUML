@@ -16,5 +16,5 @@ public class UDiagramImp extends JP.co.esm.caddies.uml.Foundation.Core.UModelEle
 
     public java.lang.String type;
 
-    public java.util.Map styleMap;
+    public java.util.Map styleMap = new java.util.HashMap();
 }

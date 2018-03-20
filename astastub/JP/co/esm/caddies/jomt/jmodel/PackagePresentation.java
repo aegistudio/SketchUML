@@ -14,7 +14,7 @@ public class PackagePresentation extends JP.co.esm.caddies.jomt.jmodel.LabelPres
     implements java.io.Serializable {
     public static final long serialVersionUID = 986379074056164002L;
 
-    public java.util.List subElements;
+    public java.util.List subElements = new java.util.ArrayList();
 
     public int pathVisibility;
 

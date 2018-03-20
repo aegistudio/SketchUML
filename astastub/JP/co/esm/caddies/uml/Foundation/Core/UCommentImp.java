@@ -14,7 +14,7 @@ public class UCommentImp extends JP.co.esm.caddies.uml.Foundation.Core.UModelEle
     implements java.io.Serializable {
     public static final long serialVersionUID = -8993269414381549519L;
 
-    public java.util.List annotatedElement;
+    public java.util.List annotatedElement = new java.util.ArrayList();
 
     public java.lang.String body;
 }

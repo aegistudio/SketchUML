@@ -20,5 +20,5 @@ public class UObjectFlowStateImp extends JP.co.esm.caddies.uml.BehavioralElement
 
     public JP.co.esm.caddies.uml.Foundation.Core.UClassifier typeInv;
 
-    public java.util.List parameters;
+    public java.util.List parameters = new java.util.ArrayList();
 }

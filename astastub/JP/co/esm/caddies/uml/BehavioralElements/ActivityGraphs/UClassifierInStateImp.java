@@ -16,9 +16,9 @@ public class UClassifierInStateImp extends JP.co.esm.caddies.uml.Foundation.Core
 
     public JP.co.esm.caddies.uml.Foundation.Core.UClassifier type;
 
-    public java.util.List inStates;
+    public java.util.List inStates = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.Foundation.Core.UClassifier typeInv;
 
-    public java.util.List inStatesInv;
+    public java.util.List inStatesInv = new java.util.ArrayList();
 }

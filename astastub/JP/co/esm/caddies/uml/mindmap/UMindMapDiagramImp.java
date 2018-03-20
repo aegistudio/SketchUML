@@ -16,7 +16,7 @@ public class UMindMapDiagramImp extends JP.co.esm.caddies.uml.Foundation.Core.UD
 
     public JP.co.esm.caddies.jomt.jmodel.IMMTopicPresentation rootTopic;
 
-    public java.util.List floatingTopics;
+    public java.util.List floatingTopics = new java.util.ArrayList();
 
-    public java.util.Map customStyleMap;
+    public java.util.Map customStyleMap = new java.util.HashMap();
 }

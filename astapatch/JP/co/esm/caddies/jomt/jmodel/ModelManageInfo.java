@@ -1,10 +1,9 @@
 package JP.co.esm.caddies.jomt.jmodel;
 
 /**
- * This file is auto-generated from java packages through 
- * reflection and will never contain piece of original    
- * source of astah-community. These code should never be  
- * utilized for commercial purpose.                       
+ * This code is modified by analyzing command line program.
+ * You should use this hand written version instead of the 
+ * auto-generated one.                       
  * 
  * @author Haoran Luo
  */
@@ -20,9 +19,9 @@ public class ModelManageInfo extends java.lang.Object
 
     public java.lang.String currentModelProducer;
 
-    public java.util.HashMap judeVersionHistory;
+    public java.util.HashMap judeVersionHistory = new java.util.HashMap();
 
-    public java.util.List sortedVersionHistory;
+    public java.util.List sortedVersionHistory = new java.util.ArrayList();
 
     public long lastModifiedTime;
 }

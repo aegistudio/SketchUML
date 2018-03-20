@@ -18,7 +18,7 @@ public class ERSubtypeRelationshipImp extends JP.co.esm.caddies.uml.Foundation.C
 
     public int group;
 
-    public java.util.List subTypeForeignKeys;
+    public java.util.List subTypeForeignKeys = new java.util.ArrayList();
 
     public JP.co.esm.caddies.er.ERAttribute discriminatorAttribute;
 }

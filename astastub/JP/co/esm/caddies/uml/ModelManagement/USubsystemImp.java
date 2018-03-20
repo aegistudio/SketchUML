@@ -14,31 +14,31 @@ public class USubsystemImp extends JP.co.esm.caddies.uml.ModelManagement.UPackag
     implements java.io.Serializable {
     public static final long serialVersionUID = 443842857769848226L;
 
-    public java.util.List realization;
+    public java.util.List realization = new java.util.ArrayList();
 
-    public java.util.List specification;
+    public java.util.List specification = new java.util.ArrayList();
 
-    public java.util.List structuralFeature;
+    public java.util.List structuralFeature = new java.util.ArrayList();
 
-    public java.util.List typeInv;
+    public java.util.List typeInv = new java.util.ArrayList();
 
-    public java.util.List baseInv;
+    public java.util.List baseInv = new java.util.ArrayList();
 
-    public java.util.List classifierInv;
+    public java.util.List classifierInv = new java.util.ArrayList();
 
     public boolean isInstantiable;
 
-    public java.util.List behavioralFeature;
+    public java.util.List behavioralFeature = new java.util.ArrayList();
 
-    public java.util.List associationEnd;
+    public java.util.List associationEnd = new java.util.ArrayList();
 
-    public java.util.List participant;
+    public java.util.List participant = new java.util.ArrayList();
 
-    public java.util.List representedClassifierInv;
+    public java.util.List representedClassifierInv = new java.util.ArrayList();
 
-    public java.util.List ownedPort;
+    public java.util.List ownedPort = new java.util.ArrayList();
 
-    public java.util.List connector;
+    public java.util.List connector = new java.util.ArrayList();
 
     public boolean active;
 }

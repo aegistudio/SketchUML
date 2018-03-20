@@ -14,7 +14,7 @@ public class ERRelationshipImp extends JP.co.esm.caddies.uml.Foundation.Core.UAs
     implements java.io.Serializable, JP.co.esm.caddies.er.ERRelationship {
     public static final long serialVersionUID = -1601608082830970740L;
 
-    public java.util.List foreignKeys;
+    public java.util.List foreignKeys = new java.util.ArrayList();
 
     public boolean isIdentifying;
 

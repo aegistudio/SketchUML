@@ -14,17 +14,17 @@ public class UInstanceImp extends JP.co.esm.caddies.uml.Foundation.Core.UModelEl
     implements java.io.Serializable, JP.co.esm.caddies.uml.BehavioralElements.CommonBehavior.UInstance {
     public static final long serialVersionUID = -5734702658915762641L;
 
-    public java.util.List classifiers;
+    public java.util.List classifiers = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.BehavioralElements.CommonBehavior.UInstance owner;
 
-    public java.util.List linkEnds;
+    public java.util.List linkEnds = new java.util.ArrayList();
 
-    public java.util.List slots;
+    public java.util.List slots = new java.util.ArrayList();
 
-    public java.util.List ownedInstances;
+    public java.util.List ownedInstances = new java.util.ArrayList();
 
-    public java.util.List ownedLinks;
+    public java.util.List ownedLinks = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.BehavioralElements.CommonBehavior.UComponentInstance componentInstance;
 }

@@ -14,5 +14,5 @@ public class UActivityGraphImp extends JP.co.esm.caddies.uml.BehavioralElements.
     implements java.io.Serializable, JP.co.esm.caddies.uml.BehavioralElements.ActivityGraphs.UActivityGraph {
     public static final long serialVersionUID = 7207632020705004959L;
 
-    public java.util.List partition;
+    public java.util.List partition = new java.util.ArrayList();
 }

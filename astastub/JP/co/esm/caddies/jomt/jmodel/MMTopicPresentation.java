@@ -16,13 +16,13 @@ public class MMTopicPresentation extends JP.co.esm.caddies.jomt.jmodel.TextPrese
 
     public JP.co.esm.caddies.jomt.jmodel.IMMTopicPresentation parent;
 
-    public java.util.List children;
+    public java.util.List children = new java.util.ArrayList();
 
     public java.lang.String position;
 
     public boolean isFolded;
 
-    public java.util.Map customStyleMap;
+    public java.util.Map customStyleMap = new java.util.HashMap();
 
     public boolean fixHorizontalPosition;
 
@@ -32,7 +32,7 @@ public class MMTopicPresentation extends JP.co.esm.caddies.jomt.jmodel.TextPrese
 
     public JP.co.esm.caddies.jomt.jmodel.IMMBoundaryPresentation boundary;
 
-    public java.util.List icons;
+    public java.util.List icons = new java.util.ArrayList();
 
     public JP.co.esm.caddies.jomt.jmodel.IImagePresentation imagePresentation;
 

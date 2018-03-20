@@ -14,5 +14,5 @@ public class UArtifactImp extends JP.co.esm.caddies.uml.Foundation.Core.UClassif
     implements java.io.Serializable {
     public static final long serialVersionUID = -1077889029400916044L;
 
-    public java.util.List implementationLocation;
+    public java.util.List implementationLocation = new java.util.ArrayList();
 }

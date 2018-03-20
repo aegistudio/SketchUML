@@ -32,13 +32,14 @@ public class PropertyPanel<T> extends JPanel {
 	}
 	
 	private static final long serialVersionUID = 1L;
-	private Consumer<? super T> notifier;
+	private final Consumer<? super T> notifier;
 	private T entity;
 	
 	private final List<Runnable> getterRunnables = new ArrayList<>();
 	
-	public PropertyPanel() {
+	public PropertyPanel(Consumer<? super T> notifier) {
 		super.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		this.notifier = notifier;
 	}
 	
 	private Font getPropertyFont() {
@@ -228,10 +229,6 @@ public class PropertyPanel<T> extends JPanel {
 		spinnerPanel.add(spinner, BorderLayout.CENTER);
 		
 		super.add(spinnerPanel);
-	}
-	
-	public void setNotifier(Consumer<? super T> notifier) {
-		this.notifier = notifier;
 	}
 	
 	public void selectEntity(T entity) {

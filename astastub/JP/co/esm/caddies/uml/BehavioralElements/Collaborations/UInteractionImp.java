@@ -14,15 +14,15 @@ public class UInteractionImp extends JP.co.esm.caddies.uml.Foundation.Core.UMode
     implements java.io.Serializable, JP.co.esm.caddies.uml.BehavioralElements.Collaborations.UInteraction {
     public static final long serialVersionUID = 7906886745068039595L;
 
-    public java.util.List message;
+    public java.util.List message = new java.util.ArrayList();
 
-    public java.util.List referstoInvs;
+    public java.util.List referstoInvs = new java.util.ArrayList();
 
-    public java.util.List fragments;
+    public java.util.List fragments = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.BehavioralElements.Collaborations.UCollaboration context;
 
     public java.lang.String argument;
 
-    public java.util.List formalGates;
+    public java.util.List formalGates = new java.util.ArrayList();
 }

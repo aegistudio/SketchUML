@@ -16,7 +16,7 @@ public class UAssociationEndRoleImp extends JP.co.esm.caddies.uml.Foundation.Cor
 
     public JP.co.esm.caddies.uml.Foundation.Core.UAssociationEnd base;
 
-    public java.util.List availableQualifier;
+    public java.util.List availableQualifier = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.Foundation.DataTypes.UMultiplicity collaborationMultiplicity;
 }

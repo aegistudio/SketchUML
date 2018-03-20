@@ -32,11 +32,11 @@ public class UAssociationEndImp extends JP.co.esm.caddies.uml.Foundation.Core.UP
 
     public JP.co.esm.caddies.uml.Foundation.DataTypes.UScopeKind targetScope;
 
-    public java.util.List qualifier;
+    public java.util.List qualifier = new java.util.ArrayList();
 
-    public java.util.List specification;
+    public java.util.List specification = new java.util.ArrayList();
 
-    public java.util.List linkEnds;
+    public java.util.List linkEnds = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.Foundation.Core.UClassifier type;
 

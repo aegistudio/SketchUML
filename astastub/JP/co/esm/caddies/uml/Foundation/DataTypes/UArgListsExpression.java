@@ -14,5 +14,5 @@ public class UArgListsExpression extends JP.co.esm.caddies.uml.Foundation.DataTy
     implements java.io.Serializable {
     public static final long serialVersionUID = -1669164807746231335L;
 
-    public java.util.List listObjs;
+    public java.util.List listObjs = new java.util.ArrayList();
 }

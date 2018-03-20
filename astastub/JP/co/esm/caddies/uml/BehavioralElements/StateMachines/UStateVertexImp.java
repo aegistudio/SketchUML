@@ -14,9 +14,9 @@ public class UStateVertexImp extends JP.co.esm.caddies.uml.Foundation.Core.UMode
     implements java.io.Serializable, JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UStateVertex {
     public static final long serialVersionUID = 959703571848299635L;
 
-    public java.util.List outgoing;
+    public java.util.List outgoing = new java.util.ArrayList();
 
-    public java.util.List incoming;
+    public java.util.List incoming = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UCompositeState container;
 }

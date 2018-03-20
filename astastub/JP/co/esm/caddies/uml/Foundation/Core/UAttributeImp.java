@@ -18,7 +18,7 @@ public class UAttributeImp extends JP.co.esm.caddies.uml.Foundation.Core.UProper
 
     public JP.co.esm.caddies.uml.Foundation.Core.UAssociationEnd associationEnd;
 
-    public java.util.List attributeLinks;
+    public java.util.List attributeLinks = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.Foundation.DataTypes.UAggregationKind aggregation;
 }

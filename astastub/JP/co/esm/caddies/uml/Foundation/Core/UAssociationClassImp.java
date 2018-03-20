@@ -14,9 +14,9 @@ public class UAssociationClassImp extends JP.co.esm.caddies.uml.Foundation.Core.
     implements java.io.Serializable {
     public static final long serialVersionUID = -8669131274073303893L;
 
-    public java.util.List connection;
+    public java.util.List connection = new java.util.ArrayList();
 
-    public java.util.List links;
+    public java.util.List links = new java.util.ArrayList();
 
-    public java.util.List connectorInv;
+    public java.util.List connectorInv = new java.util.ArrayList();
 }

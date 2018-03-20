@@ -16,9 +16,9 @@ public class PathPresentation extends JP.co.esm.caddies.jomt.jmodel.JomtPresenta
 
     public JP.co.esm.caddies.jomt.jmodel.ILabelPresentation namePresentation;
 
-    public java.util.List stereotypePresentations;
+    public java.util.List stereotypePresentations = new java.util.ArrayList();
 
-    public java.util.List constraintPresentations;
+    public java.util.List constraintPresentations = new java.util.ArrayList();
 
     public JP.co.esm.caddies.jomt.jmodel.ILabelPresentation stereotypePresentation;
 

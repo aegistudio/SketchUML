@@ -14,9 +14,9 @@ public class UParameterableElementImp extends JP.co.esm.caddies.uml.Foundation.C
     implements java.io.Serializable, JP.co.esm.caddies.uml.Foundation.Core.UParameterableElement {
     public static final long serialVersionUID = -3842146790738189745L;
 
-    public java.util.List actualInv;
+    public java.util.List actualInv = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.Foundation.Core.UTemplateParameter owningParameter;
 
-    public java.util.List defaultInv;
+    public java.util.List defaultInv = new java.util.ArrayList();
 }

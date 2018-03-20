@@ -16,5 +16,5 @@ public class MindmapStyleTemplate extends JP.co.esm.caddies.jomt.jmodel.Template
 
     public java.lang.String key;
 
-    public java.util.Map itemMap;
+    public java.util.Map itemMap = new java.util.HashMap();
 }

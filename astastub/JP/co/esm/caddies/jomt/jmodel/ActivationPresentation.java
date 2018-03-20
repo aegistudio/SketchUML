@@ -24,11 +24,11 @@ public class ActivationPresentation extends JP.co.esm.caddies.jomt.jmodel.RectPr
 
     public JP.co.esm.caddies.jomt.jmodel.ITerminationPresentation termPs;
 
-    public java.util.List inMessages;
+    public java.util.List inMessages = new java.util.ArrayList();
 
-    public java.util.List outMessages;
+    public java.util.List outMessages = new java.util.ArrayList();
 
-    public java.util.List leftActivationPs;
+    public java.util.List leftActivationPs = new java.util.ArrayList();
 
-    public java.util.List rightActivationPs;
+    public java.util.List rightActivationPs = new java.util.ArrayList();
 }

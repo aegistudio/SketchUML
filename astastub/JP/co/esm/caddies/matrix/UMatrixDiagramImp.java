@@ -14,9 +14,9 @@ public class UMatrixDiagramImp extends JP.co.esm.caddies.uml.Foundation.Core.UDi
     implements java.io.Serializable {
     public static final long serialVersionUID = 4219931579549751090L;
 
-    public java.util.List columnHeaders;
+    public java.util.List columnHeaders = new java.util.ArrayList();
 
-    public java.util.List rowHeaders;
+    public java.util.List rowHeaders = new java.util.ArrayList();
 
-    public java.util.Map valueCellMap;
+    public java.util.Map valueCellMap = new java.util.HashMap();
 }

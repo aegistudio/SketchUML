@@ -16,7 +16,7 @@ public class MMBoundaryPresentation extends JP.co.esm.caddies.jomt.jmodel.RectPr
 
     public JP.co.esm.caddies.jomt.jmodel.IMMTopicPresentation topic;
 
-    public java.util.Map customStyleMap;
+    public java.util.Map customStyleMap = new java.util.HashMap();
 
     public boolean visible;
 }

@@ -14,5 +14,5 @@ public class UConnectableElementImp extends JP.co.esm.caddies.uml.Foundation.Cor
     implements java.io.Serializable, JP.co.esm.caddies.uml.Foundation.Core.UConnectableElement {
     public static final long serialVersionUID = 881929276883271527L;
 
-    public java.util.List connectorEnd;
+    public java.util.List connectorEnd = new java.util.ArrayList();
 }

@@ -20,5 +20,5 @@ public class UCompositeStateImp extends JP.co.esm.caddies.uml.BehavioralElements
 
     public boolean isOrthogonal;
 
-    public java.util.List subvertex;
+    public java.util.List subvertex = new java.util.ArrayList();
 }

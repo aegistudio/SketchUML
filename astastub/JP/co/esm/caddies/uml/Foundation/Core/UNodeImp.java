@@ -14,5 +14,5 @@ public class UNodeImp extends JP.co.esm.caddies.uml.Foundation.Core.UClassifierI
     implements java.io.Serializable {
     public static final long serialVersionUID = -8524005346899772003L;
 
-    public java.util.List deployedComponent;
+    public java.util.List deployedComponent = new java.util.ArrayList();
 }

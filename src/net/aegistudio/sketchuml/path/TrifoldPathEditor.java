@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -139,7 +140,8 @@ public class TrifoldPathEditor extends JPanel
 		TrifoldAbstractLiftPath> extends PropertyPanel<T>{
 		private static final long serialVersionUID = 1L;
 
-		public PropertyLiftPath() {
+		public PropertyLiftPath(Consumer<? super T> notifier) {
+			super(notifier);
 			registerSpinner("Offset: ", 
 					p -> p.lift, (p, q) -> {
 						if(q == TrifoldAbstractLiftPath.BLINDED_PIXEL - 1)
@@ -159,6 +161,8 @@ public class TrifoldPathEditor extends JPanel
 	public Map<Class<? extends TrifoldPath>, 
 		StyleObject<? extends TrifoldPath>> pathStyle = new HashMap<>();
 	{
+		Consumer<TrifoldPath> notifier = p -> itemUpdated();
+		
 		// The straight line style object.
 		StyleObject<TrifoldLinePath> styleStraight = new StyleObject<>();
 		styleStraight.classObject = TrifoldLinePath.class;
@@ -174,7 +178,7 @@ public class TrifoldPathEditor extends JPanel
 		styleRectAngle.newInstance = TrifoldRectPath::new;
 		styleRectAngle.cast = p -> p instanceof
 				TrifoldRectPath? (TrifoldRectPath)p : null;
-		styleRectAngle.propertyPanel = new PropertyPanel<TrifoldRectPath>();
+		styleRectAngle.propertyPanel = new PropertyPanel<TrifoldRectPath>(notifier);
 		styleRectAngle.propertyPanel.registerCheckBox("Horizontal", 
 				p -> !p.highSkew, (p, q) -> p.highSkew = !q);
 		
@@ -185,7 +189,7 @@ public class TrifoldPathEditor extends JPanel
 		styleZigzag.newInstance = TrifoldZigzagPath::new;
 		styleZigzag.cast = p -> p instanceof
 				TrifoldZigzagPath? (TrifoldZigzagPath)p : null;
-		styleZigzag.propertyPanel = new PropertyPanel<TrifoldZigzagPath>();
+		styleZigzag.propertyPanel = new PropertyPanel<TrifoldZigzagPath>(notifier);
 		styleZigzag.propertyPanel.registerSlider("Progress (%)", 
 				p -> p.ratio * 1e2, (p, q) -> p.ratio = q * 1e-2, 
 				1000, 0., 100., "000.0", "%.1f");
@@ -199,7 +203,7 @@ public class TrifoldPathEditor extends JPanel
 		styleRoundRect.newInstance = TrifoldRoundRectPath::new;
 		styleRoundRect.cast = p -> p instanceof
 				TrifoldRoundRectPath? (TrifoldRoundRectPath)p : null;
-		styleRoundRect.propertyPanel = new PropertyPanel<TrifoldRoundRectPath>();
+		styleRoundRect.propertyPanel = new PropertyPanel<TrifoldRoundRectPath>(notifier);
 		styleRoundRect.propertyPanel.registerCheckBox("Horizontal", 
 				p -> !p.highSkew, (p, q) -> p.highSkew = !q);
 		
@@ -210,7 +214,7 @@ public class TrifoldPathEditor extends JPanel
 		styleLift.newInstance = TrifoldLiftPath::new;
 		styleLift.cast = p -> p instanceof
 				TrifoldLiftPath? (TrifoldLiftPath)p : null;
-		styleLift.propertyPanel = new PropertyLiftPath<>();
+		styleLift.propertyPanel = new PropertyLiftPath<>(notifier);
 		
 		// The rect lifted line style object.
 		StyleObject<TrifoldRoundLiftPath> styleRoundLift = new StyleObject<>();
@@ -219,16 +223,12 @@ public class TrifoldPathEditor extends JPanel
 		styleRoundLift.newInstance = TrifoldRoundLiftPath::new;
 		styleRoundLift.cast = p -> p instanceof
 				TrifoldRoundLiftPath? (TrifoldRoundLiftPath)p : null;
-		styleRoundLift.propertyPanel = new PropertyLiftPath<>();
+		styleRoundLift.propertyPanel = new PropertyLiftPath<>(notifier);
 		
 		// Add these list objects to the map.
 		pathStyleList = Arrays.asList(styleStraight, styleRectAngle, 
 				styleRoundRect, styleZigzag, styleLift, styleRoundLift);
-		pathStyleList.forEach(style -> {
-			pathStyle.put(style.classObject, style);
-			if(style.propertyPanel != null) style
-				.propertyPanel.setNotifier(p -> itemUpdated());
-		});
+		pathStyleList.forEach(style -> pathStyle.put(style.classObject, style));
 	}
 	
 	private Class<? extends TrifoldPath> propertyClass;

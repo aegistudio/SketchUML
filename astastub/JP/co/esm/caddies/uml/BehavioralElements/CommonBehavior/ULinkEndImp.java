@@ -24,5 +24,5 @@ public class ULinkEndImp extends JP.co.esm.caddies.uml.Foundation.Core.UModelEle
 
     public boolean navigable;
 
-    public java.util.List qualifierValues;
+    public java.util.List qualifierValues = new java.util.ArrayList();
 }

@@ -22,5 +22,5 @@ public class UStimulusImp extends JP.co.esm.caddies.uml.Foundation.Core.UModelEl
 
     public JP.co.esm.caddies.uml.BehavioralElements.CommonBehavior.UInstance sender;
 
-    public java.util.List arguments;
+    public java.util.List arguments = new java.util.ArrayList();
 }

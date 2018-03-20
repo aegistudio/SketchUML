@@ -46,4 +46,10 @@ public class ExObservable extends java.util.Observable
     			oos.writeObject(s);
     	oos.writeObject(null);
     }
+    
+    public synchronized void register(Serializable serializable) {
+    	if(ex_observers == null) 
+    		ex_observers = new ArrayList<>();
+    	ex_observers.add(serializable);
+    }
 }

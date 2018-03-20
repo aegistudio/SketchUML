@@ -14,11 +14,11 @@ public class CombinedFragmentPresentation extends JP.co.esm.caddies.jomt.jmodel.
     implements java.io.Serializable {
     public static final long serialVersionUID = -8978413447880542124L;
 
-    public java.util.List guardPresentations;
+    public java.util.List guardPresentations = new java.util.ArrayList();
 
-    public java.util.List subElements;
+    public java.util.List subElements = new java.util.ArrayList();
 
-    public java.util.List operandOffsets;
+    public java.util.List operandOffsets = new java.util.ArrayList();
 
-    public java.util.Map operandIndex;
+    public java.util.Map operandIndex = new java.util.HashMap();
 }

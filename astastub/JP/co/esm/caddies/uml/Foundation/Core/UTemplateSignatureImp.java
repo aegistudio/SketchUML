@@ -16,7 +16,7 @@ public class UTemplateSignatureImp extends JP.co.esm.caddies.uml.Foundation.Core
 
     public JP.co.esm.caddies.uml.Foundation.Core.UTemplateableElement template;
 
-    public java.util.List templateBinding;
+    public java.util.List templateBinding = new java.util.ArrayList();
 
-    public java.util.List ownedParameter;
+    public java.util.List ownedParameter = new java.util.ArrayList();
 }

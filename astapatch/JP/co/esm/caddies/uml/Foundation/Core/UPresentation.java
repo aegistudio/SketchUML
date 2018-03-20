@@ -1,10 +1,9 @@
 package JP.co.esm.caddies.uml.Foundation.Core;
 
 /**
- * This file is auto-generated from java packages through 
- * reflection and will never contain piece of original    
- * source of astah-community. These code should never be  
- * utilized for commercial purpose.                       
+ * This code is modified by analyzing command line program.
+ * You should use this hand written version instead of the 
+ * auto-generated one.
  * 
  * @author Haoran Luo
  */
@@ -18,11 +17,11 @@ public class UPresentation extends JP.co.esm.caddies.uml.util.ExObservable
 
     public JP.co.esm.caddies.uml.Foundation.Core.UDiagram diagram;
 
-    public java.util.List clients;
+    public java.util.List clients = new java.util.ArrayList();
 
     public int version;
 
-    public java.util.List servers;
+    public java.util.List servers = new java.util.ArrayList();
 
     public java.lang.String uid;
 
@@ -30,13 +29,13 @@ public class UPresentation extends JP.co.esm.caddies.uml.util.ExObservable
 
     public boolean unsolvedFlag;
 
-    public boolean stereotypeVisibility;
+    public boolean stereotypeVisibility = true;
 
-    public java.util.Map styleMap;
+    public java.util.Map styleMap = new java.util.HashMap();
 
-    public java.util.Map extensionProperties;
+    public java.util.Map extensionProperties = null;
 
-    public java.util.List hyperlinks;
+    public java.util.List hyperlinks = new java.util.ArrayList();
 
-    public java.util.List miniIcons;
+    public java.util.List miniIcons = null;
 }

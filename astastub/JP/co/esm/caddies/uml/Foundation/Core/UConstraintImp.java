@@ -16,5 +16,5 @@ public class UConstraintImp extends JP.co.esm.caddies.uml.Foundation.Core.UModel
 
     public JP.co.esm.caddies.uml.Foundation.DataTypes.UBooleanExpression body;
 
-    public java.util.List constrainedElement;
+    public java.util.List constrainedElement = new java.util.ArrayList();
 }

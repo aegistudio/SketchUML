@@ -14,7 +14,7 @@ public class UPropertyImp extends JP.co.esm.caddies.uml.Foundation.Core.UStructu
     implements java.io.Serializable, JP.co.esm.caddies.uml.Foundation.Core.UProperty {
     public static final long serialVersionUID = 1747762371469704294L;
 
-    public java.util.List connectorEnd;
+    public java.util.List connectorEnd = new java.util.ArrayList();
 
-    public java.util.List partWithPortInv;
+    public java.util.List partWithPortInv = new java.util.ArrayList();
 }

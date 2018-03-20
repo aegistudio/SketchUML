@@ -18,5 +18,5 @@ public class UMultiplicity extends java.lang.Object
 
     public java.lang.String id;
 
-    public java.util.List multiplicityRange;
+    public java.util.List multiplicityRange = new java.util.ArrayList();
 }

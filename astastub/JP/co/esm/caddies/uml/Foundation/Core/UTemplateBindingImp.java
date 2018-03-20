@@ -18,5 +18,5 @@ public class UTemplateBindingImp extends JP.co.esm.caddies.uml.Foundation.Core.U
 
     public JP.co.esm.caddies.uml.Foundation.Core.UTemplateSignature signature;
 
-    public java.util.List parameterSubstition;
+    public java.util.List parameterSubstition = new java.util.ArrayList();
 }

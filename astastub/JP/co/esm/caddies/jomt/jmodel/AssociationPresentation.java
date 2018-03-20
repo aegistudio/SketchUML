@@ -38,7 +38,7 @@ public class AssociationPresentation extends JP.co.esm.caddies.jomt.jmodel.Binar
 
     public int nameDirectionReverse;
 
-    public java.util.List roleAConstraintPresentations;
+    public java.util.List roleAConstraintPresentations = new java.util.ArrayList();
 
-    public java.util.List roleBConstraintPresentations;
+    public java.util.List roleBConstraintPresentations = new java.util.ArrayList();
 }

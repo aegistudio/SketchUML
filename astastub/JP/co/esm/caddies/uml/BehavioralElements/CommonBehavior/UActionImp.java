@@ -22,7 +22,7 @@ public class UActionImp extends JP.co.esm.caddies.uml.Foundation.Core.UModelElem
 
     public JP.co.esm.caddies.uml.Foundation.DataTypes.UObjectSetExpression target;
 
-    public java.util.List actualArgument;
+    public java.util.List actualArgument = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.BehavioralElements.CommonBehavior.UActionSequence actionInv;
 

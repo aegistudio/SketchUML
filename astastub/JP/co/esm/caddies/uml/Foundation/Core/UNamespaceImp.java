@@ -14,5 +14,5 @@ public class UNamespaceImp extends JP.co.esm.caddies.uml.Foundation.Core.UModelE
     implements java.io.Serializable, JP.co.esm.caddies.uml.Foundation.Core.UNamespace {
     public static final long serialVersionUID = -4870648327327272487L;
 
-    public java.util.List ownedElementOwnership;
+    public java.util.List ownedElementOwnership = new java.util.ArrayList();
 }

@@ -1,10 +1,9 @@
 package JP.co.esm.caddies.jomt.jmodel;
 
 /**
- * This file is auto-generated from java packages through 
- * reflection and will never contain piece of original    
- * source of astah-community. These code should never be  
- * utilized for commercial purpose.                       
+ * This code is modified by analyzing command line program.
+ * You should use this hand written version instead of the 
+ * auto-generated one.
  * 
  * @author Haoran Luo
  */
@@ -13,13 +12,15 @@ public class JomtPresentation extends JP.co.esm.caddies.uml.Foundation.Core.UPre
     implements java.io.Serializable {
     public static final long serialVersionUID = -7508818022374904276L;
 
-    public JP.co.esm.caddies.golf.geom2D.Pnt2d location;
+    public JP.co.esm.caddies.golf.geom2D.Pnt2d location
+    	= new JP.co.esm.caddies.golf.geom2D.Pnt2d();
 
-    public java.lang.Long changeId;
+    public java.lang.Long changeId = -1l;
 
-    public int depth;
+    public int depth = Integer.MAX_VALUE;
 
-    public JP.co.esm.caddies.golf.geom2D.Vec2d localMovement;
+    public JP.co.esm.caddies.golf.geom2D.Vec2d localMovement
+    	= new JP.co.esm.caddies.golf.geom2D.Vec2d();
 
     public JP.co.esm.caddies.uml.Foundation.Core.IUPresentation compositeParent;
 

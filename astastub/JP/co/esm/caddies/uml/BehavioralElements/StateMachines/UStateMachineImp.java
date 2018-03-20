@@ -18,9 +18,9 @@ public class UStateMachineImp extends JP.co.esm.caddies.uml.Foundation.Core.UMod
 
     public JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UState top;
 
-    public java.util.List transition;
+    public java.util.List transition = new java.util.ArrayList();
 
-    public java.util.List submachineInv;
+    public java.util.List submachineInv = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.Foundation.Core.UDiagram diagram;
 }

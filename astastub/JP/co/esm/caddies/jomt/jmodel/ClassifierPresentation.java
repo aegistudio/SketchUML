@@ -56,13 +56,13 @@ public class ClassifierPresentation extends JP.co.esm.caddies.jomt.jmodel.LabelP
 
     public boolean iconNotation;
 
-    public java.util.List invisibleFeatures;
+    public java.util.List invisibleFeatures = new java.util.ArrayList();
 
     public int classType;
 
     public int interfaceType;
 
-    public java.util.List subElements;
+    public java.util.List subElements = new java.util.ArrayList();
 
     public boolean isHideName;
 }

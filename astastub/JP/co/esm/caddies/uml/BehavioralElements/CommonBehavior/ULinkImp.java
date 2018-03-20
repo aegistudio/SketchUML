@@ -18,5 +18,5 @@ public class ULinkImp extends JP.co.esm.caddies.uml.Foundation.Core.UModelElemen
 
     public JP.co.esm.caddies.uml.BehavioralElements.CommonBehavior.UInstance owner;
 
-    public java.util.List connections;
+    public java.util.List connections = new java.util.ArrayList();
 }

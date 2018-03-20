@@ -20,7 +20,7 @@ public class UGeneralizableElementImp extends JP.co.esm.caddies.uml.Foundation.C
 
     public boolean abst;
 
-    public java.util.List generalization;
+    public java.util.List generalization = new java.util.ArrayList();
 
-    public java.util.List specialization;
+    public java.util.List specialization = new java.util.ArrayList();
 }

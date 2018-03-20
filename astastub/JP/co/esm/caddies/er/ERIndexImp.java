@@ -20,7 +20,7 @@ public class ERIndexImp extends JP.co.esm.caddies.uml.Foundation.Core.UModelElem
 
     public JP.co.esm.caddies.er.EREntity parentEntity;
 
-    public java.util.List erAttributes;
+    public java.util.List erAttributes = new java.util.ArrayList();
 
-    public java.util.List erRelationships;
+    public java.util.List erRelationships = new java.util.ArrayList();
 }

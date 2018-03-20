@@ -14,9 +14,9 @@ public class UCombinedFragmentImp extends JP.co.esm.caddies.uml.BehavioralElemen
     implements java.io.Serializable, JP.co.esm.caddies.uml.BehavioralElements.Collaborations.UCombinedFragment {
     public static final long serialVersionUID = -8168467806578821944L;
 
-    public java.util.List operands;
+    public java.util.List operands = new java.util.ArrayList();
 
-    public java.util.List gates;
+    public java.util.List gates = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.BehavioralElements.Collaborations.UInteractionOperator operator;
 }

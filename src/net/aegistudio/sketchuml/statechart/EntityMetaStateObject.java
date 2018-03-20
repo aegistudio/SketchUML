@@ -24,8 +24,7 @@ public class EntityMetaStateObject implements SketchView, PropertyView.Factory {
 	public PropertyView newPropertyView(Consumer<Entity> notifier) {
 		return new PropertyView() {
 			private final PropertyPanel<EntityStateObject> viewObject; {
-				viewObject = new PropertyPanel<EntityStateObject>();
-				viewObject.setNotifier(notifier);
+				viewObject = new PropertyPanel<EntityStateObject>(notifier);
 				
 				// Add the state name.
 				viewObject.registerTextField("State Name: ", 

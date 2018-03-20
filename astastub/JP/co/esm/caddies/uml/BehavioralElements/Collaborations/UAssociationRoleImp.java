@@ -14,13 +14,13 @@ public class UAssociationRoleImp extends JP.co.esm.caddies.uml.Foundation.Core.U
     implements java.io.Serializable, JP.co.esm.caddies.uml.BehavioralElements.Collaborations.UAssociationRole {
     public static final long serialVersionUID = 2782040323934004004L;
 
-    public java.util.List message;
+    public java.util.List message = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.BehavioralElements.Collaborations.UCollaboration collaboration;
 
     public JP.co.esm.caddies.uml.Foundation.Core.UAssociation base;
 
-    public java.util.List conformingLink;
+    public java.util.List conformingLink = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.Foundation.DataTypes.UMultiplicity multiplicity;
 }

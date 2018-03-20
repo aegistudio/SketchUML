@@ -18,7 +18,7 @@ public class UInteractionUseImp extends JP.co.esm.caddies.uml.BehavioralElements
 
     public java.lang.String argument;
 
-    public java.util.List gates;
+    public java.util.List gates = new java.util.ArrayList();
 
-    public java.util.List slots;
+    public java.util.List slots = new java.util.ArrayList();
 }

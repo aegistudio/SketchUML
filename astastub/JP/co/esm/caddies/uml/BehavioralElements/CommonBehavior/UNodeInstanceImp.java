@@ -14,5 +14,5 @@ public class UNodeInstanceImp extends JP.co.esm.caddies.uml.BehavioralElements.C
     implements java.io.Serializable, JP.co.esm.caddies.uml.BehavioralElements.CommonBehavior.UNodeInstance {
     public static final long serialVersionUID = -3648280867907365133L;
 
-    public java.util.List residents;
+    public java.util.List residents = new java.util.ArrayList();
 }

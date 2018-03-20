@@ -16,9 +16,9 @@ public class UStereotypeImp extends JP.co.esm.caddies.uml.Foundation.Core.UGener
 
     public JP.co.esm.caddies.uml.Foundation.DataTypes.UGeometry icon;
 
-    public java.util.List extendedElement;
+    public java.util.List extendedElement = new java.util.ArrayList();
 
-    public java.util.List requiredTag;
+    public java.util.List requiredTag = new java.util.ArrayList();
 
-    public java.util.List stereotypeConstraint;
+    public java.util.List stereotypeConstraint = new java.util.ArrayList();
 }

@@ -16,9 +16,9 @@ public class UMessageImp extends JP.co.esm.caddies.uml.Foundation.Core.UModelEle
 
     public JP.co.esm.caddies.uml.BehavioralElements.Collaborations.UAssociationRole communicationConnection;
 
-    public java.util.List predecessor;
+    public java.util.List predecessor = new java.util.ArrayList();
 
-    public java.util.List successor;
+    public java.util.List successor = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.BehavioralElements.Collaborations.UMessage activator;
 

@@ -14,5 +14,5 @@ public class EREntityImp extends JP.co.esm.caddies.uml.Foundation.Core.UClassifi
     implements java.io.Serializable, JP.co.esm.caddies.er.EREntity {
     public static final long serialVersionUID = -8569327821110185818L;
 
-    public java.util.List erIndexes;
+    public java.util.List erIndexes = new java.util.ArrayList();
 }

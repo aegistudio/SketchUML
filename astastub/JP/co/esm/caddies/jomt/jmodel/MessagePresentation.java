@@ -22,9 +22,9 @@ public class MessagePresentation extends JP.co.esm.caddies.jomt.jmodel.BinaryRel
 
     public boolean returnValueVisibility;
 
-    public java.util.List branchMessage;
+    public java.util.List branchMessage = new java.util.ArrayList();
 
-    public java.util.List parentMessage;
+    public java.util.List parentMessage = new java.util.ArrayList();
 
     public java.lang.String index;
 }

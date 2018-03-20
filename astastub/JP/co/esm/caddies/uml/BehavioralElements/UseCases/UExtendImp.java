@@ -18,7 +18,7 @@ public class UExtendImp extends JP.co.esm.caddies.uml.Foundation.Core.URelations
 
     public JP.co.esm.caddies.uml.BehavioralElements.UseCases.UUseCase extension;
 
-    public java.util.List location;
+    public java.util.List location = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.Foundation.DataTypes.UBooleanExpression condition;
 }

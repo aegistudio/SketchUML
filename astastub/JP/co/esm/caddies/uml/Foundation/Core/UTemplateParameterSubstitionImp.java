@@ -16,7 +16,7 @@ public class UTemplateParameterSubstitionImp extends JP.co.esm.caddies.uml.Found
 
     public JP.co.esm.caddies.uml.Foundation.Core.UTemplateBinding templateBinding;
 
-    public java.util.List actual;
+    public java.util.List actual = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.Foundation.Core.UTemplateParameter formal;
 }

@@ -14,5 +14,5 @@ public class AssociationClassPresentation extends JP.co.esm.caddies.jomt.jmodel.
     implements java.io.Serializable {
     public static final long serialVersionUID = -5406107725052893892L;
 
-    public java.util.List points;
+    public java.util.List points = new java.util.ArrayList();
 }

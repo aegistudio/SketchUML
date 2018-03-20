@@ -14,7 +14,7 @@ public class UMessageEndImp extends JP.co.esm.caddies.uml.Foundation.Core.UModel
     implements java.io.Serializable, JP.co.esm.caddies.uml.BehavioralElements.Collaborations.UMessageEnd {
     public static final long serialVersionUID = -7243815057060273113L;
 
-    public java.util.List senderInvs;
+    public java.util.List senderInvs = new java.util.ArrayList();
 
-    public java.util.List receiverInvs;
+    public java.util.List receiverInvs = new java.util.ArrayList();
 }

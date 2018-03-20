@@ -20,9 +20,9 @@ public class UStateImp extends JP.co.esm.caddies.uml.BehavioralElements.StateMac
 
     public JP.co.esm.caddies.uml.BehavioralElements.CommonBehavior.UAction doActivity;
 
-    public java.util.List deferrableEvent;
+    public java.util.List deferrableEvent = new java.util.ArrayList();
 
-    public java.util.List internalTransitions;
+    public java.util.List internalTransitions = new java.util.ArrayList();
 
-    public java.util.List inStateInv;
+    public java.util.List inStateInv = new java.util.ArrayList();
 }

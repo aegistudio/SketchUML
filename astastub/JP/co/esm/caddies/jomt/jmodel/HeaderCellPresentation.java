@@ -16,7 +16,7 @@ public class HeaderCellPresentation extends JP.co.esm.caddies.jomt.jmodel.CellPr
 
     public JP.co.esm.caddies.jomt.jmodel.IHeaderCellPresentation parent;
 
-    public java.util.List subElements;
+    public java.util.List subElements = new java.util.ArrayList();
 
     public boolean isVisible;
 

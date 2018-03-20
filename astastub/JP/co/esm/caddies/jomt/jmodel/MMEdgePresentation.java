@@ -14,7 +14,7 @@ public class MMEdgePresentation extends JP.co.esm.caddies.jomt.jmodel.PathPresen
     implements java.io.Serializable, JP.co.esm.caddies.jomt.jmodel.IMMEdgePresentation {
     public static final long serialVersionUID = 5765794689595424556L;
 
-    public java.util.Map customStyleMap;
+    public java.util.Map customStyleMap = new java.util.HashMap();
 
     public JP.co.esm.caddies.jomt.jmodel.IMMTopicPresentation parentTopic;
 }

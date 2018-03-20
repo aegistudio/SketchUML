@@ -16,17 +16,17 @@ public class UClassifierRoleImp extends JP.co.esm.caddies.uml.Foundation.Core.UC
 
     public JP.co.esm.caddies.uml.Foundation.Core.UClassifier base;
 
-    public java.util.List senderInv;
+    public java.util.List senderInv = new java.util.ArrayList();
 
-    public java.util.List receiverInv;
+    public java.util.List receiverInv = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.Foundation.DataTypes.UMultiplicity multiplicity;
 
-    public java.util.List availableContent;
+    public java.util.List availableContent = new java.util.ArrayList();
 
-    public java.util.List availableFeature;
+    public java.util.List availableFeature = new java.util.ArrayList();
 
-    public java.util.List conformingInstance;
+    public java.util.List conformingInstance = new java.util.ArrayList();
 
-    public java.util.List coveredBy;
+    public java.util.List coveredBy = new java.util.ArrayList();
 }

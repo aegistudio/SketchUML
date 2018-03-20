@@ -14,7 +14,7 @@ public class UPackageImp extends JP.co.esm.caddies.uml.Foundation.Core.UNamespac
     implements java.io.Serializable {
     public static final long serialVersionUID = -3914343964309052282L;
 
-    public java.util.List referedElem;
+    public java.util.List referedElem = new java.util.ArrayList();
 
     public boolean root;
 
@@ -22,7 +22,7 @@ public class UPackageImp extends JP.co.esm.caddies.uml.Foundation.Core.UNamespac
 
     public boolean abst;
 
-    public java.util.List generalization;
+    public java.util.List generalization = new java.util.ArrayList();
 
-    public java.util.List specialization;
+    public java.util.List specialization = new java.util.ArrayList();
 }

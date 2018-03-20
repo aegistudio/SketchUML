@@ -14,7 +14,7 @@ public class UTemplateableElementImp extends JP.co.esm.caddies.uml.Foundation.Co
     implements java.io.Serializable, JP.co.esm.caddies.uml.Foundation.Core.UTemplateableElement {
     public static final long serialVersionUID = 7703661707197197582L;
 
-    public java.util.List templateBinding;
+    public java.util.List templateBinding = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.Foundation.Core.UTemplateSignature ownedTemplateSignatrue;
 }

@@ -14,13 +14,13 @@ public class UPartitionImp extends JP.co.esm.caddies.uml.Foundation.Core.UModelE
     implements java.io.Serializable, JP.co.esm.caddies.uml.BehavioralElements.ActivityGraphs.UPartition {
     public static final long serialVersionUID = 6056679042194861678L;
 
-    public java.util.List contents;
+    public java.util.List contents = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.BehavioralElements.ActivityGraphs.UActivityGraph activityGraph;
 
     public JP.co.esm.caddies.uml.BehavioralElements.ActivityGraphs.UPartition superPartition;
 
-    public java.util.List subGroup;
+    public java.util.List subGroup = new java.util.ArrayList();
 
     public boolean isDimension;
 

@@ -14,7 +14,7 @@ public class UComponentInstanceImp extends JP.co.esm.caddies.uml.BehavioralEleme
     implements java.io.Serializable, JP.co.esm.caddies.uml.BehavioralElements.CommonBehavior.UComponentInstance {
     public static final long serialVersionUID = -8490280859870003729L;
 
-    public java.util.List residents;
+    public java.util.List residents = new java.util.ArrayList();
 
     public JP.co.esm.caddies.uml.BehavioralElements.CommonBehavior.UNodeInstance nodeInstance;
 }

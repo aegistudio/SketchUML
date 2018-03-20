@@ -16,7 +16,7 @@ public class UDependencyImp extends JP.co.esm.caddies.uml.Foundation.Core.URelat
 
     public java.lang.String description;
 
-    public java.util.List supplier;
+    public java.util.List supplier = new java.util.ArrayList();
 
-    public java.util.List client;
+    public java.util.List client = new java.util.ArrayList();
 }

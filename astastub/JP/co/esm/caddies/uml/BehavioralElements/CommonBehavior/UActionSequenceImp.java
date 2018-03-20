@@ -14,5 +14,5 @@ public class UActionSequenceImp extends JP.co.esm.caddies.uml.BehavioralElements
     implements java.io.Serializable, JP.co.esm.caddies.uml.BehavioralElements.CommonBehavior.UActionSequence {
     public static final long serialVersionUID = -2425594398585041897L;
 
-    public java.util.List action;
+    public java.util.List action = new java.util.ArrayList();
 }
