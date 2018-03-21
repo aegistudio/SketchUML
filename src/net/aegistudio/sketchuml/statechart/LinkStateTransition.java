@@ -6,6 +6,9 @@ import java.io.IOException;
 
 import JP.co.esm.caddies.jomt.jmodel.LabelPresentation;
 import JP.co.esm.caddies.jomt.jmodel.TransitionPresentation;
+import JP.co.esm.caddies.uml.BehavioralElements.CommonBehavior.UActionImp;
+import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UEventImp;
+import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UGuardImp;
 import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UTransitionImp;
 import net.aegistudio.sketchuml.Entity;
 import net.aegistudio.sketchuml.astaxpt.AstahUuidGenerator;
@@ -57,6 +60,30 @@ public class LinkStateTransition implements Entity, TransitionEntity {
 		LabelPresentation weightPresentation = new LabelPresentation();
 		transitionView.weightPresentation = weightPresentation;
 		prepareTransitionLabel(uuid, transitionView, weightPresentation);
+		
+		// Initialize the trigger.
+		if(this.trigger.length() > 0) {
+			UEventImp trigger = new UEventImp();
+			trigger.name.body = this.trigger;
+			trigger.id = uuid.nextUuid();
+			transitionModel.trigger = trigger;
+		}
+		
+		// Initialize the guard.
+		if(this.guard.length() > 0) {
+			UGuardImp guard = new UGuardImp();
+			guard.name.body = this.guard;
+			guard.id = uuid.nextUuid();
+			transitionModel.guard = guard;
+		}
+		
+		// Initialize the action.
+		if(this.action.length() > 0) {
+			UActionImp action = new UActionImp();
+			action.name.body = this.action;
+			action.id = uuid.nextUuid();
+			transitionModel.effect = action;
+		}
 		
 		// Construct the link's presentation string.
 		String presentationString = toPresentationString();

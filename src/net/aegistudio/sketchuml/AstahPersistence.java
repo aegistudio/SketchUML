@@ -106,6 +106,8 @@ public class AstahPersistence<Path> extends
 				astahEntity.location.y = entity.y;
 				astahEntity.width = entity.w;
 				astahEntity.height = entity.h;
+				
+				// Apply view transformation.
 				applyTransform(astahEntity);
 				
 				// Update the gross entity size.
@@ -140,6 +142,21 @@ public class AstahPersistence<Path> extends
 				
 				// Apply view transformation.
 				applyTransform(astahLink);
+				
+				// Update the boundary.
+				List<Pnt2d> boundaryPoint = new ArrayList<>();
+				for(Pnt2d innerPnt : pathHint.innerPoints) 
+					boundaryPoint.add(innerPnt);
+				for(Pnt2d controlPnt : pathHint.controlPoints)
+					boundaryPoint.add(controlPnt);
+				for(Pnt2d outerPnt : pathHint.controlPoints)
+					boundaryPoint.add(outerPnt);
+				for(Pnt2d point : boundaryPoint) {
+					minX = Math.min(minX, point.x);
+					minY = Math.min(minY, point.y);
+					maxX = Math.max(maxX, point.x);
+					maxY = Math.max(maxY, point.y);
+				}
 			}
 		}
 		

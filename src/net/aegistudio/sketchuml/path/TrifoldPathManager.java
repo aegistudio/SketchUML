@@ -298,7 +298,11 @@ public class TrifoldPathManager implements PathManager<TrifoldProxyPath> {
 		if(path.path.isCurve()) {
 			pathHint.lineStyle = path.path.isRightAngle()? 
 					"curve_right_angle" : "curve";
-			pathHint.innerPoints = controlPoints.stream()
+			List<PointR> evaluatedPoints = new ArrayList<>();
+			evaluatedPoints.add(pointBegin);
+			controlPoints.forEach(evaluatedPoints::add);
+			evaluatedPoints.add(pointEnd);
+			pathHint.innerPoints = evaluatedPoints.stream()
 				.map(TrifoldPathManager::makePnt2d)
 				.toArray(Pnt2d[]::new);
 		}
