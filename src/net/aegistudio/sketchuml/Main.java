@@ -72,6 +72,9 @@ public class Main {
 	public static DefaultHistory history;
 	public static JMenuItem menuItemUndo, menuItemRedo;
 	
+	// The export file options.
+	public static JMenuItem menuItemExportAstah;
+	
 	public static void main(String[] arguments) {
 		// Set the UI's major look and feel. Could fail.
 		try { UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"); } 
@@ -230,6 +233,13 @@ public class Main {
 		menuItemSaveAs.setAccelerator(KeyStroke.getKeyStroke("ctrl alt S"));
 		menuFile.add(menuItemSaveAs);
 		
+		// An separator before export and import options.
+		menuFile.addSeparator();
+		
+		// The [File -> Export as Astah Project] item.
+		menuItemExportAstah = new JMenuItem("Export as Astah Project");
+		menuFile.add(menuItemExportAstah);
+		
 		// Add the edit menu.
 		JMenu menuEdit = new JMenu("Edit");
 		menuEdit.setMnemonic('E');
@@ -270,9 +280,11 @@ public class Main {
 			JMenu menu = menuBar.getMenu(i);
 			menu.setFont(Configuration
 					.getInstance().PROPERTY_FONT);
-			for(int j = 0; j < menu.getItemCount(); ++ j)
-				menu.getItem(j).setFont(Configuration
+			for(int j = 0; j < menu.getItemCount(); ++ j) {
+				JMenuItem menuItem = menu.getItem(j);
+				if(menuItem != null) menuItem.setFont(Configuration
 						.getInstance().PROPERTY_FONT);
+			}
 		}
 		
 		// Add the result selection panel.
@@ -317,15 +329,19 @@ public class Main {
 		if(sketchPanel != null) mainFrame.remove(sketchPanel);
 		if(editPanel != null) mainFrame.remove(editPanel);
 		
-		// Destroy N-Dollar recognizer if template mismatches.
-		// And initialize the new template's recognizers.
+		// Update when a new template is selected.
 		if(currentTemplate != newTemplate) {
+			// Destroy N-Dollar recognizer if template mismatches.
+			// And initialize the new template's recognizers.
 			if(recognizer != null) recognizer.destroyNDollar();
 			recognizer = new SketchRecognizer(
 					new File(Configuration.getInstance().GESTURE_PATH), 
 					newTemplate.entities());
 			currentTemplate = newTemplate;
 			recognizer.initializeNDollar();
+			
+			// Update the exporting and importing stack.
+			menuItemExportAstah.setEnabled(newTemplate.canExportAstah());
 		}
 		
 		// Create the new sketch panel.

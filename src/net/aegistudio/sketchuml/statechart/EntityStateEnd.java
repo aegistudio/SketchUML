@@ -5,11 +5,15 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+import JP.co.esm.caddies.jomt.jmodel.FinalStatePresentation;
+import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UFinalStateImp;
 import net.aegistudio.sketchuml.Entity;
 import net.aegistudio.sketchuml.EntityAdapter;
+import net.aegistudio.sketchuml.astaxpt.AstahUuidGenerator;
 import net.aegistudio.sketchuml.framework.RegularRenderer;
 
-public class EntityStateEnd extends EntityAdapter implements RegularRenderer.Painter {
+public class EntityStateEnd extends EntityAdapter implements 
+	RegularRenderer.Painter, StateEntity {
 	private final RegularRenderer renderer = new RegularRenderer(this);
 	
 	@Override
@@ -34,5 +38,18 @@ public class EntityStateEnd extends EntityAdapter implements RegularRenderer.Pai
 	@Override
 	public void renderEntity(Graphics g, Entity entity, boolean preview) {
 		renderer.renderEntity(g, entity, preview);
+	}
+
+	@Override
+	public AstahStateObject toAstahState(AstahUuidGenerator uuid) {
+		UFinalStateImp finalModel = new UFinalStateImp();
+		FinalStatePresentation finalView = new FinalStatePresentation();
+		finalModel.name.body = "FinalState #" + hashCode();
+		
+		// Collect the created instance.
+		AstahStateObject stateObject = new AstahStateObject();
+		stateObject.stateModel = finalModel;
+		stateObject.stateView = finalView;
+		return stateObject;
 	}
 }

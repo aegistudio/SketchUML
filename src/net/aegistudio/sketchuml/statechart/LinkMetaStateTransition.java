@@ -58,19 +58,9 @@ public class LinkMetaStateTransition implements PropertyView.Factory, LinkView {
 			endStyle = PathView.ArrowStyle.FISHBONE;
 			lineStyle = PathView.LineStyle.COHERENT;
 			
-			// Add the trigger if any.
-			if(transition.trigger.length() > 0)
-				centerText = transition.trigger;
-			
-			// Replace the guard condition if any.
-			if(transition.guard.length() > 0)
-				centerText = (centerText == null? "" : 
-					centerText + " ") + "[" + transition.guard + "]";
-			
-			// Append the action to the end.
-			if(transition.action.length() > 0)
-				centerText = (centerText == null? "" : 
-					centerText + " ") + "/ " + transition.action;
+			// Retrieve the presentation string of transition.
+			centerText = transition.toPresentationString();
+			if(centerText.length() == 0) centerText = null;
 		} };
 	}
 

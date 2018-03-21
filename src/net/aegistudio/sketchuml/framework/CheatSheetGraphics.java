@@ -21,7 +21,7 @@ public class CheatSheetGraphics {
 	public CheatSheetGraphics(String language) throws IOException {
 		// Attempts to load cheat sheet of certain language.
 		InputStream cheatsheetInputStream = getClass()
-				.getResourceAsStream("/cheatsheet/" + language + ".png");
+				.getResourceAsStream("/assets/cheatsheet/" + language + ".png");
 		if(cheatsheetInputStream == null) throw new IOException(
 				"Cheat sheet resource is not found.");
 		

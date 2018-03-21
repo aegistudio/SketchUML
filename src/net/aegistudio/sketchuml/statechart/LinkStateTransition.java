@@ -4,9 +4,13 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import JP.co.esm.caddies.jomt.jmodel.LabelPresentation;
+import JP.co.esm.caddies.jomt.jmodel.TransitionPresentation;
+import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UTransitionImp;
 import net.aegistudio.sketchuml.Entity;
+import net.aegistudio.sketchuml.astaxpt.AstahUuidGenerator;
 
-public class LinkStateTransition implements Entity {
+public class LinkStateTransition implements Entity, TransitionEntity {
 	public String trigger = "", guard = "", action = "";
 
 	@Override
@@ -21,5 +25,69 @@ public class LinkStateTransition implements Entity {
 		outputStream.writeUTF(trigger);
 		outputStream.writeUTF(guard);
 		outputStream.writeUTF(action);
+	}
+
+	public String toPresentationString() {
+		String centerText = "";
+		
+		// Add the trigger if any.
+		if(trigger.length() > 0) centerText = trigger;
+		
+		// Replace the guard condition if any.
+		if(guard.length() > 0) centerText = (centerText == null? "" : 
+				centerText + " ") + "[" + guard + "]";
+		
+		// Append the action to the end.
+		if(action.length() > 0) centerText = (centerText == null? "" : 
+				centerText + " ") + "/ " + action;
+		
+		return centerText;
+	}
+	
+	@Override
+	public AstahTransitionObject toAstahTransition(AstahUuidGenerator uuid) {
+		// Initialize the transition model.
+		TransitionPresentation transitionView = new TransitionPresentation();
+		UTransitionImp transitionModel = new UTransitionImp();
+		
+		// Initialize the namePresentation and weightPresentation.
+		LabelPresentation namePresentation = new LabelPresentation(); 
+		transitionView.namePresentation = namePresentation;
+		prepareTransitionLabel(uuid, transitionView, namePresentation);
+		LabelPresentation weightPresentation = new LabelPresentation();
+		transitionView.weightPresentation = weightPresentation;
+		prepareTransitionLabel(uuid, transitionView, weightPresentation);
+		
+		// Construct the link's presentation string.
+		String presentationString = toPresentationString();
+		transitionModel.name.body = presentationString;
+		namePresentation.label = presentationString;
+		
+		// Construct the transition entity.
+		AstahTransitionObject transitionObject = new AstahTransitionObject();
+		transitionObject.transitionModel = transitionModel;
+		transitionObject.transitionView = transitionView;
+		return transitionObject;
+	}
+	
+	/**
+	 * Initialize the label (namePresentation and weightPresentation) in the phase
+	 * of Astah model preparation.
+	 *
+	 * @param uuid used to generate a new UUID for the label.
+	 * @param transition the transition presentation holding it.
+	 * @param label the presentation of label.
+	 */
+	private void prepareTransitionLabel(AstahUuidGenerator uuid, 
+			TransitionPresentation transition, LabelPresentation label) {
+		label.depth = 0;
+		label.doAutoResize = true;
+		label.label = "";
+		label.compositeParent = transition;
+		label.id = uuid.nextUuid();
+		label.visibility = true;
+		label.constraintVisibility = true;
+		label.stereotypeVisibility = true;
+		label.styleMap = null;
 	}
 }
