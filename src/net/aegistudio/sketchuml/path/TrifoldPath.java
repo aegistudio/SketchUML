@@ -93,4 +93,14 @@ public interface TrifoldPath extends Cloneable {
 	 * @throws IOException while there's some I/O error occurs.
 	 */
 	public void readPath(DataInputStream inputStream) throws IOException;
+	
+	/**
+	 * @return is this path a curve.
+	 */
+	public boolean isCurve();
+	
+	/**
+	 * @return is this path contains right angles.
+	 */
+	public boolean isRightAngle();
 }

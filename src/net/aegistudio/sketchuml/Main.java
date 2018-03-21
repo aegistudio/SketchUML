@@ -246,6 +246,7 @@ public class Main {
 					new AstahPersistence.AstahTransaction<>();
 			astahTransaction.projectName = getProjectFileName();
 			astahTransaction.sketchModel = currentModel;
+			astahTransaction.pathManager = pathManager;
 			if(!astahPersistence.saveModelPanel(mainFrame, astahTransaction)) return;
 		});
 		menuFile.add(menuItemExportAstah);

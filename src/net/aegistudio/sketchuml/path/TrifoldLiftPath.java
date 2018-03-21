@@ -48,4 +48,14 @@ public class TrifoldLiftPath extends TrifoldAbstractLiftPath {
 		stripVertical.add(new ParametricLinePiece(
 				paramVLiftEnd, paramPointEnd));
 	}
+
+	@Override
+	public boolean isCurve() {
+		return false;
+	}
+
+	@Override
+	public boolean isRightAngle() {
+		return true;
+	}
 }

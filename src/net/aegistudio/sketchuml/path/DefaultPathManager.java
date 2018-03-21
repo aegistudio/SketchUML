@@ -312,5 +312,12 @@ public class DefaultPathManager implements PathManager<DefaultPath> {
 		
 		return pathObject;
 	}
+
+	@Override
+	public AstahPathHint getAstahPathHint(DefaultPath path, 
+			Rectangle2D pathBegin, Rectangle2D pathEnd) {
+		// NOT IMPLEMENTED.
+		return null;
+	}
 	
 }

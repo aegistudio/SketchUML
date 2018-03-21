@@ -156,4 +156,14 @@ public class TrifoldZigzagPath implements TrifoldPath {
 		this.horizontal = inputStream.readByte() == 1;
 		this.ratio = inputStream.readDouble();
 	}
+
+	@Override
+	public boolean isCurve() {
+		return false;
+	}
+
+	@Override
+	public boolean isRightAngle() {
+		return true;
+	}
 }

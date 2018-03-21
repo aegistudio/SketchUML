@@ -6,6 +6,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Vector;
 
+import JP.co.esm.caddies.golf.geom2D.Pnt2d;
 import de.dubs.dollarn.PointR;
 
 public interface PathManager<Path> {
@@ -37,4 +38,23 @@ public interface PathManager<Path> {
 	 * @throws IOException when the path fails to deserialize.
 	 */
 	public Path read(DataInputStream input) throws IOException;
+	
+	public static class AstahPathHint {
+		public Pnt2d[] innerPoints;
+		
+		public Pnt2d[] outerPoints;
+		
+		public Pnt2d[] controlPoints;
+		
+		public double sourceX, sourceY;
+		
+		public double targetX, targetY;
+		
+		public String lineStyle;
+		
+		public Pnt2d pathCenter;
+	}
+	
+	public AstahPathHint getAstahPathHint(Path path, 
+			Rectangle2D pathBegin, Rectangle2D pathEnd);
 }

@@ -81,4 +81,14 @@ public class TrifoldRoundRectPath implements TrifoldPath {
 	public void readPath(DataInputStream inputStream) throws IOException {
 		this.highSkew = inputStream.readByte() == 1;
 	}
+
+	@Override
+	public boolean isCurve() {
+		return true;
+	}
+
+	@Override
+	public boolean isRightAngle() {
+		return true;
+	}
 }

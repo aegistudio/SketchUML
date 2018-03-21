@@ -49,24 +49,12 @@ public class TrifoldProxyPath implements BezierPath {
 		separatePoints.clear();
 		controlPoints.clear();
 		
-		boolean isCenterBegin = statusBegin.status 
-				== LinePiece.BoxIntersectStatus.BOX_INTERLEAVED;
-		boolean isCenterEnd = statusEnd.status 
-				== LinePiece.BoxIntersectStatus.BOX_INTERLEAVED;
+		boolean isCenterBegin = isCenter(statusBegin);
+		boolean isCenterEnd = isCenter(statusEnd);
 
-		// Calculate the beginning point.
-		if(isCenterBegin) {
-			pointBegin.X = boundBegin.getCenterX();
-			pointBegin.Y = boundBegin.getCenterY();			
-		}
-		else statusBegin.retrievePoint(pointBegin, boundBegin);
-		
-		// Calculate the ending point.
-		if(isCenterEnd) {
-			pointEnd.X = boundEnd.getCenterX();
-			pointEnd.Y = boundEnd.getCenterY();
-		}
-		else statusEnd.retrievePoint(pointEnd, boundEnd);
+		// Calculate the beginning and ending point.
+		retrieveObjectPoint(pointBegin, boundBegin, statusBegin);
+		retrieveObjectPoint(pointEnd, boundEnd, statusEnd);
 		
 		// Convert and construct the path.
 		path.makePath(pointBegin, pointEnd,
@@ -117,13 +105,25 @@ public class TrifoldProxyPath implements BezierPath {
 
 	@Override
 	public boolean renderInnerLineBegin() {
-		return statusBegin.status == LinePiece
-				.BoxIntersectStatus.BOX_INTERLEAVED;
+		return isCenter(statusBegin);
 	}
 
 	@Override
 	public boolean renderInnerLineEnd() {
-		return statusEnd.status == LinePiece
+		return isCenter(statusEnd);
+	}
+	
+	public static boolean isCenter(LinePiece.BoxIntersectStatus status) {
+		return status.status == LinePiece
 				.BoxIntersectStatus.BOX_INTERLEAVED;
+	}
+	
+	public static void retrieveObjectPoint(PointR point, Rectangle2D bound, 
+			LinePiece.BoxIntersectStatus status) {
+		if(isCenter(status)) {
+			point.X = bound.getCenterX();
+			point.Y = bound.getCenterY();
+		}
+		else status.retrievePoint(point, bound);
 	}
 }

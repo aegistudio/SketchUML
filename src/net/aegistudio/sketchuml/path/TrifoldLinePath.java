@@ -48,4 +48,14 @@ public class TrifoldLinePath implements TrifoldPath {
 	public void readPath(DataInputStream inputStream) throws IOException {
 		
 	}
+
+	@Override
+	public boolean isCurve() {
+		return false;
+	}
+
+	@Override
+	public boolean isRightAngle() {
+		return false;
+	}
 }

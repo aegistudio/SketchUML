@@ -49,4 +49,14 @@ public class TrifoldRoundLiftPath extends TrifoldAbstractLiftPath {
 		bezierVBegin.proximate(stripVertical, 16);
 		bezierVEnd.proximate(stripVertical, 16);
 	}
+
+	@Override
+	public boolean isCurve() {
+		return true;
+	}
+
+	@Override
+	public boolean isRightAngle() {
+		return true;
+	}
 }

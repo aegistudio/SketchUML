@@ -20,12 +20,15 @@ import net.aegistudio.sketchuml.astaxpt.DefaultUuidGenerator;
 import net.aegistudio.sketchuml.framework.SketchEntityComponent;
 import net.aegistudio.sketchuml.framework.SketchLinkComponent;
 import net.aegistudio.sketchuml.framework.SketchModel;
+import net.aegistudio.sketchuml.path.PathManager;
 
 public class AstahPersistence<Path> extends 
 	Persistence<AstahPersistence.AstahTransaction<Path>> {
 	
 	public static class AstahTransaction<T> {
 		public SketchModel<T> sketchModel;
+		
+		public PathManager<T> pathManager;
 		
 		public String projectName;
 	}
@@ -121,29 +124,19 @@ public class AstahPersistence<Path> extends
 				BinaryRelationPresentation astahLink = linksView.get(link.link);
 				if(astahLink == null) continue;
 				
-				// XXX stub: all paths is connecting the entity centers.
-				Pnt2d sourceCenter = new Pnt2d();
-				Pnt2d sourceCenter2 = new Pnt2d();
-				sourceCenter.x = link.source.x + link.source.w / 2;
-				sourceCenter.y = link.source.y + link.source.h / 2;
-				sourceCenter2.x = sourceCenter.x;
-				sourceCenter2.y = sourceCenter.y;
-				Pnt2d destinationCenter = new Pnt2d();
-				Pnt2d destinationCenter2 = new Pnt2d();
-				destinationCenter.x = link.destination.x + link.destination.w / 2;
-				destinationCenter.y = link.destination.y + link.destination.h / 2;
-				destinationCenter2.x = destinationCenter.x;
-				destinationCenter2.y = destinationCenter.y;
-				
-				/// XXX stub: the path information.
-				astahLink.allPoints = new Pnt2d[] { 
-						sourceCenter, destinationCenter };
-				astahLink.outerPoints = new Pnt2d[] {
-						sourceCenter2, destinationCenter2 };
-				astahLink.points = new Pnt2d[] {};
-				astahLink.styleMap.put("line.style", "line");
-				astahLink.sourceEndX = astahLink.sourceEndY = 0.5;
-				astahLink.targetEndX = astahLink.targetEndY = 0.5;
+				// Retrieve render hints.
+				PathManager.AstahPathHint pathHint = model.pathManager
+						.getAstahPathHint(link.pathObject, 
+						link.source.getBoundRectangle(), 
+						link.destination.getBoundRectangle());
+				astahLink.sourceEndX = pathHint.sourceX;
+				astahLink.sourceEndY = pathHint.sourceY;
+				astahLink.targetEndX = pathHint.targetX;
+				astahLink.targetEndY = pathHint.targetY;
+				astahLink.allPoints = pathHint.innerPoints;
+				astahLink.points = pathHint.controlPoints;
+				astahLink.outerPoints = pathHint.outerPoints;
+				astahLink.styleMap.put("line.shape", pathHint.lineStyle);
 				
 				// Apply view transformation.
 				applyTransform(astahLink);

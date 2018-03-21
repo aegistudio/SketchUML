@@ -4,8 +4,11 @@ import java.awt.geom.Rectangle2D;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
+import JP.co.esm.caddies.golf.geom2D.Pnt2d;
 import de.dubs.dollarn.PointR;
 
 public class TrifoldPathManager implements PathManager<TrifoldProxyPath> {
@@ -268,4 +271,146 @@ public class TrifoldPathManager implements PathManager<TrifoldProxyPath> {
 		return result;
 	}
 
+	@Override
+	public AstahPathHint getAstahPathHint(TrifoldProxyPath path, 
+			Rectangle2D pathBegin, Rectangle2D pathEnd) {
+		AstahPathHint pathHint = new AstahPathHint();
+		
+		// Initialize the line position inside the model.
+		pathHint.sourceX = objectRatioX(path.statusBegin);
+		pathHint.sourceY = objectRatioY(path.statusBegin);
+		pathHint.targetX = objectRatioX(path.statusEnd);
+		pathHint.targetY = objectRatioY(path.statusEnd);
+		
+		// Retrieve the beginning and ending point.
+		PointR pointBegin = new PointR();
+		TrifoldProxyPath.retrieveObjectPoint(pointBegin, 
+				pathBegin, path.statusBegin);
+		PointR pointEnd = new PointR();
+		TrifoldProxyPath.retrieveObjectPoint(pointEnd, 
+				pathEnd, path.statusEnd);
+		
+		// Retrieve the inner points.
+		List<PointR> separatePoints = new ArrayList<>();
+		List<PointR> controlPoints = new ArrayList<>();
+		path.path.makePath(pointBegin, pointEnd, 
+				separatePoints, controlPoints);
+		if(path.path.isCurve()) {
+			pathHint.lineStyle = path.path.isRightAngle()? 
+					"curve_right_angle" : "curve";
+			pathHint.innerPoints = controlPoints.stream()
+				.map(TrifoldPathManager::makePnt2d)
+				.toArray(Pnt2d[]::new);
+		}
+		else {
+			pathHint.lineStyle = path.path.isRightAngle()?
+					"line_right_angle" : "line";
+			pathHint.innerPoints = separatePoints.stream()
+				.map(TrifoldPathManager::makePnt2d)
+				.toArray(Pnt2d[]::new);
+		}
+		
+		// Convert the control points.
+		pathHint.controlPoints = new Pnt2d[Math.max(0, 
+				pathHint.innerPoints.length - 2)];
+		for(int i = 0; i < pathHint.controlPoints.length; ++ i)
+			pathHint.controlPoints[i] = 
+				clonePnt2d(pathHint.innerPoints[i]);
+		
+		// Calculate point intersections.
+		PointR intersectionBegin = evaluatePointBegin(pointBegin, pathBegin,
+				makePointR(pathHint.innerPoints[0]), 
+				makePointR(pathHint.innerPoints[1]), path.statusBegin);
+		int numInnerPoints = pathHint.innerPoints.length;
+		PointR intersectionEnd = evaluatePointBegin(pointEnd, pathEnd,
+				makePointR(pathHint.innerPoints[numInnerPoints - 1]), 
+				makePointR(pathHint.innerPoints[numInnerPoints - 2]), 
+				path.statusEnd);
+		
+		// Intersections as outer points now.
+		pathHint.outerPoints = new Pnt2d[numInnerPoints];
+		for(int i = 1; i < numInnerPoints - 1; ++ i) 
+			pathHint.outerPoints[i] = clonePnt2d(pathHint.innerPoints[i]);
+		pathHint.outerPoints[0] = makePnt2d(intersectionBegin);
+		pathHint.outerPoints[numInnerPoints - 1] = makePnt2d(intersectionEnd);
+		
+		// Calculate the position of the center text.
+		
+		return pathHint;
+	}
+
+	private static PointR evaluatePointBegin(
+				PointR point, Rectangle2D bound, 
+				PointR lineStart, PointR lineEnd,
+				LinePiece.BoxIntersectStatus status) {
+		
+		PointR intersection = new PointR();
+		boolean useBeginPoint = true;
+		if(TrifoldProxyPath.isCenter(status)) {
+			LinePiece linePieceBegin = new LinePiece(
+					lineStart, lineEnd);
+			LinePiece.BoxIntersectStatus evalStatus 
+				= new LinePiece.BoxIntersectStatus(); 
+			linePieceBegin.intersectBox(evalStatus, bound);
+			if(evalStatus.status != LinePiece
+					.BoxIntersectStatus.BOX_INTERLEAVED) {
+				useBeginPoint = false;
+				evalStatus.retrievePoint(
+						intersection, bound);
+			}
+		}
+		
+		if(useBeginPoint) {
+			intersection.X = point.X;
+			intersection.Y = point.Y;
+		}
+		return intersection;
+	}
+	
+	private static Pnt2d makePnt2d(PointR pointR) {
+		Pnt2d pnt2d = new Pnt2d();
+		pnt2d.x = pointR.X;
+		pnt2d.y = pointR.Y;
+		return pnt2d;
+	}
+	
+	public static Pnt2d clonePnt2d(Pnt2d pnt2d) {
+		Pnt2d cloned2d = new Pnt2d();
+		cloned2d.x = pnt2d.x;
+		cloned2d.y = pnt2d.y;
+		return cloned2d;
+	}
+	
+	public static PointR makePointR(Pnt2d pnt2d) {
+		PointR pointR = new PointR();
+		pointR.X = pnt2d.x;
+		pointR.Y = pnt2d.y;
+		return pointR;
+	}
+	
+	private double objectRatioX(LinePiece.BoxIntersectStatus info) {
+		switch(info.status) {
+			case LinePiece.BoxIntersectStatus.BOX_TOP:
+			case LinePiece.BoxIntersectStatus.BOX_BOTTOM:
+				return 0.5 * info.ratio + 0.5;
+			case LinePiece.BoxIntersectStatus.BOX_LEFT:
+				return 1e-6;
+			case LinePiece.BoxIntersectStatus.BOX_RIGHT:
+				return 1.0 - 1e-6;
+			default: return 0.5;
+		}
+	}
+	
+	private double objectRatioY(LinePiece.BoxIntersectStatus info) {
+		switch(info.status) {
+			case LinePiece.BoxIntersectStatus.BOX_TOP:
+				return 1e-6;
+			case LinePiece.BoxIntersectStatus.BOX_BOTTOM:
+				return 1.0 - 1e-6;
+			case LinePiece.BoxIntersectStatus.BOX_LEFT:
+			case LinePiece.BoxIntersectStatus.BOX_RIGHT:
+				return 0.5 * info.ratio + 0.5;
+			default: return 0.5;
+		}
+	}
 }
