@@ -339,6 +339,17 @@ public class TrifoldPathManager implements PathManager<TrifoldProxyPath> {
 		pathHint.outerPoints[numInnerPoints - 1] = makePnt2d(intersectionEnd);
 		
 		// Calculate the position of the center text.
+		List<PointR> evaluateSeparatePoint = new ArrayList<>();
+		separatePoints.forEach(evaluateSeparatePoint::add);
+		separatePoints.set(0, intersectionBegin);
+		separatePoints.set(separatePoints.size() - 1, intersectionEnd);
+		PointR[] separatePointArray = evaluateSeparatePoint.toArray(new PointR[0]);
+		PointR[] controlPointArray = controlPoints.toArray(new PointR[0]);
+		BezierPathStrider pathStrider = new BezierPathStrider(
+				separatePointArray, controlPointArray);
+		PointR centerTextLocation = new PointR();
+		pathStrider.pointPercentage(centerTextLocation, .5);
+		pathHint.pathCenter = makePnt2d(centerTextLocation);
 		
 		return pathHint;
 	}

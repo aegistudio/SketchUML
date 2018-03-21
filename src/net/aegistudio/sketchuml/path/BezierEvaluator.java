@@ -106,7 +106,7 @@ public class BezierEvaluator {
 	}
 	
 	/**
-	 * Solve the equation at which l(t) = 0.5 * l(1)
+	 * Solve the equation at which l(c) = t * l(1)
 	 * @param t the parameter.
 	 * @param maxIteration when will solution stop.
 	 * @param epsilon at which precision will solution stop.

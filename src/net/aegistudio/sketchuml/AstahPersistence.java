@@ -13,6 +13,7 @@ import javax.swing.filechooser.FileFilter;
 import JP.co.esm.caddies.golf.geom2D.Pnt2d;
 import JP.co.esm.caddies.jomt.jmodel.BinaryRelationPresentation;
 import JP.co.esm.caddies.jomt.jmodel.JomtPresentation;
+import JP.co.esm.caddies.jomt.jmodel.LabelPresentation;
 import JP.co.esm.caddies.jomt.jmodel.RectPresentation;
 import net.aegistudio.sketchuml.astaxpt.AstahExportable;
 import net.aegistudio.sketchuml.astaxpt.AstahFileFormat;
@@ -151,7 +152,18 @@ public class AstahPersistence<Path> extends
 				astahLink.allPoints = pathHint.innerPoints;
 				astahLink.points = pathHint.controlPoints;
 				astahLink.outerPoints = pathHint.outerPoints;
-				astahLink.styleMap.put("line.shape", pathHint.lineStyle);
+				astahLink.styleMap.put("line.shape", pathHint.lineStyle);				
+				if(astahLink.namePresentation != null) {
+					LabelPresentation nameView = (LabelPresentation) 
+							astahLink.namePresentation;
+					nameView.location = pathHint.pathCenter;
+					
+					// XXX Stub: method for string size calculation.
+					nameView.width = 10 * nameView.label.length() + 3;
+					nameView.height = 11.;
+					nameView.location.x -= nameView.width * 0.5;
+					nameView.location.y -= nameView.height * 0.5;
+				}
 				
 				// Apply view transformation.
 				applyTransform(astahLink);
@@ -249,5 +261,11 @@ public class AstahPersistence<Path> extends
 			pnt.x *= scaleFactor;
 			pnt.y *= scaleFactor;
 		}
+		
+		// Relocate the name label.
+		LabelPresentation nameLabel = (LabelPresentation) 
+				pathView.namePresentation;
+		nameLabel.location.x *= scaleFactor;
+		nameLabel.location.y *= scaleFactor;
 	}
 }
