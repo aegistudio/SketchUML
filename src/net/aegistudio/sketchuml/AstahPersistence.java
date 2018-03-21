@@ -1,5 +1,6 @@
 package net.aegistudio.sketchuml;
 
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -102,10 +103,15 @@ public class AstahPersistence<Path> extends
 				SketchEntityComponent entity = model.sketchModel.getEntity(i);
 				RectPresentation astahEntity = entitiesView.get(entity.entity);
 				if(astahEntity == null) continue;
-				astahEntity.location.x = entity.x;
-				astahEntity.location.y = entity.y;
-				astahEntity.width = entity.w;
-				astahEntity.height = entity.h;
+				Rectangle2D entityBound = entity.getBoundRectangle();
+				if(entity.entry.astahSizeFitter != null)
+					entityBound = entity.entry.astahSizeFitter.apply(entityBound);
+				
+				// Apply entity size to astah entity.
+				astahEntity.location.x = entityBound.getX();
+				astahEntity.location.y = entityBound.getY();
+				astahEntity.width = entityBound.getWidth();
+				astahEntity.height = entityBound.getHeight();
 				
 				// Apply view transformation.
 				applyTransform(astahEntity);
@@ -126,11 +132,18 @@ public class AstahPersistence<Path> extends
 				BinaryRelationPresentation astahLink = linksView.get(link.link);
 				if(astahLink == null) continue;
 				
+				// Retrieve the boundaries.
+				Rectangle2D sourceBound = link.source.getBoundRectangle();
+				if(link.source.entry.astahSizeFitter != null) sourceBound 
+					= link.source.entry.astahSizeFitter.apply(sourceBound);
+				Rectangle2D targetBound = link.destination.getBoundRectangle();
+				if(link.destination.entry.astahSizeFitter != null) targetBound
+					= link.destination.entry.astahSizeFitter.apply(targetBound);
+				
 				// Retrieve render hints.
 				PathManager.AstahPathHint pathHint = model.pathManager
 						.getAstahPathHint(link.pathObject, 
-						link.source.getBoundRectangle(), 
-						link.destination.getBoundRectangle());
+								sourceBound, targetBound);
 				astahLink.sourceEndX = pathHint.sourceX;
 				astahLink.sourceEndY = pathHint.sourceY;
 				astahLink.targetEndX = pathHint.targetX;

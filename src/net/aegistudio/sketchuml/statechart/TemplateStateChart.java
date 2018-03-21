@@ -13,6 +13,7 @@ import net.aegistudio.sketchuml.EntityEntry;
 import net.aegistudio.sketchuml.LinkEntry;
 import net.aegistudio.sketchuml.Template;
 import net.aegistudio.sketchuml.astaxpt.AstahExportable;
+import net.aegistudio.sketchuml.astaxpt.AstahSquareFitter;
 import net.aegistudio.sketchuml.astaxpt.AstahUuidGenerator;
 import net.aegistudio.sketchuml.general.EntityDecision;
 import net.aegistudio.sketchuml.general.EntityMetaDecision;
@@ -29,22 +30,26 @@ public class TemplateStateChart implements Template {
 	
 	private final EntityEntry[] entities;
 	private final LinkEntry[] links;
+	private final AstahSquareFitter squareFitter = new AstahSquareFitter();
 	public TemplateStateChart() {
 		// The entities initialization.
 		EntityEntry stateStart = new EntityEntry(
 				"statechart/start", "Start",
 				"A start point of a state machine",
 				entityStart, entityStart, entityStart);
+		stateStart.astahSizeFitter = squareFitter;
 		
 		EntityEntry stateEnd = new EntityEntry(
 				"statechart/end", "End",
 				"A normal exit point of a state machine",
 				entityEnd, entityEnd, entityEnd);
+		stateEnd.astahSizeFitter = squareFitter;
 		
 		EntityEntry stateExit = new EntityEntry(
 				"statechart/exit", "Exit",
 				"A exceptional exit point of a state machine",
 				entityExit, entityExit, entityExit);
+		stateExit.astahSizeFitter = squareFitter;
 		
 		EntityEntry stateBrief = new EntityEntry(
 				"statechart/state_brief", "State (Brief)",
@@ -65,6 +70,7 @@ public class TemplateStateChart implements Template {
 				"A conditional branch of decision", 
 				EntityDecision::new, entityMetaDecision, 
 				entityMetaDecision);
+		decision.astahSizeFitter = squareFitter;
 		
 		this.entities = new EntityEntry[] { 
 				stateStart, stateEnd, stateExit, 

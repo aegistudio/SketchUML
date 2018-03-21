@@ -1,5 +1,7 @@
 package net.aegistudio.sketchuml;
 
+import java.awt.geom.Rectangle2D;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -20,6 +22,8 @@ public class EntityEntry {
 	public final PropertyView.Factory propertyFactory;
 	
 	public final SketchView sketchView;
+	
+	public Function<Rectangle2D, Rectangle2D> astahSizeFitter;
 	
 	public EntityEntry(String entry, String name,
 			String description, Supplier<Entity> factory,
