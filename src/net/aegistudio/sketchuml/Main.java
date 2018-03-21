@@ -236,8 +236,18 @@ public class Main {
 		// An separator before export and import options.
 		menuFile.addSeparator();
 		
+		// The export to astah project persistence.
+		AstahPersistence<TrifoldProxyPath> astahPersistence = new AstahPersistence<>();
+		
 		// The [File -> Export as Astah Project] item.
 		menuItemExportAstah = new JMenuItem("Export as Astah Project");
+		menuItemExportAstah.addActionListener(a -> {
+			AstahPersistence.AstahTransaction<TrifoldProxyPath> astahTransaction =
+					new AstahPersistence.AstahTransaction<>();
+			astahTransaction.projectName = getProjectFileName();
+			astahTransaction.sketchModel = currentModel;
+			if(!astahPersistence.saveModelPanel(mainFrame, astahTransaction)) return;
+		});
 		menuFile.add(menuItemExportAstah);
 		
 		// Add the edit menu.
@@ -380,12 +390,16 @@ public class Main {
 	}
 	
 	public static void updateTitle() {
+		mainFrame.setTitle("SketchUML - " + getProjectFileName());
+	}
+	
+	public static String getProjectFileName() {
 		String fileName = previousFile == null? 
 				"Untitled" : previousFile.getName();
 		if(fileName.toLowerCase().endsWith(".suml"))
 			fileName = fileName.substring(0, 
 					fileName.length() - ".suml".length());
-		mainFrame.setTitle("SketchUML - " + fileName);
+		return fileName;
 	}
 	
 	public static void updateHistoryItems() {

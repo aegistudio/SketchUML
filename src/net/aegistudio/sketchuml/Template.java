@@ -3,12 +3,10 @@ package net.aegistudio.sketchuml;
 import java.io.IOException;
 import java.util.Map;
 
-import JP.co.esm.caddies.jomt.jmodel.PathPresentation;
+import JP.co.esm.caddies.jomt.jmodel.BinaryRelationPresentation;
 import JP.co.esm.caddies.jomt.jmodel.RectPresentation;
-import net.aegistudio.sketchuml.astaxpt.AstahProject;
+import net.aegistudio.sketchuml.astaxpt.AstahExportable;
 import net.aegistudio.sketchuml.astaxpt.AstahUuidGenerator;
-import net.aegistudio.sketchuml.framework.SketchEntityComponent;
-import net.aegistudio.sketchuml.framework.SketchLinkComponent;
 
 /**
  * Represents a kind of diagram (template) that could be 
@@ -54,16 +52,21 @@ public interface Template {
 	 * 
 	 * @param uuid[in] the generator to provide next UUID.
 	 * @param projectName[in] the name of current project.
+	 * @param entityTypes[in] the entity type corresponds to the entities.
 	 * @param entities[in] the entities in the model.
 	 * @param entitiesView[out] corresponding views of entities.
+	 * @param sources[in] the sources corresponds to the links.
+	 * @param destinations[in] the destination corresponds to the links.
+	 * @param linkTypes[in] the link type corresponds to the links.
 	 * @param links[in] the links in the model.
 	 * @param linksView[out] corresponding links of entities.
 	 * @return the prepared Astah project model.
 	 */
-	public <Path> AstahProject prepareAstahProject(
+	public AstahExportable prepareAstahProject(
 			AstahUuidGenerator uuid, String projectName, 
-			SketchEntityComponent[] entities,
-			Map<SketchEntityComponent, RectPresentation> entitiesView,
-			SketchLinkComponent<Path>[] links,
-			Map<SketchLinkComponent<Path>, PathPresentation> linksView) throws IOException;
+			EntityEntry[] entityTypes, Entity[] entities,
+			Map<Entity, RectPresentation> entitiesView,
+			Entity[] sources, Entity[] destinations,
+			LinkEntry[] linkTypes, Entity[] links,
+			Map<Entity, BinaryRelationPresentation> linksView) throws IOException;
 }

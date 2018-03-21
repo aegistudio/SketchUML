@@ -2,7 +2,9 @@ package net.aegistudio.sketchuml.statechart;
 
 import java.io.IOException;
 
+import JP.co.esm.caddies.golf.model.EntityRoot;
 import JP.co.esm.caddies.jomt.jmodel.FramePresentation;
+import JP.co.esm.caddies.jomt.jmodel.ModelManageInfo;
 import JP.co.esm.caddies.jomt.jmodel.StateVertexPresentation;
 import JP.co.esm.caddies.jomt.jmodel.TransitionPresentation;
 import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UCompositeStateImp;
@@ -10,10 +12,11 @@ import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UStateChartDiagram
 import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UStateMachineImp;
 import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UStateVertexImp;
 import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UTransitionImp;
+import net.aegistudio.sketchuml.astaxpt.AstahExportable;
 import net.aegistudio.sketchuml.astaxpt.AstahProject;
 import net.aegistudio.sketchuml.astaxpt.AstahUuidGenerator;
 
-public class AstahStateChart extends AstahProject {
+public class AstahStateChart extends AstahProject implements AstahExportable {
 	public final UStateMachineImp stateMachineModel;
 	public final UCompositeStateImp stateRoot;
 	public final UStateChartDiagramImp stateChartDiagram;
@@ -133,5 +136,20 @@ public class AstahStateChart extends AstahProject {
 			root.store.add(transitionModel.guard);
 		if(transitionModel.effect != null)
 			root.store.add(transitionModel.effect);
+	}
+
+	@Override
+	public ModelManageInfo getMMI() {
+		return mmi;
+	}
+
+	@Override
+	public EntityRoot getRoot() {
+		return root;
+	}
+
+	@Override
+	public FramePresentation getFrame() {
+		return stateChartFrame;
 	}
 }
