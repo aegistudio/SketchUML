@@ -237,7 +237,16 @@ public class Main {
 		menuFile.addSeparator();
 		
 		// The export to astah project persistence.
-		AstahPersistence<TrifoldProxyPath> astahPersistence = new AstahPersistence<>();
+		AstahPersistence<TrifoldProxyPath> astahPersistence = 
+				new AstahPersistence<TrifoldProxyPath>() {
+			
+			@Override
+			public File getPreviousFile() {
+				File projectFile = persistence.getPreviousFile();
+				File projectDir = projectFile.getParentFile();
+				return new File(projectDir, getProjectFileName() + ".asta");
+			}
+		};
 		
 		// The [File -> Export as Astah Project] item.
 		menuItemExportAstah = new JMenuItem("Export as Astah Project");

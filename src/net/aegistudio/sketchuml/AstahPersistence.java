@@ -234,7 +234,7 @@ public class AstahPersistence<Path> extends
 		exportFileFormat.write(modelFile);
 	}
 	
-	double scaleFactor = 0.55;
+	double scaleFactor = 0.65;
 	
 	private void applyTransform(RectPresentation rectView) {
 		rectView.location.x *= scaleFactor;
