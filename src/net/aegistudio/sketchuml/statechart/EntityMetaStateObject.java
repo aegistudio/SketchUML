@@ -85,19 +85,23 @@ public class EntityMetaStateObject implements SketchView, PropertyView.Factory {
 		Rectangle2D nameMetric = g.getFontMetrics()
 				.getStringBounds(entityState.name, g); 
 		if(!entityState.isBrief) {
+			RenderUtils.beginInline(g2d, hint, preview);
 			g.drawLine(0, STATE_NAMEHEIGHT, 
 					bound.width, STATE_NAMEHEIGHT);
-			g.drawString(entityState.name, 
-					(int)(bound.width - nameMetric.getWidth()) / 2, 
-					(int)(STATE_NAMEHEIGHT + nameMetric.getHeight() / 2) / 2);
-			
+
+			// Draw the state text and actions.
+			g.setColor(hint.getLineColor(SketchRenderHint.innerLabelColor, preview));
 			Graphics actionGraphics = g.create(STATE_ROUNDOFFSET, 
 					STATE_NAMEHEIGHT + 2, bound.width - STATE_ROUNDOFFSET * 2, 
 					bound.height - STATE_NAMEHEIGHT - 2);
+			g.drawString(entityState.name, 
+					(int)(bound.width - nameMetric.getWidth()) / 2, 
+					(int)(STATE_NAMEHEIGHT + nameMetric.getHeight() / 2) / 2);
 			RenderUtils.drawLines(actionGraphics, entityState.actions.split("\n"));
 		}
 		else {
 			// Draw string only.
+			g.setColor(hint.getLineColor(SketchRenderHint.innerLabelColor, preview));
 			g.drawString(entityState.name, 
 					(int)(bound.width - nameMetric.getWidth()) / 2, 
 					(int)(bound.height + nameMetric.getHeight() / 2) / 2);

@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -312,6 +313,7 @@ public class Main {
 			SketchRenderHint defaultRenderHint = new SketchRenderHint();
 			defaultRenderHint.labelFont = Configuration
 					.getInstance().HANDWRITING_FONT;
+			defaultRenderHint.awtRenderingHints = new RenderingHints(null);
 			defaultRenderHint.lineColorNormal = Color.BLACK;
 			defaultRenderHint.fillColorNormal = Color.WHITE;
 			defaultRenderHint.lineColorSelected = Color.GRAY;
@@ -320,12 +322,35 @@ public class Main {
 			defaultRenderHint.outlineWidth = 2.0f;
 			defaultRenderHint.inlineWidth = 2.0f;
 			defaultRenderHint.lineWidthSelected = 3.0f;
-			defaultRenderHint.arrowColorNormal = Color.WHITE;
-			defaultRenderHint.arrowColorSelected = Color.WHITE;
 			defaultRenderHint.userWidth = 2.0f;
-			
 			sketchRenderHint = defaultRenderHint;
 			sketchRenderHints.addItem(defaultRenderHint, "Default", true);
+			
+			// For those requires anti-aliasing, initilize this hint.
+			RenderingHints awtAntiAliasedHint = new RenderingHints(
+					RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			
+			// Attempt to configure the color just as the Visio.
+			Font visioMimicFont = Main.fonts.get("Calibri");
+			if(visioMimicFont != null) {
+				visioMimicFont = visioMimicFont.deriveFont(
+					Configuration.getInstance().HANDWRITING_FONTSTYLE, 
+					Configuration.getInstance().HANDWRITING_FONTSIZE);
+				SketchRenderHint visioMimicHint = new SketchRenderHint();
+				visioMimicHint.awtRenderingHints = awtAntiAliasedHint;
+				visioMimicHint.labelFont = visioMimicFont;
+				visioMimicHint.lineColorNormal = new Color(47, 82, 143);
+				visioMimicHint.fillColorNormal = new Color(68, 114, 196);
+				visioMimicHint.lineColorSelected = new Color(129, 151, 187);
+				visioMimicHint.fillColorSelected = new Color(142, 170, 219);
+				visioMimicHint.userColor = Color.GRAY;
+				visioMimicHint.outlineWidth = 2.0f;
+				visioMimicHint.inlineWidth = 1.0f;
+				visioMimicHint.lineWidthSelected = 3.0f;
+				visioMimicHint.userWidth = 2f;
+				visioMimicHint.colorMap.put(SketchRenderHint.innerLabelColor, Color.WHITE);
+				sketchRenderHints.addItem(visioMimicHint, "Visio Styled", false);
+			}
 		}
 		sketchRenderHints.addMenu(menuView);
 		

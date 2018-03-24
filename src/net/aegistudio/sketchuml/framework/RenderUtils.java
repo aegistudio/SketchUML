@@ -52,4 +52,12 @@ public class RenderUtils {
 		if(selected) g2d.setColor(hint.lineColorSelected);
 		else g2d.setColor(hint.lineColorNormal);
 	}
+	
+	public static void beginInline(Graphics2D g2d,
+			SketchRenderHint hint, boolean selected) {
+		
+		g2d.setStroke(new BasicStroke(hint.inlineWidth));
+		if(selected) g2d.setColor(hint.lineColorSelected);
+		else g2d.setColor(hint.lineColorNormal);
+	}
 }

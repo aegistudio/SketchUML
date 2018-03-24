@@ -517,7 +517,7 @@ public class SketchPanel<Path> extends JComponent implements
 				currentGraphics, current.entity, preview);
 		
 		// The overlaying part of the rendering object.
-		g.setColor(preview? Color.GRAY : Color.BLACK);
+		g.setColor(hint.getLineColor(SketchRenderHint.outerLabelColor, preview));
 		Rectangle2D boundObject = new Rectangle2D.Double(
 				current.x, current.y, current.w, current.h);
 		for(SketchView.OverlayDirection direction 
@@ -578,6 +578,7 @@ public class SketchPanel<Path> extends JComponent implements
 		g.setFont(hint.labelFont);
 		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, getWidth(), getHeight());
+		g2d.setRenderingHints(hint.awtRenderingHints);
 		
 		// Retrieve the background.
 		Background background = this.background.get();

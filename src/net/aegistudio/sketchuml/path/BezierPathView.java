@@ -61,14 +61,14 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 
 	private void beginLine(Graphics2D g2d, 
 			SketchRenderHint hint, boolean selected) {
-		if(selected) g2d.setColor(hint.lineColorSelected);
-		else g2d.setColor(hint.lineColorNormal);
+		g2d.setColor(hint.getLineColor(
+				SketchRenderHint.pathColor, selected));
 	}
 	
 	private void beginArrowFill(Graphics2D g2d,
 			SketchRenderHint hint, boolean selected) {
-		if(selected) g2d.setColor(hint.arrowColorSelected);
-		else g2d.setColor(hint.arrowColorNormal);
+		g2d.setColor(hint.getFillColor(
+				SketchRenderHint.arrowFillcolor, selected));
 	}
 	
 	private void renderText(Graphics2D g2d, SketchRenderHint hint, 
@@ -90,13 +90,14 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 			pointY - boundH2, boundW, boundH);
 		
 		// Draw the text content.
-		beginLine(g2d, hint, preview);
-		g2d.drawString(text, 
-				pointX - boundW2, pointY + boundH2);
+		g2d.setColor(hint.getLineColor(
+				SketchRenderHint.outerLabelColor, preview));
+		g2d.drawString(text, pointX - boundW2, pointY + boundH2);
 	}
 	
-	private void renderKnot(Graphics2D g2d, 
-			SketchRenderHint hint, int x, int y) {
+	private void renderKnot(Graphics2D g2d, SketchRenderHint hint, 
+			int x, int y, boolean preview) {
+		beginLine(g2d, hint, preview);
 		int knotOffset = (int)hint.lineWidthSelected;
 		int knotWidth = (int)hint.lineWidthSelected * 2;
 		g2d.fillRect(x - knotOffset, 
@@ -173,8 +174,8 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 			
 			// Render knot when selected.
 			if(selected) {
-				if(renderBegin) renderKnot(g2d, hint, xBegin, yBegin);
-				if(renderEnd) renderKnot(g2d, hint, xEnd, yEnd);
+				if(renderBegin) renderKnot(g2d, hint, xBegin, yBegin, selected);
+				if(renderEnd) renderKnot(g2d, hint, xEnd, yEnd, selected);
 			}
 			
 			// Configure line style.
@@ -251,7 +252,7 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 				}
 				
 				// Render control points when selected.
-				if(selected) renderKnot(g2d, hint, xCtrl, yCtrl);
+				if(selected) renderKnot(g2d, hint, xCtrl, yCtrl, selected);
 				
 				// Check whether guard condition is reached.
 				// XXX This part may be changed later, or may never.
