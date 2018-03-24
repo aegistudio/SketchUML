@@ -786,7 +786,7 @@ public class SketchPanel<Path> extends JComponent implements
 						moved = false;
 						break;
 				}
-				if(moved) model.notifyEntityUpdated(selectedEntity);
+				if(moved) model.notifyEntityMoved(selectedEntity);
 			}
 		}
 		
@@ -799,6 +799,8 @@ public class SketchPanel<Path> extends JComponent implements
 						model, selectionModel, selectedLink);
 				history.perform(keyDeleteObject, linkCommand, true);
 			}
+			else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) 
+				selectionModel.requestUnselect();
 		}
 		
 		// For other cases, just clear all strokes and state and paint.
