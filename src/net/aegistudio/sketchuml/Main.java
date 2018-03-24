@@ -10,19 +10,13 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.swing.AbstractButton;
-import javax.swing.ButtonGroup;
-import javax.swing.ButtonModel;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
@@ -83,10 +77,8 @@ public class Main {
 	public static JMenuItem menuItemExportAstah;
 	
 	// The sketch render style options.
-	public static ButtonGroup sketchRenderGroup;
-	public static List<SketchRenderHint> sketchRenderHints;
-	public static List<JRadioButtonMenuItem> sketchRenderMenuItems;
-	public static List<ButtonModel> sketchRenderMenuModels;
+	public static RadioMenuItemGroup<SketchRenderHint> 
+				sketchRenderHints;
 	public static SketchRenderHint sketchRenderHint;
 	
 	public static void main(String[] arguments) {
@@ -301,17 +293,23 @@ public class Main {
 		menuBar.add(menuView);
 		
 		// Initialize the sketch render hints.
-		sketchRenderHints = new ArrayList<>();
-		sketchRenderMenuItems = new ArrayList<>();
-		sketchRenderMenuModels = new ArrayList<>();
+		sketchRenderHints = new RadioMenuItemGroup<SketchRenderHint>() {
+			@Override
+			public void selectItem(SketchRenderHint t) {
+				if(t != null && t != Main.sketchRenderHint) {
+					Main.sketchRenderHint = t;
+					sketchPanel.updateUI();
+					sketchPanel.repaint();
+				}
+			}
+		};
 		
 		SketchRenderHint defaultRenderHint = new SketchRenderHint();
 		defaultRenderHint.labelFont = Configuration
 				.getInstance().HANDWRITING_FONT;
-		defaultRenderHint.name = "Default";
 		defaultRenderHint.lineColorNormal = Color.BLACK;
 		defaultRenderHint.fillColorNormal = Color.WHITE;
-		defaultRenderHint.lineColorSelected = Color.BLUE;
+		defaultRenderHint.lineColorSelected = Color.GRAY;
 		defaultRenderHint.fillColorSelected = Color.WHITE;
 		defaultRenderHint.userColor = Color.BLACK;
 		defaultRenderHint.outlineWidth = 2.0f;
@@ -320,29 +318,12 @@ public class Main {
 		defaultRenderHint.arrowColorNormal = Color.WHITE;
 		defaultRenderHint.arrowColorSelected = Color.WHITE;
 		defaultRenderHint.userWidth = 2.0f;
-		sketchRenderHints.add(defaultRenderHint);
+		
+		sketchRenderHint = defaultRenderHint;
+		sketchRenderHints.addItem(defaultRenderHint, "Default", true);
 		
 		// Initialize the list of render hints into button group.
-		sketchRenderGroup = new ButtonGroup();
-		sketchRenderHints.stream().map(sketchRenderHint -> {
-			JRadioButtonMenuItem menuItem = new 
-					JRadioButtonMenuItem(sketchRenderHint.name);
-			menuItem.addActionListener(a -> {
-				ButtonModel selectedModel = sketchRenderGroup.getSelection();
-				int index = sketchRenderMenuModels.indexOf(selectedModel);
-				Main.sketchRenderHint = sketchRenderHints.get(index);
-				sketchPanel.updateUI();
-				sketchPanel.repaint();
-			});
-			return menuItem;
-		}).forEach(sketchRenderMenuItems::add);
-		sketchRenderMenuItems.forEach(sketchRenderGroup::add);
-		sketchRenderMenuItems.forEach(menuView::add);
-		sketchRenderMenuItems.stream().map(AbstractButton::getModel)
-			.forEach(sketchRenderMenuModels::add);
-		sketchRenderHint = defaultRenderHint;
-		sketchRenderGroup.setSelected(sketchRenderMenuItems.get(
-			sketchRenderHints.indexOf(sketchRenderHint)).getModel(), true);
+		sketchRenderHints.addMenu(menuView);
 		
 		// Add the help menu.
 		JMenu menuHelp = new JMenu("Help");
