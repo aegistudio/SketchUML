@@ -1,6 +1,7 @@
 package net.aegistudio.sketchuml;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.MouseInfo;
@@ -9,13 +10,19 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
+import javax.swing.ButtonModel;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
@@ -74,6 +81,13 @@ public class Main {
 	
 	// The export file options.
 	public static JMenuItem menuItemExportAstah;
+	
+	// The sketch render style options.
+	public static ButtonGroup sketchRenderGroup;
+	public static List<SketchRenderHint> sketchRenderHints;
+	public static List<JRadioButtonMenuItem> sketchRenderMenuItems;
+	public static List<ButtonModel> sketchRenderMenuModels;
+	public static SketchRenderHint sketchRenderHint;
 	
 	public static void main(String[] arguments) {
 		// Set the UI's major look and feel. Could fail.
@@ -281,6 +295,52 @@ public class Main {
 		// Initialize history items.
 		updateHistoryItems();
 		
+		// Initialize the view menu.
+		JMenu menuView = new JMenu("View");
+		menuView.setMnemonic('V');
+		menuBar.add(menuView);
+		
+		// Initialize the sketch render hints.
+		sketchRenderHints = new ArrayList<>();
+		sketchRenderMenuItems = new ArrayList<>();
+		sketchRenderMenuModels = new ArrayList<>();
+		
+		SketchRenderHint defaultRenderHint = new SketchRenderHint();
+		defaultRenderHint.labelFont = Configuration
+				.getInstance().HANDWRITING_FONT;
+		defaultRenderHint.name = "Default";
+		defaultRenderHint.lineColorNormal = Color.BLACK;
+		defaultRenderHint.fillColorNormal = Color.WHITE;
+		defaultRenderHint.lineColorSelected = Color.GRAY;
+		defaultRenderHint.fillColorSelected = Color.WHITE;
+		defaultRenderHint.userColor = Color.BLACK;
+		defaultRenderHint.outlineWidth = 2.0f;
+		defaultRenderHint.inlineWidth = 2.0f;
+		defaultRenderHint.userWidth = 2.0f;
+		sketchRenderHints.add(defaultRenderHint);
+		
+		// Initialize the list of render hints into button group.
+		sketchRenderGroup = new ButtonGroup();
+		sketchRenderHints.stream().map(sketchRenderHint -> {
+			JRadioButtonMenuItem menuItem = new 
+					JRadioButtonMenuItem(sketchRenderHint.name);
+			menuItem.addActionListener(a -> {
+				ButtonModel selectedModel = sketchRenderGroup.getSelection();
+				int index = sketchRenderMenuModels.indexOf(selectedModel);
+				Main.sketchRenderHint = sketchRenderHints.get(index);
+				sketchPanel.updateUI();
+				sketchPanel.repaint();
+			});
+			return menuItem;
+		}).forEach(sketchRenderMenuItems::add);
+		sketchRenderMenuItems.forEach(sketchRenderGroup::add);
+		sketchRenderMenuItems.forEach(menuView::add);
+		sketchRenderMenuItems.stream().map(AbstractButton::getModel)
+			.forEach(sketchRenderMenuModels::add);
+		sketchRenderHint = defaultRenderHint;
+		sketchRenderGroup.setSelected(sketchRenderMenuItems.get(
+			sketchRenderHints.indexOf(sketchRenderHint)).getModel(), true);
+		
 		// Add the help menu.
 		JMenu menuHelp = new JMenu("Help");
 		menuHelp.setMnemonic('H');
@@ -368,7 +428,7 @@ public class Main {
 		currentModel = model;
 		sketchPanel = new SketchPanel<>(candidatePanel, 
 				history, currentModel, currentModel, recognizer, 
-				pathManager, pathView, cheatSheet);
+				pathManager, pathView, cheatSheet, () -> sketchRenderHint);
 		mainFrame.add(sketchPanel, BorderLayout.CENTER);
 		
 		// Create the new edit panel.

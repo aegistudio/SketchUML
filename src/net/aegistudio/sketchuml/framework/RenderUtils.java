@@ -1,5 +1,6 @@
 package net.aegistudio.sketchuml.framework;
 
+import java.awt.BasicStroke;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -7,6 +8,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.Vector;
 
 import de.dubs.dollarn.PointR;
+import net.aegistudio.sketchuml.SketchRenderHint;
 
 public class RenderUtils {
 	public static void drawLines(Graphics g, String[] lines) {
@@ -32,5 +34,22 @@ public class RenderUtils {
 			g2d.drawLine(former.intX(), former.intY(), 
 					latter.intX(), latter.intY());
 		}
+	}
+	
+	static final BasicStroke fillStroke = new BasicStroke(1);
+	public static void beginFill(Graphics2D g2d, 
+			SketchRenderHint hint, boolean selected) {
+		
+		g2d.setStroke(fillStroke);
+		if(selected) g2d.setColor(hint.fillColorSelected);
+		else g2d.setColor(hint.fillColorNormal);
+	}
+	
+	public static void beginOutline(Graphics2D g2d,
+			SketchRenderHint hint, boolean selected) {
+		
+		g2d.setStroke(new BasicStroke(hint.outlineWidth));
+		if(selected) g2d.setColor(hint.lineColorSelected);
+		else g2d.setColor(hint.lineColorNormal);
 	}
 }

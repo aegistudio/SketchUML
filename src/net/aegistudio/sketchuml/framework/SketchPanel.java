@@ -18,7 +18,10 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;import javax.swing.JComponent;
+import java.util.Vector;
+import java.util.function.Supplier;
+
+import javax.swing.JComponent;
 
 import de.dubs.dollarn.PointR;
 import net.aegistudio.sketchuml.Command;
@@ -26,6 +29,7 @@ import net.aegistudio.sketchuml.Configuration;
 import net.aegistudio.sketchuml.EntityEntry;
 import net.aegistudio.sketchuml.History;
 import net.aegistudio.sketchuml.LinkEntry;
+import net.aegistudio.sketchuml.SketchRenderHint;
 import net.aegistudio.sketchuml.SketchView;
 import net.aegistudio.sketchuml.path.PathManager;
 import net.aegistudio.sketchuml.path.PathView;
@@ -48,12 +52,13 @@ public class SketchPanel<Path> extends JComponent implements
 	
 	private final CheatSheetGraphics cheatSheet;
 	private final History history;
+	private final Supplier<SketchRenderHint> renderHint;
 	
 	public SketchPanel(CandidatePanel candidatePanel, 
 			History history, SketchSelectionModel<Path> selectionModel, 
 			SketchModel<Path> model, SketchRecognizer recognizer, 
 			PathManager<Path> pathManager, PathView<Path> pathView,
-			CheatSheetGraphics cheatsheet) {
+			CheatSheetGraphics cheatsheet, Supplier<SketchRenderHint> renderHint) {
 		
 		this.model = model;
 		this.selectionModel = selectionModel;
@@ -63,6 +68,7 @@ public class SketchPanel<Path> extends JComponent implements
 		this.pathManager = pathManager;
 		this.pathView = pathView;
 		this.cheatSheet = cheatsheet;
+		this.renderHint = renderHint;
 		
 		model.subscribe(this);
 		selectionModel.subscribe(this);
@@ -497,13 +503,13 @@ public class SketchPanel<Path> extends JComponent implements
 		}
 	}
 	
-	private void paintSketchComponent(Graphics g, 
-			SketchEntityComponent current, boolean preview) {
+	private void paintSketchComponent(SketchRenderHint hint, 
+		Graphics g, SketchEntityComponent current, boolean preview) {
 		
 		// The concrete part of the rendering object.
 		Graphics currentGraphics = g.create(
 				current.x, current.y, current.w, current.h);
-		current.entry.sketchView.renderEntity(
+		current.entry.sketchView.renderEntity(hint,
 				currentGraphics, current.entity, preview);
 		
 		// The overlaying part of the rendering object.
@@ -528,7 +534,7 @@ public class SketchPanel<Path> extends JComponent implements
 		}
 	}
 	
-	private void paintSketchLink(Graphics g, 
+	private void paintSketchLink(SketchRenderHint hint, Graphics g, 
 			SketchLinkComponent<Path> current, boolean preview) {
 		
 		// Bound rectangle retrieval.
@@ -543,7 +549,7 @@ public class SketchPanel<Path> extends JComponent implements
 	}
 	
 	private interface SketchPaintInterface<Path> {
-		public void paint(Graphics2D g2d,
+		public void paint(SketchRenderHint hint, Graphics2D g2d,
 			SketchEntityComponent selectedEntity,
 			SketchLinkComponent<Path> selectedLink);
 	}
@@ -566,6 +572,7 @@ public class SketchPanel<Path> extends JComponent implements
 		SketchEntityComponent selectedEntity = selectionModel.selectedEntity();
 		SketchLinkComponent<Path> selectedLink = selectionModel.selectedLink();
 		Graphics2D g2d = (Graphics2D) g;
+		SketchRenderHint hint = this.renderHint.get();
 		
 		// Render common objects.
 		SketchPaintInterface<Path> paintInterface;
@@ -574,7 +581,7 @@ public class SketchPanel<Path> extends JComponent implements
 			paintInterface = this::paintObjectsInterleaved;
 		else // Render links alongside with its entities.
 			paintInterface = this::paintObjectsSeparated;
-		paintInterface.paint(g2d, selectedEntity, selectedLink);
+		paintInterface.paint(hint, g2d, selectedEntity, selectedLink);
 		
 		// Render the candidate object.
 		CandidatePanel.CandidateObject candidate = candidatePanel.current();
@@ -583,19 +590,19 @@ public class SketchPanel<Path> extends JComponent implements
 			@SuppressWarnings("unchecked")
 			SketchPanel<Path>.ComponentCandidate componentCandidate 
 				= (SketchPanel<Path>.ComponentCandidate) candidate;
-			paintSketchComponent(g, componentCandidate.component, true);
+			paintSketchComponent(hint, g, componentCandidate.component, true);
 		}
 		else if(candidate instanceof SketchPanel.LinkCandidate) {
 			// The current candidate object is a link.
 			@SuppressWarnings("unchecked")
 			SketchPanel<Path>.LinkCandidate linkCandidate 
 				= (SketchPanel<Path>.LinkCandidate) candidate;
-			paintSketchLink(g, linkCandidate.component, true);
+			paintSketchLink(hint, g, linkCandidate.component, true);
 		}
 		
 		// Render the newly painting stroke.
-		g2d.setStroke(new BasicStroke(2));
-		g2d.setColor(Color.BLACK);
+		g2d.setStroke(new BasicStroke(hint.userWidth));
+		g2d.setColor(hint.userColor);
 		Enumeration<Vector<PointR>> en = strokes.elements();
 		while (en.hasMoreElements()) {
 			Vector<PointR> pts = en.nextElement();
@@ -614,14 +621,14 @@ public class SketchPanel<Path> extends JComponent implements
 		dirty = false;
 	}
 	
-	private void paintObjectsSeparated(Graphics2D g2d,
-			SketchEntityComponent selectedEntity,
+	private void paintObjectsSeparated(SketchRenderHint hint, 
+			Graphics2D g2d, SketchEntityComponent selectedEntity,
 			SketchLinkComponent<Path> selectedLink) {
 		// Render the links in order.
 		for(int i = 0; i < model.numLinks(); ++ i) {
 			SketchLinkComponent<Path> current = model.getLink(i);
 			if(current != selectedLink)
-				paintSketchLink(g2d, current, false);
+				paintSketchLink(hint, g2d, current, false);
 		}
 		
 		// Render the entities in order.
@@ -636,15 +643,16 @@ public class SketchPanel<Path> extends JComponent implements
 			}
 			
 			// Default object component.
-			paintSketchComponent(g2d, current, false);
+			paintSketchComponent(hint, g2d, current, false);
 		}
 		
 		// Render the current selected link object.
 		if(selectedLink != null)
-			paintSketchLink(g2d, selectedLink, true);
+			paintSketchLink(hint, g2d, selectedLink, true);
 	}
 	
-	private void paintObjectsInterleaved(Graphics2D g2d,
+	private void paintObjectsInterleaved(
+			SketchRenderHint hint, Graphics2D g2d,
 			SketchEntityComponent selectedEntity,
 			SketchLinkComponent<Path> selectedLink) {
 		
@@ -671,18 +679,18 @@ public class SketchPanel<Path> extends JComponent implements
 				SketchEntityComponent relation = current;
 				if(currentLink.relatedTo(relation)) {
 					if(selectedLink != currentLink)
-						paintSketchLink(g2d, currentLink, false);
+						paintSketchLink(hint, g2d, currentLink, false);
 					iterator.remove();
 				}
 			}
 			
 			// Default object component.
-			paintSketchComponent(g2d, current, false);
+			paintSketchComponent(hint, g2d, current, false);
 		}
 		
 		// Render the current selected link object.
 		if(selectedLink != null)
-			paintSketchLink(g2d, selectedLink, true);
+			paintSketchLink(hint, g2d, selectedLink, true);
 	}
 	
 	@Override

@@ -1,7 +1,5 @@
 package net.aegistudio.sketchuml.general;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -9,9 +7,11 @@ import java.util.function.Consumer;
 
 import net.aegistudio.sketchuml.Entity;
 import net.aegistudio.sketchuml.PropertyView;
+import net.aegistudio.sketchuml.SketchRenderHint;
 import net.aegistudio.sketchuml.SketchView;
 import net.aegistudio.sketchuml.framework.PropertyPanel;
 import net.aegistudio.sketchuml.framework.RegularRenderer;
+import net.aegistudio.sketchuml.framework.RenderUtils;
 
 public class EntityMetaDecision implements 
 	SketchView, PropertyView.Factory, RegularRenderer.Painter {
@@ -46,8 +46,9 @@ public class EntityMetaDecision implements
 	}
 	
 	@Override
-	public void renderEntity(Graphics g, Entity entity, boolean preview) {
-		renderer.renderEntity(g, entity, preview);
+	public void renderEntity(SketchRenderHint hint, Graphics g, 
+			Entity entity, boolean preview) {
+		renderer.renderEntity(hint, g, entity, preview);
 	}
 
 	@Override
@@ -59,19 +60,29 @@ public class EntityMetaDecision implements
 	}
 
 	@Override
-	public void render(Graphics g, int length, boolean preview) {
+	public void render(SketchRenderHint hint, Graphics g, 
+			int length, boolean preview) {
+		
 		Graphics2D g2d = (Graphics2D)g;
-		int[] xs = new int[] { length / 2, length - 3, length / 2, 2 };
-		int[] ys = new int[] { 2, length / 2, length - 3, length / 2 };
-
+		int outlineWidth = (int)hint.outlineWidth;
+		int outlineOffset = outlineWidth / 2 + 1;
+		int clampedWidth = length - outlineWidth + 1;
+		int semiLength = length / 2;
+		
+		// Retrieve the line point coordinates..
+		int[] xs = new int[4];
+		int[] ys = new int[4];
+		xs[0] = semiLength; ys[0] = outlineOffset;	// Top point.
+		xs[1] = clampedWidth; ys[1] = semiLength;	// Center point.
+		xs[2] = semiLength; ys[2] = clampedWidth;	// Bottom point.
+		xs[3] = outlineOffset; ys[3] = semiLength;	// Left point.
+		
 		// Fill the diamond.
-		g2d.setStroke(new BasicStroke(1));
-		g2d.setColor(Color.WHITE);
+		RenderUtils.beginFill(g2d, hint, preview);
 		g2d.fillPolygon(xs, ys, 4);
 		
 		// Draw the diamond.
-		g2d.setStroke(new BasicStroke(2));
-		g2d.setColor(preview? Color.GRAY : Color.BLACK);
+		RenderUtils.beginOutline(g2d, hint, preview);
 		g2d.drawPolygon(xs, ys, 4);
 	}
 }

@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 import net.aegistudio.sketchuml.Entity;
+import net.aegistudio.sketchuml.SketchRenderHint;
 import net.aegistudio.sketchuml.SketchView;
 
 public class RegularRenderer implements SketchView {
@@ -13,19 +14,21 @@ public class RegularRenderer implements SketchView {
 	}
 	
 	public interface Painter {
-		public void render(Graphics g, int length, boolean preview);
+		public void render(SketchRenderHint hint,
+				Graphics g, int length, boolean preview);
 	}
 	
 	@Override
-	public void renderEntity(Graphics g, Entity entity, boolean preview) {
+	public void renderEntity(SketchRenderHint hint, 
+			Graphics g, Entity entity, boolean preview) {
 		Rectangle bound = g.getClipBounds();
 		if(bound == null) return;
 		
 		if(bound.width > bound.height) 
-			painter.render(g.create((bound.width - bound.height) / 2, 0, 
-					bound.height, bound.height), bound.height, preview);
-		else painter.render(g.create(0, (bound.height - bound.width) / 2, 
-					bound.width, bound.width), bound.width, preview);
+			painter.render(hint, g.create((bound.width - bound.height) / 2, 
+				0, bound.height, bound.height), bound.height, preview);
+		else painter.render(hint, g.create(0, (bound.height - bound.width) / 2, 
+				bound.width, bound.width), bound.width, preview);
 	}
 
 	/**

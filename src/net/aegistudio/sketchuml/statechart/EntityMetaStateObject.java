@@ -1,7 +1,6 @@
 package net.aegistudio.sketchuml.statechart;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -11,6 +10,7 @@ import java.util.function.Consumer;
 
 import net.aegistudio.sketchuml.Entity;
 import net.aegistudio.sketchuml.PropertyView;
+import net.aegistudio.sketchuml.SketchRenderHint;
 import net.aegistudio.sketchuml.SketchView;
 import net.aegistudio.sketchuml.framework.PropertyPanel;
 import net.aegistudio.sketchuml.framework.RenderUtils;
@@ -60,18 +60,25 @@ public class EntityMetaStateObject implements SketchView, PropertyView.Factory {
 	}
 
 	@Override
-	public void renderEntity(Graphics g, Entity entity, boolean preview) {
+	public void renderEntity(SketchRenderHint hint, 
+			Graphics g, Entity entity, boolean preview) {
 		Rectangle bound = g.getClipBounds();
 		EntityStateObject entityState = (EntityStateObject)entity;
 		Graphics2D g2d = (Graphics2D)g;
-		g2d.setStroke(new BasicStroke(2));
+		g2d.setStroke(new BasicStroke(hint.outlineWidth));
 		
 		// Draw outline.
-		g.setColor(Color.WHITE);
-		g.fillRoundRect(1, 1, bound.width - 2, bound.height - 2, 
+		int outlineWidth = (int)hint.outlineWidth;
+		int outlineOffset = outlineWidth / 2;
+		RenderUtils.beginFill(g2d, hint, preview);
+		g.fillRoundRect(outlineOffset, outlineOffset, 
+				bound.width - outlineWidth, 
+				bound.height - outlineWidth, 
 				STATE_ROUNDSIZE, STATE_ROUNDSIZE);
-		g.setColor(preview? Color.GRAY : Color.BLACK);
-		g.drawRoundRect(1, 1, bound.width - 2, bound.height - 2, 
+		RenderUtils.beginOutline(g2d, hint, preview);
+		g.drawRoundRect(outlineOffset, outlineOffset, 
+				bound.width - outlineWidth, 
+				bound.height - outlineWidth, 
 				STATE_ROUNDSIZE, STATE_ROUNDSIZE);
 		
 		// Draw internal text.

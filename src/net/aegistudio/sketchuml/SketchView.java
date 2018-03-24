@@ -11,11 +11,13 @@ import java.awt.geom.Rectangle2D;
  */
 public interface SketchView {
 	/**
+	 * @param hint the sketch render hint.
 	 * @param g the graphic object to render object.
 	 * @param entity the entities' data model.
 	 * @param preview is object previewing.
 	 */
-	public void renderEntity(Graphics g, Entity entity, boolean preview);
+	public void renderEntity(SketchRenderHint hint,
+			Graphics g, Entity entity, boolean preview);
 	
 	/**
 	 * Indicate where to show the overlaying text.
