@@ -1,5 +1,6 @@
 package net.aegistudio.sketchuml;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -77,9 +78,12 @@ public class Main {
 	public static JMenuItem menuItemExportAstah;
 	
 	// The sketch render style options.
-	public static RadioMenuItemGroup<SketchRenderHint> 
-				sketchRenderHints;
+	public static RadioMenuItemGroup<SketchRenderHint> sketchRenderHints;
 	public static SketchRenderHint sketchRenderHint;
+	
+	// The sketch background options.
+	public static RadioMenuItemGroup<Background> backgrounds;
+	public static Background background;
 	
 	public static void main(String[] arguments) {
 		// Set the UI's major look and feel. Could fail.
@@ -303,27 +307,71 @@ public class Main {
 				}
 			}
 		};
-		
-		SketchRenderHint defaultRenderHint = new SketchRenderHint();
-		defaultRenderHint.labelFont = Configuration
-				.getInstance().HANDWRITING_FONT;
-		defaultRenderHint.lineColorNormal = Color.BLACK;
-		defaultRenderHint.fillColorNormal = Color.WHITE;
-		defaultRenderHint.lineColorSelected = Color.GRAY;
-		defaultRenderHint.fillColorSelected = Color.WHITE;
-		defaultRenderHint.userColor = Color.BLACK;
-		defaultRenderHint.outlineWidth = 2.0f;
-		defaultRenderHint.inlineWidth = 2.0f;
-		defaultRenderHint.lineWidthSelected = 3.0f;
-		defaultRenderHint.arrowColorNormal = Color.WHITE;
-		defaultRenderHint.arrowColorSelected = Color.WHITE;
-		defaultRenderHint.userWidth = 2.0f;
-		
-		sketchRenderHint = defaultRenderHint;
-		sketchRenderHints.addItem(defaultRenderHint, "Default", true);
-		
-		// Initialize the list of render hints into button group.
+		{
+			// The default SketchUML style render hint.
+			SketchRenderHint defaultRenderHint = new SketchRenderHint();
+			defaultRenderHint.labelFont = Configuration
+					.getInstance().HANDWRITING_FONT;
+			defaultRenderHint.lineColorNormal = Color.BLACK;
+			defaultRenderHint.fillColorNormal = Color.WHITE;
+			defaultRenderHint.lineColorSelected = Color.GRAY;
+			defaultRenderHint.fillColorSelected = Color.WHITE;
+			defaultRenderHint.userColor = Color.BLACK;
+			defaultRenderHint.outlineWidth = 2.0f;
+			defaultRenderHint.inlineWidth = 2.0f;
+			defaultRenderHint.lineWidthSelected = 3.0f;
+			defaultRenderHint.arrowColorNormal = Color.WHITE;
+			defaultRenderHint.arrowColorSelected = Color.WHITE;
+			defaultRenderHint.userWidth = 2.0f;
+			
+			sketchRenderHint = defaultRenderHint;
+			sketchRenderHints.addItem(defaultRenderHint, "Default", true);
+		}
 		sketchRenderHints.addMenu(menuView);
+		
+		// Initialize the backgrounds.
+		menuView.addSeparator();
+		backgrounds = new RadioMenuItemGroup<Background>() {
+			@Override
+			public void selectItem(Background t) {
+				if(background != t) {
+					background = t;
+					sketchPanel.updateUI();
+					sketchPanel.repaint();
+				}
+			}
+		};
+		{
+			// These style settings will be used later.
+			BasicStroke slimDenseStroke = new BasicStroke(1.f);
+			BasicStroke slimDotStroke = new BasicStroke(2.f, 
+					BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f,
+					new float[] {2.0f, 3.0f}, 5.f);
+			BasicStroke thickStroke = new BasicStroke(2.f);
+			Color gridColor = new Color(0.95f, 0.95f, 0.95f, 1.0f);
+			
+			// The background with nothing on it.
+			Background backgroundEmpty = new BackgroundNull();
+			background = backgroundEmpty;
+			backgrounds.addItem(backgroundEmpty, "Empty", true);
+			
+			// The background with 2-period repetitive grid (dot or not) on it.
+			Background background2Grid = new BackgroundGrid(
+					2, 20., slimDenseStroke, thickStroke, gridColor);
+			backgrounds.addItem(background2Grid, "2-Grid", false);
+			Background background2DotGrid = new BackgroundGrid(
+					2, 20., slimDotStroke, thickStroke, gridColor);
+			backgrounds.addItem(background2DotGrid, "2-Grid (Dot)", false);
+			
+			// The background with 2-period repetitive grid on it.
+			Background background5Grid = new BackgroundGrid(
+					5, 10., slimDenseStroke, thickStroke, gridColor);
+			backgrounds.addItem(background5Grid, "5-Grid", false);
+			Background background5DotGrid = new BackgroundGrid(
+					5, 10., slimDotStroke, thickStroke, gridColor);
+			backgrounds.addItem(background5DotGrid, "5-Grid (Dot)", false);
+		}
+		backgrounds.addMenu(menuView);
 		
 		// Add the help menu.
 		JMenu menuHelp = new JMenu("Help");
@@ -412,7 +460,8 @@ public class Main {
 		currentModel = model;
 		sketchPanel = new SketchPanel<>(candidatePanel, 
 				history, currentModel, currentModel, recognizer, 
-				pathManager, pathView, cheatSheet, () -> sketchRenderHint);
+				pathManager, pathView, cheatSheet, 
+				() -> sketchRenderHint, () -> background);
 		mainFrame.add(sketchPanel, BorderLayout.CENTER);
 		
 		// Create the new edit panel.

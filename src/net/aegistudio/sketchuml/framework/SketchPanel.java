@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 import javax.swing.JComponent;
 
 import de.dubs.dollarn.PointR;
+import net.aegistudio.sketchuml.Background;
 import net.aegistudio.sketchuml.Command;
 import net.aegistudio.sketchuml.Configuration;
 import net.aegistudio.sketchuml.EntityEntry;
@@ -53,12 +54,14 @@ public class SketchPanel<Path> extends JComponent implements
 	private final CheatSheetGraphics cheatSheet;
 	private final History history;
 	private final Supplier<SketchRenderHint> renderHint;
+	private final Supplier<Background> background;
 	
 	public SketchPanel(CandidatePanel candidatePanel, 
 			History history, SketchSelectionModel<Path> selectionModel, 
 			SketchModel<Path> model, SketchRecognizer recognizer, 
 			PathManager<Path> pathManager, PathView<Path> pathView,
-			CheatSheetGraphics cheatsheet, Supplier<SketchRenderHint> renderHint) {
+			CheatSheetGraphics cheatsheet, Supplier<SketchRenderHint> renderHint,
+			Supplier<Background> background) {
 		
 		this.model = model;
 		this.selectionModel = selectionModel;
@@ -69,6 +72,7 @@ public class SketchPanel<Path> extends JComponent implements
 		this.pathView = pathView;
 		this.cheatSheet = cheatsheet;
 		this.renderHint = renderHint;
+		this.background = background;
 		
 		model.subscribe(this);
 		selectionModel.subscribe(this);
@@ -564,15 +568,21 @@ public class SketchPanel<Path> extends JComponent implements
 	
 	@Override
 	public void paint(Graphics g) {
-		g.setFont(Configuration.getInstance().HANDWRITING_FONT);
-		g.setColor(Color.WHITE);
-		g.fillRect(0, 0, getWidth(), getHeight());
-		
 		// Draw other entities on the canvas.
 		SketchEntityComponent selectedEntity = selectionModel.selectedEntity();
 		SketchLinkComponent<Path> selectedLink = selectionModel.selectedLink();
 		Graphics2D g2d = (Graphics2D) g;
 		SketchRenderHint hint = this.renderHint.get();
+		
+		// Update the rendering hint.
+		g.setFont(hint.labelFont);
+		g.setColor(Color.WHITE);
+		g.fillRect(0, 0, getWidth(), getHeight());
+		
+		// Retrieve the background.
+		Background background = this.background.get();
+		background.renderBackground(g2d, hint, 
+				0, 0, getWidth(), getHeight());
 		
 		// Render common objects.
 		SketchPaintInterface<Path> paintInterface;
