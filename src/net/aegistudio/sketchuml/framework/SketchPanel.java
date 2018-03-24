@@ -514,7 +514,8 @@ public class SketchPanel<Path> extends JComponent implements
 		Graphics currentGraphics = g.create(
 				current.x, current.y, current.w, current.h);
 		current.entry.sketchView.renderEntity(hint,
-				currentGraphics, current.entity, preview);
+				currentGraphics, current.entity, preview,
+				current.w, current.h);
 		
 		// The overlaying part of the rendering object.
 		g.setColor(hint.getLineColor(SketchRenderHint.outerLabelColor, preview));

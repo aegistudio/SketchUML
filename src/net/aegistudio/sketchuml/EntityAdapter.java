@@ -56,5 +56,6 @@ public abstract class EntityAdapter implements Entity,
 	
 	@Override
 	public abstract void renderEntity(SketchRenderHint hint, 
-			Graphics g, Entity entity, boolean preview);
+			Graphics g, Entity entity, boolean preview, 
+			int entityWidth, int entityHeight);
 }

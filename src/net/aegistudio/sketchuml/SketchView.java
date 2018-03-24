@@ -17,7 +17,8 @@ public interface SketchView {
 	 * @param preview is object previewing.
 	 */
 	public void renderEntity(SketchRenderHint hint,
-			Graphics g, Entity entity, boolean preview);
+			Graphics g, Entity entity, boolean preview,
+			int entityWidth, int entityHeight);
 	
 	/**
 	 * Indicate where to show the overlaying text.

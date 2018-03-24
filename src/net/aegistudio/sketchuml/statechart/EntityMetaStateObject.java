@@ -4,7 +4,6 @@ import java.awt.BasicStroke;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.function.Consumer;
 
@@ -61,8 +60,8 @@ public class EntityMetaStateObject implements SketchView, PropertyView.Factory {
 
 	@Override
 	public void renderEntity(SketchRenderHint hint, 
-			Graphics g, Entity entity, boolean preview) {
-		Rectangle bound = g.getClipBounds();
+			Graphics g, Entity entity, boolean preview,
+			int entityWidth, int entityHeight) {
 		EntityStateObject entityState = (EntityStateObject)entity;
 		Graphics2D g2d = (Graphics2D)g;
 		g2d.setStroke(new BasicStroke(hint.outlineWidth));
@@ -72,13 +71,13 @@ public class EntityMetaStateObject implements SketchView, PropertyView.Factory {
 		int outlineOffset = outlineWidth / 2;
 		RenderUtils.beginFill(g2d, hint, preview);
 		g.fillRoundRect(outlineOffset, outlineOffset, 
-				bound.width - outlineWidth, 
-				bound.height - outlineWidth, 
+				entityWidth - outlineWidth, 
+				entityHeight - outlineWidth, 
 				STATE_ROUNDSIZE, STATE_ROUNDSIZE);
 		RenderUtils.beginOutline(g2d, hint, preview);
 		g.drawRoundRect(outlineOffset, outlineOffset, 
-				bound.width - outlineWidth, 
-				bound.height - outlineWidth, 
+				entityWidth - outlineWidth, 
+				entityHeight - outlineWidth, 
 				STATE_ROUNDSIZE, STATE_ROUNDSIZE);
 		
 		// Draw internal text.
@@ -87,15 +86,15 @@ public class EntityMetaStateObject implements SketchView, PropertyView.Factory {
 		if(!entityState.isBrief) {
 			RenderUtils.beginInline(g2d, hint, preview);
 			g.drawLine(0, STATE_NAMEHEIGHT, 
-					bound.width, STATE_NAMEHEIGHT);
+					entityWidth, STATE_NAMEHEIGHT);
 
 			// Draw the state text and actions.
 			g.setColor(hint.getLineColor(SketchRenderHint.innerLabelColor, preview));
 			Graphics actionGraphics = g.create(STATE_ROUNDOFFSET, 
-					STATE_NAMEHEIGHT + 2, bound.width - STATE_ROUNDOFFSET * 2, 
-					bound.height - STATE_NAMEHEIGHT - 2);
+					STATE_NAMEHEIGHT + 2, entityWidth - STATE_ROUNDOFFSET * 2, 
+					entityHeight - STATE_NAMEHEIGHT - 2);
 			g.drawString(entityState.name, 
-					(int)(bound.width - nameMetric.getWidth()) / 2, 
+					(int)(entityWidth - nameMetric.getWidth()) / 2, 
 					(int)(STATE_NAMEHEIGHT + nameMetric.getHeight() / 2) / 2);
 			RenderUtils.drawLines(actionGraphics, entityState.actions.split("\n"));
 		}
@@ -103,8 +102,8 @@ public class EntityMetaStateObject implements SketchView, PropertyView.Factory {
 			// Draw string only.
 			g.setColor(hint.getLineColor(SketchRenderHint.innerLabelColor, preview));
 			g.drawString(entityState.name, 
-					(int)(bound.width - nameMetric.getWidth()) / 2, 
-					(int)(bound.height + nameMetric.getHeight() / 2) / 2);
+					(int)(entityWidth - nameMetric.getWidth()) / 2, 
+					(int)(entityHeight + nameMetric.getHeight() / 2) / 2);
 		}
 	}
 

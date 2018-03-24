@@ -20,15 +20,16 @@ public class RegularRenderer implements SketchView {
 	
 	@Override
 	public void renderEntity(SketchRenderHint hint, 
-			Graphics g, Entity entity, boolean preview) {
+			Graphics g, Entity entity, boolean preview,
+			int entityWidth, int entityHeight) {
 		Rectangle bound = g.getClipBounds();
 		if(bound == null) return;
 		
-		if(bound.width > bound.height) 
-			painter.render(hint, g.create((bound.width - bound.height) / 2, 
-				0, bound.height, bound.height), bound.height, preview);
-		else painter.render(hint, g.create(0, (bound.height - bound.width) / 2, 
-				bound.width, bound.width), bound.width, preview);
+		if(entityWidth > entityHeight) 
+			painter.render(hint, g.create((entityWidth - entityHeight) / 2, 
+				0, entityHeight, entityHeight), entityHeight, preview);
+		else painter.render(hint, g.create(0, (entityHeight - entityWidth) / 2, 
+				entityWidth, entityWidth), entityWidth, preview);
 	}
 
 	/**

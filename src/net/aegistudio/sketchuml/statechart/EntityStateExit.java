@@ -45,8 +45,8 @@ public class EntityStateExit extends EntityAdapter implements
 	
 	@Override
 	public void renderEntity(SketchRenderHint hint, Graphics g, 
-			Entity entity, boolean preview) {
-		renderer.renderEntity(hint, g, entity, preview);
+			Entity entity, boolean preview, int w, int h) {
+		renderer.renderEntity(hint, g, entity, preview, w, h);
 	}
 
 	@Override
