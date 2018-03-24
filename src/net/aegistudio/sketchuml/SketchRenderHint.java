@@ -23,7 +23,7 @@ public class SketchRenderHint {
 	public Color lineColorNormal;
 	
 	/**
-	 * The color of an object's back ground while it is not
+	 * The color of an object's background while it is not
 	 * selected by the user.
 	 */
 	public Color fillColorNormal;
@@ -37,10 +37,22 @@ public class SketchRenderHint {
 	public Color lineColorSelected;
 	
 	/**
-	 * The color of an object outline or a link while it is
+	 * The color of an object's background while it is
 	 * selected by the user.
 	 */
 	public Color fillColorSelected;
+	
+	/**
+	 * The color of an arrow's background while it is
+	 * not selected by the user.
+	 */
+	public Color arrowColorNormal;
+	
+	/**
+	 * The color of an arrow's background while it is 
+	 * selected by the user.
+	 */
+	public Color arrowColorSelected;
 	
 	/**
 	 * The color of the user input stroke.
@@ -51,6 +63,12 @@ public class SketchRenderHint {
 	 * The width of an object outline or a link.
 	 */
 	public float outlineWidth;
+
+	/**
+	 * The width of a path when it is selected. Not applicable
+	 * to the object and label.
+	 */
+	public float lineWidthSelected;
 	
 	/**
 	 * The width of a line inside the object.

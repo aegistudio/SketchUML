@@ -311,11 +311,14 @@ public class Main {
 		defaultRenderHint.name = "Default";
 		defaultRenderHint.lineColorNormal = Color.BLACK;
 		defaultRenderHint.fillColorNormal = Color.WHITE;
-		defaultRenderHint.lineColorSelected = Color.GRAY;
+		defaultRenderHint.lineColorSelected = Color.BLUE;
 		defaultRenderHint.fillColorSelected = Color.WHITE;
 		defaultRenderHint.userColor = Color.BLACK;
 		defaultRenderHint.outlineWidth = 2.0f;
 		defaultRenderHint.inlineWidth = 2.0f;
+		defaultRenderHint.lineWidthSelected = 3.0f;
+		defaultRenderHint.arrowColorNormal = Color.WHITE;
+		defaultRenderHint.arrowColorSelected = Color.WHITE;
 		defaultRenderHint.userWidth = 2.0f;
 		sketchRenderHints.add(defaultRenderHint);
 		

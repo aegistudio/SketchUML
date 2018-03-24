@@ -4,6 +4,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 
 import de.dubs.dollarn.PointR;
+import net.aegistudio.sketchuml.SketchRenderHint;
 
 public interface PathView<Path> {
 	public enum ArrowStyle {
@@ -27,12 +28,18 @@ public interface PathView<Path> {
 	/**
 	 * Render the path object.
 	 * 
+	 * @param hint the sketch rendering hint.
 	 * @param pathObject the path object to reform.
 	 * @param boundBegin the starting object's center point.
+	 * @param arrowBegin the style of the beginning arrow.
 	 * @param boundEnd the ending object's center point.
-	 * @param 
+	 * @param arrowEnd the style of the ending arrow.
+	 * @param startText the staring text.
+	 * @param centerText the centering text.
+	 * @param endText the ending text.
 	 */
-	public void render(Graphics2D graphics, boolean selected,
+	public void render(SketchRenderHint hint,
+			Graphics2D graphics, boolean selected,
 			Path pathObject, LineStyle line,
 			Rectangle2D boundBegin, ArrowStyle arrowBegin, 
 			Rectangle2D boundEnd, ArrowStyle arrowEnd,

@@ -543,7 +543,7 @@ public class SketchPanel<Path> extends JComponent implements
 		
 		// The concrete part of the rendering object.
 		current.entry.linkView.render(current.source.entity, 
-				current.destination.entity, current.link).paint(
+				current.destination.entity, current.link).paint(hint,
 						(Graphics2D)g, preview, current.pathObject, pathView, 
 						boundSource, boundDestination);
 	}

@@ -7,6 +7,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 import de.dubs.dollarn.PointR;
+import net.aegistudio.sketchuml.SketchRenderHint;
 
 public class BezierPathView<T extends BezierPath> implements PathView<T> {
 	public static final float[][] DASH_DECORATION= { 
@@ -57,8 +58,20 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 		
 		return 1.0;
 	}
+
+	private void beginLine(Graphics2D g2d, 
+			SketchRenderHint hint, boolean selected) {
+		if(selected) g2d.setColor(hint.lineColorSelected);
+		else g2d.setColor(hint.lineColorNormal);
+	}
 	
-	private void renderText(Graphics2D g2d, 
+	private void beginArrowFill(Graphics2D g2d,
+			SketchRenderHint hint, boolean selected) {
+		if(selected) g2d.setColor(hint.arrowColorSelected);
+		else g2d.setColor(hint.arrowColorNormal);
+	}
+	
+	private void renderText(Graphics2D g2d, SketchRenderHint hint, 
 			PointR point, String text, boolean preview) {
 		if(text == null) return;
 		
@@ -71,26 +84,35 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 		int boundW2 = (int)bound.getWidth() / 2;
 		int boundH2 = (int)bound.getHeight() / 2;
 		
-		// Draw the background.
+		// Draw the text background.
 		g2d.setColor(Color.WHITE);
 		g2d.fillRect(pointX - boundW2, 
 			pointY - boundH2, boundW, boundH);
 		
 		// Draw the text content.
-		g2d.setColor(preview? Color.GRAY : Color.BLACK);
+		beginLine(g2d, hint, preview);
 		g2d.drawString(text, 
 				pointX - boundW2, pointY + boundH2);
 	}
 	
+	private void renderKnot(Graphics2D g2d, 
+			SketchRenderHint hint, int x, int y) {
+		int knotOffset = (int)hint.lineWidthSelected;
+		int knotWidth = (int)hint.lineWidthSelected * 2;
+		g2d.fillRect(x - knotOffset, 
+				y - knotOffset, knotWidth, knotWidth);
+	}
+	
 	@Override
-	public void render(Graphics2D g2d, boolean selected,
+	public void render(SketchRenderHint hint,
+			Graphics2D g2d, boolean selected,
 			T pathObject, LineStyle line, 
 			Rectangle2D boundBegin, ArrowStyle arrowBegin,
 			Rectangle2D boundEnd, ArrowStyle arrowEnd,
 			String startText, String centerText, String endText) {
 		
 		// Prepare for rendering.
-		g2d.setColor(selected? Color.GRAY : Color.BLACK);
+		beginLine(g2d, hint, selected);
 		
 		// Collect path object information.
 		List<PointR> separatePoints = pathObject
@@ -117,6 +139,19 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 				boundBegin, boundEnd);
 		double lengthThreshold = totalLength * 0.5;
 		
+		// Initialize the line style.
+		BasicStroke renderingLineStyle;
+		if(!LineStyle.COHERENT.equals(line)) {
+			int order = line.ordinal() - 1/*COHERENT*/;
+			float[] dash = DASH_DECORATION[order];
+			renderingLineStyle = new BasicStroke(selected? 
+					hint.lineWidthSelected : hint.outlineWidth, 
+					BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 
+					1.0f, dash, 0.0f);
+		}
+		else renderingLineStyle = new BasicStroke(selected? 
+				hint.lineWidthSelected: hint.outlineWidth);
+		
 		// Perform drawings.
 		PointR pieceLength = new PointR();
 		PointR centerPoint = new PointR();
@@ -138,19 +173,12 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 			
 			// Render knot when selected.
 			if(selected) {
-				if(renderBegin) g2d.fillRect(xBegin - 3, yBegin - 3, 6, 6);
-				if(renderEnd) g2d.fillRect(xEnd - 3, yEnd - 3, 6, 6);
+				if(renderBegin) renderKnot(g2d, hint, xBegin, yBegin);
+				if(renderEnd) renderKnot(g2d, hint, xEnd, yEnd);
 			}
 			
 			// Configure line style.
-			if(!LineStyle.COHERENT.equals(line)) {
-				int order = line.ordinal() - 1/*COHERENT*/;
-				float[] dash = DASH_DECORATION[order];
-				g2d.setStroke(new BasicStroke(selected? 3.0f : 2.0f, 
-						BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 
-						1.0f, dash, 0.0f));
-			}
-			else g2d.setStroke(new BasicStroke(selected? 3.0f : 2.0f));
+			g2d.setStroke(renderingLineStyle);
 			
 			if(controlPoints.size() <= i || 
 					controlPoints.get(i) == null) {
@@ -179,7 +207,7 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 					centerPoint.interpolate(lengthThreshold / lineLength, 
 							pBegin == pointBegin? intersectBegin : pBegin, 
 							pEnd == pointEnd? intersectEnd : pEnd);
-					renderText(g2d, centerPoint, centerText, selected);
+					renderText(g2d, hint, centerPoint, centerText, selected);
 				}
 				lengthThreshold -= lineLength;
 			}
@@ -223,9 +251,7 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 				}
 				
 				// Render control points when selected.
-				g2d.setStroke(new BasicStroke(selected? 3.0f : 2.0f));
-				if(selected)
-					g2d.fillRect(xCtrl - 3, yCtrl - 3, 6, 6);
+				if(selected) renderKnot(g2d, hint, xCtrl, yCtrl);
 				
 				// Check whether guard condition is reached.
 				// XXX This part may be changed later, or may never.
@@ -237,15 +263,18 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 					double solveParameter = evaluator.solveLengthEquation(
 							requestParameter, 5, 1e-3);
 					evaluator.evaluate(solveParameter, centerPoint);
-					renderText(g2d, centerPoint, centerText, selected);
+					renderText(g2d, hint, centerPoint, centerText, selected);
 				}
 				lengthThreshold -= bezierLength;
 			}
 		}
 		
-		// Perform arrow rendering.
-		g2d.setStroke(new BasicStroke(3));
-		g2d.setColor(selected? Color.GRAY : Color.BLACK);
+		// Perform arrow rendering, notice that it will replace 
+		// the previous stroke style.
+		g2d.setStroke(new BasicStroke(selected? 
+				hint.lineWidthSelected : hint.outlineWidth));
+		if(selected) g2d.setColor(hint.lineColorSelected);
+		else g2d.setColor(hint.lineColorNormal);
 		
 		if(pathObject.arrowDirectionOnLine()) {
 			// Indicates the line is placed on the edge.
@@ -262,11 +291,11 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 				}
 				
 				// Render the starting arrow.
-				renderArrow(g2d, separatePoints.get(0), 
+				renderArrow(g2d, hint, separatePoints.get(0), 
 						directionBegin, arrowBegin, selected);
 			}
 			else {
-				renderArrow(g2d, intersectBegin, directionBegin, 
+				renderArrow(g2d, hint, intersectBegin, directionBegin, 
 					arrowBegin, selected);
 			}
 			
@@ -286,18 +315,21 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 				}
 				
 				// Render the ending arrow.
-				renderArrow(g2d, separatePoints.get(separatePoints.size() - 1), 
+				renderArrow(g2d, hint,
+						separatePoints.get(separatePoints.size() - 1), 
 						directionEnd, arrowEnd, selected);
 			}
 			else {
-				renderArrow(g2d, intersectEnd, directionEnd, 
+				renderArrow(g2d, hint,
+					intersectEnd, directionEnd, 
 					arrowEnd, selected);
 			}
 		}
 	}
 	
-	private void renderArrow(Graphics2D g2d, PointR origin, 
-			PointR direction, ArrowStyle arrow, boolean selected) {
+	private void renderArrow(Graphics2D g2d, SketchRenderHint hint,
+			PointR origin, PointR direction, 
+			ArrowStyle arrow, boolean selected) {
 		
 		PointR orthoDirection = new PointR();
 		orthoDirection.X = direction.Y;
@@ -317,6 +349,7 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 		switch(arrow) {
 			// Render the fish bone arrows.
 			case FISHBONE:
+				beginLine(g2d, hint, selected);
 				g2d.drawLine(x0, y0, x1, y1);
 				g2d.drawLine(x0, y0, x2, y2);
 				g2d.drawLine(x0, y0, x3, y3);
@@ -330,12 +363,12 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 				
 				// Fill with color.
 				if(arrow.equals(ArrowStyle.TRIANGLE_EMPTY))
-					g2d.setColor(Color.WHITE);
-				else g2d.setColor(selected? Color.GRAY : Color.BLACK);
+					beginArrowFill(g2d, hint, selected);
+				else beginLine(g2d, hint, selected);
 				g2d.fillPolygon(xsT, ysT, 3);
 				
 				// Draw out border.
-				g2d.setColor(selected? Color.GRAY : Color.BLACK);
+				beginLine(g2d, hint, selected);
 				g2d.drawPolygon(xsT, ysT, 3);
 			break;
 			
@@ -349,12 +382,12 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 				
 				// Fill with color.
 				if(arrow.equals(ArrowStyle.DIAMOND_EMPTY))
-					g2d.setColor(Color.WHITE);
-				else g2d.setColor(selected? Color.GRAY : Color.BLACK);
+					beginArrowFill(g2d, hint, selected);
+				else beginLine(g2d, hint, selected);
 				g2d.fillPolygon(xsD, ysD, 4);
 				
 				// Draw out border.
-				g2d.setColor(selected? Color.GRAY : Color.BLACK);
+				beginLine(g2d, hint, selected);
 				g2d.drawPolygon(xsD, ysD, 4);
 			break;
 			
@@ -368,13 +401,13 @@ public class BezierPathView<T extends BezierPath> implements PathView<T> {
 				
 				// Fill with color.
 				if(arrow.equals(ArrowStyle.CIRCLE_EMPTY))
-					g2d.setColor(Color.WHITE);
-				else g2d.setColor(selected? Color.GRAY : Color.BLACK);
+					beginArrowFill(g2d, hint, selected);
+				else beginLine(g2d, hint, selected);
 				g2d.fillOval(xcC - radius, ycC - radius, 
 						2 * radius, 2 * radius);
 				
 				// Draw out border.
-				g2d.setColor(selected? Color.GRAY : Color.BLACK);
+				beginLine(g2d, hint, selected);
 				g2d.drawOval(xcC - radius, ycC - radius, 
 						2 * radius, 2 * radius);
 			break;
