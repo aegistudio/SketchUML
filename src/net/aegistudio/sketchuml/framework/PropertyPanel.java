@@ -58,6 +58,13 @@ public class PropertyPanel<T> extends JPanel {
 		}
 	}
 	
+	protected boolean silent = false;
+	protected <V> void safeRunSilent(PropertySetter<T, V> setter, V value) {
+		silent = true;
+		safeRun(setter, value);
+		silent = false;
+	}
+	
 	protected <V> void addGetterReactor(
 			Consumer<V> consumer, PropertyGetter<T, V> getter) {
 		
@@ -97,11 +104,8 @@ public class PropertyPanel<T> extends JPanel {
 			}
 		});
 		fieldField.addCaretListener(c ->
-			safeRun(setter, fieldField.getText()));
-		addGetterReactor(string -> {
-			if(fieldField.isFocusOwner()) return;
-			fieldField.setText(string);
-		}, getter);
+			safeRunSilent(setter, fieldField.getText()));
+		addGetterReactor(fieldField::setText, getter);
 		
 		super.add(fieldPanel);
 	}
@@ -154,11 +158,8 @@ public class PropertyPanel<T> extends JPanel {
 			}
 		});
 		area.addCaretListener(c ->
-			safeRun(setter, area.getText()));
-		addGetterReactor(string -> {
-			if(area.isFocusOwner()) return;
-			area.setText(string);
-		}, getter);
+			safeRunSilent(setter, area.getText()));
+		addGetterReactor(area::setText, getter);
 		
 		super.add(areaPanel);
 	}
@@ -237,6 +238,7 @@ public class PropertyPanel<T> extends JPanel {
 	}
 	
 	public void updateEntity(T updatedEntity) {
+		if(silent) return;
 		if(this.entity != updatedEntity) return;
 		getterRunnables.forEach(Runnable::run);
 	}

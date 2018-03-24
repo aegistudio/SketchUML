@@ -284,13 +284,13 @@ public class TrifoldPathEditor extends JPanel
 		this.notifier = notifier;
 		
 		// Update the path data.
-		refreshPath();
+		refreshPath(true);
 		
 		// Finish changing and return the result.
 		return this;
 	}
 	
-	private synchronized void refreshPath() {
+	private synchronized void refreshPath(boolean pathChanged) {
 		this.changing = true;
 
 		Class<? extends TrifoldPath> newPropertyClass = 
@@ -319,8 +319,10 @@ public class TrifoldPathEditor extends JPanel
 		}
 		
 		// Update the property data.
-		if(style.propertyPanel != null) style
-			.updateEntity(edittingPath.pathObject.path);
+		if(style.propertyPanel != null) {
+			if(pathChanged) style.selectEntity(edittingPath.pathObject.path);
+			else style.updateEntity(edittingPath.pathObject.path);
+		}
 		this.changing = false;
 	}
 	
@@ -365,13 +367,13 @@ public class TrifoldPathEditor extends JPanel
 		
 		if(hasChanged) {
 			notifier.receiveChange(backup, edittingPath);
-			refreshPath();
+			refreshPath(false);
 		}
 	}
 
 	@Override
 	public void updatePath(SketchLinkComponent<TrifoldProxyPath> path) {
 		if(path != this.edittingPath) return;
-		refreshPath();
+		refreshPath(false);
 	}
 }
