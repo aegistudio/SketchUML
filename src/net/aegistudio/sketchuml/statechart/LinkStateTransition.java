@@ -10,7 +10,7 @@ import JP.co.esm.caddies.uml.BehavioralElements.CommonBehavior.UActionImp;
 import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UEventImp;
 import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UGuardImp;
 import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UTransitionImp;
-import net.aegistudio.sketchuml.Entity;
+import net.aegistudio.sketchuml.abstraction.Entity;
 import net.aegistudio.sketchuml.astaxpt.AstahUuidGenerator;
 
 public class LinkStateTransition implements Entity, TransitionEntity {

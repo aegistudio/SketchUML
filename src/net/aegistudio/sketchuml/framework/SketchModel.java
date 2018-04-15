@@ -4,7 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import net.aegistudio.sketchuml.Template;
+import net.aegistudio.sketchuml.abstraction.Template;
 public interface SketchModel<Path> {
 	/**
 	 * The observer that listen to the changes in the sketch 

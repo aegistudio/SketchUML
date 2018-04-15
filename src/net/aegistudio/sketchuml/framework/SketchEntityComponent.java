@@ -2,8 +2,8 @@ package net.aegistudio.sketchuml.framework;
 
 import java.awt.geom.Rectangle2D;
 
-import net.aegistudio.sketchuml.Entity;
-import net.aegistudio.sketchuml.EntityEntry;
+import net.aegistudio.sketchuml.abstraction.Entity;
+import net.aegistudio.sketchuml.abstraction.EntityEntry;
 
 public class SketchEntityComponent {
 	public int x, y, w, h;

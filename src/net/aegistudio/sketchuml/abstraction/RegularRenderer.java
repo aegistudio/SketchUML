@@ -1,11 +1,7 @@
-package net.aegistudio.sketchuml.framework;
+package net.aegistudio.sketchuml.abstraction;
 
 import java.awt.Graphics;
 import java.awt.Rectangle;
-
-import net.aegistudio.sketchuml.Entity;
-import net.aegistudio.sketchuml.SketchRenderHint;
-import net.aegistudio.sketchuml.SketchView;
 
 public class RegularRenderer implements SketchView {
 	private final Painter painter;

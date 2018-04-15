@@ -1,7 +1,7 @@
 package net.aegistudio.sketchuml.framework;
 
-import net.aegistudio.sketchuml.Entity;
-import net.aegistudio.sketchuml.LinkEntry;
+import net.aegistudio.sketchuml.abstraction.Entity;
+import net.aegistudio.sketchuml.abstraction.LinkEntry;
 
 public class SketchLinkComponent<Path> {
 	public final SketchEntityComponent source, destination;

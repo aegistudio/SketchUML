@@ -3,11 +3,10 @@ package net.aegistudio.sketchuml.statechart;
 import java.awt.Component;
 import java.util.function.Consumer;
 
-import net.aegistudio.sketchuml.Entity;
-import net.aegistudio.sketchuml.LinkView;
-import net.aegistudio.sketchuml.PropertyView;
-import net.aegistudio.sketchuml.framework.PropertyPanel;
-import net.aegistudio.sketchuml.path.PathView;
+import net.aegistudio.sketchuml.abstraction.Entity;
+import net.aegistudio.sketchuml.abstraction.LinkView;
+import net.aegistudio.sketchuml.abstraction.PropertyPanel;
+import net.aegistudio.sketchuml.abstraction.PropertyView;
 
 public class LinkMetaStateTransition implements PropertyView.Factory, LinkView {
 	
@@ -54,9 +53,9 @@ public class LinkMetaStateTransition implements PropertyView.Factory, LinkView {
 	public LinkRender render(Entity source, Entity destination, Entity link) {
 		LinkStateTransition transition = (LinkStateTransition)link;
 		return new LinkView.LinkRender() { {
-			beginStyle = PathView.ArrowStyle.NONE;
-			endStyle = PathView.ArrowStyle.FISHBONE;
-			lineStyle = PathView.LineStyle.COHERENT;
+			beginStyle = LinkView.ArrowStyle.NONE;
+			endStyle = LinkView.ArrowStyle.FISHBONE;
+			lineStyle = LinkView.LineStyle.COHERENT;
 			
 			// Retrieve the presentation string of transition.
 			centerText = transition.toPresentationString();

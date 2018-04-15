@@ -23,6 +23,8 @@ import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 
+import net.aegistudio.sketchuml.abstraction.SketchRenderHint;
+import net.aegistudio.sketchuml.abstraction.Template;
 import net.aegistudio.sketchuml.framework.CandidatePanel;
 import net.aegistudio.sketchuml.framework.CheatSheetGraphics;
 import net.aegistudio.sketchuml.framework.ComponentEditPanel;

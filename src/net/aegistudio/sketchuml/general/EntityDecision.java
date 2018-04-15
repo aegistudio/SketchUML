@@ -7,7 +7,7 @@ import java.io.IOException;
 import JP.co.esm.caddies.jomt.jmodel.ChoicePresentation;
 import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UPseudostateImp;
 import JP.co.esm.caddies.uml.Foundation.DataTypes.UPseudostateKind;
-import net.aegistudio.sketchuml.Entity;
+import net.aegistudio.sketchuml.abstraction.Entity;
 import net.aegistudio.sketchuml.astaxpt.AstahUuidGenerator;
 import net.aegistudio.sketchuml.statechart.StateEntity;
 

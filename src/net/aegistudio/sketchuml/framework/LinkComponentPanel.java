@@ -18,8 +18,8 @@ import javax.swing.JPanel;
 
 import net.aegistudio.sketchuml.Configuration;
 import net.aegistudio.sketchuml.History;
-import net.aegistudio.sketchuml.LinkEntry;
-import net.aegistudio.sketchuml.PropertyView;
+import net.aegistudio.sketchuml.abstraction.LinkEntry;
+import net.aegistudio.sketchuml.abstraction.PropertyView;
 
 public class LinkComponentPanel<Path> extends JPanel {
 	private static final long serialVersionUID = 1L;

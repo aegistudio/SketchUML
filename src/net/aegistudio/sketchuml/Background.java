@@ -2,6 +2,8 @@ package net.aegistudio.sketchuml;
 
 import java.awt.Graphics2D;
 
+import net.aegistudio.sketchuml.abstraction.SketchRenderHint;
+
 /**
  * Render the background of the sketch main panel or the exported
  * file, according to provided data.

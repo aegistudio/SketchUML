@@ -27,11 +27,13 @@ import de.dubs.dollarn.PointR;
 import net.aegistudio.sketchuml.Background;
 import net.aegistudio.sketchuml.Command;
 import net.aegistudio.sketchuml.Configuration;
-import net.aegistudio.sketchuml.EntityEntry;
 import net.aegistudio.sketchuml.History;
-import net.aegistudio.sketchuml.LinkEntry;
-import net.aegistudio.sketchuml.SketchRenderHint;
-import net.aegistudio.sketchuml.SketchView;
+import net.aegistudio.sketchuml.abstraction.EntityEntry;
+import net.aegistudio.sketchuml.abstraction.LinkEntry;
+import net.aegistudio.sketchuml.abstraction.LinkView;
+import net.aegistudio.sketchuml.abstraction.RenderUtils;
+import net.aegistudio.sketchuml.abstraction.SketchRenderHint;
+import net.aegistudio.sketchuml.abstraction.SketchView;
 import net.aegistudio.sketchuml.path.PathManager;
 import net.aegistudio.sketchuml.path.PathView;
 import net.aegistudio.sketchuml.stroke.SketchRecognizer;
@@ -547,10 +549,10 @@ public class SketchPanel<Path> extends JComponent implements
 		Rectangle2D boundDestination = current.destination.getBoundRectangle();
 		
 		// The concrete part of the rendering object.
-		current.entry.linkView.render(current.source.entity, 
-				current.destination.entity, current.link).paint(hint,
-						(Graphics2D)g, preview, current.pathObject, pathView, 
-						boundSource, boundDestination);
+		LinkView.LinkRender linkRender = current.entry.linkView.render(
+				current.source.entity, current.destination.entity, current.link);
+		PathView.paint(pathView, linkRender, hint, (Graphics2D)g, preview, 
+				current.pathObject, boundSource, boundDestination);
 	}
 	
 	private interface SketchPaintInterface<Path> {

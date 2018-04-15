@@ -2,7 +2,7 @@ package net.aegistudio.sketchuml.statechart;
 
 import JP.co.esm.caddies.jomt.jmodel.StateVertexPresentation;
 import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UStateVertexImp;
-import net.aegistudio.sketchuml.Entity;
+import net.aegistudio.sketchuml.abstraction.Entity;
 import net.aegistudio.sketchuml.astaxpt.AstahUuidGenerator;
 
 /**

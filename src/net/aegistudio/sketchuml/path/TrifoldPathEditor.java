@@ -20,9 +20,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.aegistudio.sketchuml.Configuration;
+import net.aegistudio.sketchuml.abstraction.PropertyPanel;
 import net.aegistudio.sketchuml.framework.BoundSlider;
 import net.aegistudio.sketchuml.framework.PathEditor;
-import net.aegistudio.sketchuml.framework.PropertyPanel;
 import net.aegistudio.sketchuml.framework.SketchLinkComponent;
 
 public class TrifoldPathEditor extends JPanel 

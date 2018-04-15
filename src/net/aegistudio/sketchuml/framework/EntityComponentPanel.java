@@ -18,9 +18,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.aegistudio.sketchuml.Configuration;
-import net.aegistudio.sketchuml.EntityEntry;
 import net.aegistudio.sketchuml.History;
-import net.aegistudio.sketchuml.PropertyView;
+import net.aegistudio.sketchuml.abstraction.EntityEntry;
+import net.aegistudio.sketchuml.abstraction.PropertyView;
 
 public class EntityComponentPanel<Path> extends JPanel {
 	

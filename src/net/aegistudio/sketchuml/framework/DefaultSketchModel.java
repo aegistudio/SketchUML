@@ -11,10 +11,10 @@ import java.util.List;
 
 import de.dubs.dollarn.PointR;
 import net.aegistudio.sketchuml.Configuration;
-import net.aegistudio.sketchuml.Entity;
-import net.aegistudio.sketchuml.EntityEntry;
-import net.aegistudio.sketchuml.LinkEntry;
-import net.aegistudio.sketchuml.Template;
+import net.aegistudio.sketchuml.abstraction.Entity;
+import net.aegistudio.sketchuml.abstraction.EntityEntry;
+import net.aegistudio.sketchuml.abstraction.LinkEntry;
+import net.aegistudio.sketchuml.abstraction.Template;
 import net.aegistudio.sketchuml.path.PathManager;
 import net.aegistudio.sketchuml.path.PathView;
 

@@ -6,12 +6,12 @@ import java.awt.Graphics2D;
 
 import JP.co.esm.caddies.jomt.jmodel.FinalStatePresentation;
 import JP.co.esm.caddies.uml.BehavioralElements.StateMachines.UFinalStateImp;
-import net.aegistudio.sketchuml.Entity;
-import net.aegistudio.sketchuml.EntityAdapter;
-import net.aegistudio.sketchuml.SketchRenderHint;
+import net.aegistudio.sketchuml.abstraction.Entity;
+import net.aegistudio.sketchuml.abstraction.EntityAdapter;
+import net.aegistudio.sketchuml.abstraction.RegularRenderer;
+import net.aegistudio.sketchuml.abstraction.RenderUtils;
+import net.aegistudio.sketchuml.abstraction.SketchRenderHint;
 import net.aegistudio.sketchuml.astaxpt.AstahUuidGenerator;
-import net.aegistudio.sketchuml.framework.RegularRenderer;
-import net.aegistudio.sketchuml.framework.RenderUtils;
 
 public class EntityStateEnd extends EntityAdapter implements 
 	RegularRenderer.Painter, StateEntity {

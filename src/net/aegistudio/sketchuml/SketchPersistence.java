@@ -13,6 +13,7 @@ import java.util.zip.GZIPOutputStream;
 
 import javax.swing.filechooser.FileFilter;
 
+import net.aegistudio.sketchuml.abstraction.Template;
 import net.aegistudio.sketchuml.framework.SketchModel;
 
 public class SketchPersistence<Path> extends 

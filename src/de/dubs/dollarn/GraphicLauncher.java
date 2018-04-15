@@ -93,7 +93,7 @@ import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.Vector;
 
-import net.aegistudio.sketchuml.framework.RenderUtils;
+import net.aegistudio.sketchuml.abstraction.RenderUtils;
 
 public class GraphicLauncher extends Frame implements MouseMotionListener,
 		MouseListener, ActionListener {

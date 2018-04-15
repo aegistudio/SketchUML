@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 
+import net.aegistudio.sketchuml.abstraction.SketchRenderHint;
+
 /**
  * Render grid with provided grid interval and repetitive period
  * as background to the provided graphics.

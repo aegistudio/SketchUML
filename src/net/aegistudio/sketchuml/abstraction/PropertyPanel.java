@@ -1,4 +1,4 @@
-package net.aegistudio.sketchuml.framework;
+package net.aegistudio.sketchuml.abstraction;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -21,6 +21,7 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerModel;
 
 import net.aegistudio.sketchuml.Configuration;
+import net.aegistudio.sketchuml.framework.BoundSlider;
 
 public class PropertyPanel<T> extends JPanel {
 	public interface PropertyGetter<T, U> {

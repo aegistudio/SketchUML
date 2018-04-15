@@ -1,4 +1,4 @@
-package net.aegistudio.sketchuml;
+package net.aegistudio.sketchuml.abstraction;
 
 import java.awt.Component;
 import java.awt.Graphics;

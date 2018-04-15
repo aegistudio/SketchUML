@@ -12,7 +12,7 @@ import java.util.Vector;
 import de.dubs.dollarn.NBestList;
 import de.dubs.dollarn.NDollarRecognizer;
 import de.dubs.dollarn.PointR;
-import net.aegistudio.sketchuml.EntityEntry;
+import net.aegistudio.sketchuml.abstraction.EntityEntry;
 
 /**
  * Encapsulate the $N recognizer and make it more expressive in 

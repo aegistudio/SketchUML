@@ -5,13 +5,13 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.function.Consumer;
 
-import net.aegistudio.sketchuml.Entity;
-import net.aegistudio.sketchuml.PropertyView;
-import net.aegistudio.sketchuml.SketchRenderHint;
-import net.aegistudio.sketchuml.SketchView;
-import net.aegistudio.sketchuml.framework.PropertyPanel;
-import net.aegistudio.sketchuml.framework.RegularRenderer;
-import net.aegistudio.sketchuml.framework.RenderUtils;
+import net.aegistudio.sketchuml.abstraction.Entity;
+import net.aegistudio.sketchuml.abstraction.PropertyPanel;
+import net.aegistudio.sketchuml.abstraction.PropertyView;
+import net.aegistudio.sketchuml.abstraction.RegularRenderer;
+import net.aegistudio.sketchuml.abstraction.RenderUtils;
+import net.aegistudio.sketchuml.abstraction.SketchRenderHint;
+import net.aegistudio.sketchuml.abstraction.SketchView;
 
 public class EntityMetaDecision implements 
 	SketchView, PropertyView.Factory, RegularRenderer.Painter {

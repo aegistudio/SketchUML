@@ -7,7 +7,9 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 import de.dubs.dollarn.PointR;
-import net.aegistudio.sketchuml.SketchRenderHint;
+import net.aegistudio.sketchuml.abstraction.LinkView.ArrowStyle;
+import net.aegistudio.sketchuml.abstraction.LinkView.LineStyle;
+import net.aegistudio.sketchuml.abstraction.SketchRenderHint;
 
 public class BezierPathView<T extends BezierPath> implements PathView<T> {
 	public static final float[][] DASH_DECORATION= { 

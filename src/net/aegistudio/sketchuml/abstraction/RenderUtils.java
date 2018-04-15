@@ -1,4 +1,4 @@
-package net.aegistudio.sketchuml.framework;
+package net.aegistudio.sketchuml.abstraction;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics;
@@ -8,7 +8,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.Vector;
 
 import de.dubs.dollarn.PointR;
-import net.aegistudio.sketchuml.SketchRenderHint;
 
 public class RenderUtils {
 	public static void drawLines(Graphics g, String[] lines) {
